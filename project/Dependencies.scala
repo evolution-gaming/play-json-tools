@@ -7,7 +7,9 @@ object Dependencies {
 
   val jacksonDatabind: ModuleID = "com.fasterxml.jackson.core" % "jackson-databind" % fasterXmlVersion % Compile
   
-  val scalaTools: ModuleID = "com.evolutiongaming" %% "scala-tools" % "1.14"
+  val scalaTools: ModuleID = "com.evolutiongaming" %% "scala-tools" % "1.15"
+
+  val nel = "com.evolutiongaming" %% "nel" % "1.0"
 
   val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % "3.0.4" % Test
 

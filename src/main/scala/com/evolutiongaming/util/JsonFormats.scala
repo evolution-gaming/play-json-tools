@@ -9,6 +9,7 @@ import play.api.libs.json._
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
+import com.evolutiongaming.nel.{Nel => NewNel}
 import scala.util.{Failure, Success, Try}
 
 
@@ -242,5 +243,17 @@ object JsonFormats {
     } yield nel
 
     def writes(x: Nel[T]): JsValue = Json toJson x.toList
+  }
+
+  implicit def newNelFormat[T](implicit format: Format[T]): Format[NewNel[T]] = new Format[NewNel[T]] {
+    def reads(json: JsValue): JsResult[NewNel[T]] = for {
+      list <- json.validate[List[T]]
+      nel <- list match {
+        case Nil          => JsError("list is empty")
+        case head :: tail => JsSuccess(NewNel(head, tail))
+      }
+    } yield nel
+
+    def writes(x: NewNel[T]): JsValue = Json toJson x.toList
   }
 }

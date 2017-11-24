@@ -25,7 +25,6 @@ lazy val playJsonTools = (project in file("."))
     licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/mit-license.html")),
     description := "Set of implicit helper classes for transforming various objects to and from JSON",
     startYear := Some(2017),
-    shellPrompt := { s => s"${Project.extract(s).currentProject.id} > " },
     javaOptions in(Compile, doc) := Seq(),
     publishArtifact in(Compile, packageDoc) := false,
     publishArtifact in packageDoc := false,
@@ -46,7 +45,7 @@ lazy val playJsonTools = (project in file("."))
       "-feature",
       "-unchecked",
       "-deprecation",
-      "-Xfatal-warnings",
+//      "-Xfatal-warnings",
       "-Xlint",
       "-Yno-adapted-args",
       "-Ywarn-dead-code",
@@ -54,5 +53,5 @@ lazy val playJsonTools = (project in file("."))
       "-Xfuture"
     ),
 
-    libraryDependencies ++= Seq(playJson, jacksonDatabind, scalaTools, scalaTest).map(excludeLog4j)
+    libraryDependencies ++= Seq(playJson, jacksonDatabind, nel, scalaTools, scalaTest).map(excludeLog4j)
   ))
