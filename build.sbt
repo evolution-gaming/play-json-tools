@@ -8,7 +8,7 @@ import sbt.{Resolver, _}
 lazy val build = taskKey[Unit]("Build, test, and package artifacts for publishing")
 
 lazy val Scala212 = "2.12.4"
-lazy val Scala211 = "2.11.11"
+lazy val Scala211 = "2.11.12"
 
 lazy val playJsonTools = (project in file("."))
   .settings(build := {((test in Test).value, packagedArtifacts.value)})
