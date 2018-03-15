@@ -26,6 +26,6 @@ class FlatFormatSpec extends FunSuite with Matchers {
 
   case class Outer(outer: String, inner: Inner)
   object Outer {
-    implicit val JsonFormat: Format[Outer] = new FlatFormat[Outer]("inner", Json.format[Outer])
+    implicit val JsonFormat: Format[Outer] = FlatFormat("inner", Json.format[Outer])
   }
 }

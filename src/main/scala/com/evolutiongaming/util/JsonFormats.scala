@@ -4,12 +4,12 @@ import java.net.URL
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{Instant, LocalTime, ZoneOffset}
 
+import com.evolutiongaming.nel.{Nel => NewNel}
 import play.api.libs.json._
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
-import com.evolutiongaming.nel.{Nel => NewNel}
 import scala.util.{Failure, Success, Try}
 
 
@@ -176,6 +176,12 @@ object JsonFormats {
       val json = format.writes(o)
       val nested = (json \ field).asOpt[JsObject] getOrElse Json.obj()
       json - field ++ nested
+    }
+  }
+
+  object FlatFormat {
+    def apply[T](field: String, format: OFormat[T])(implicit tag: ClassTag[T]): OFormat[T] = {
+      new FlatFormat[T](field, format)
     }
   }
 
