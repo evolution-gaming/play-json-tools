@@ -239,18 +239,6 @@ object JsonFormats {
   }
 
 
-  implicit def nelFormat[T](implicit format: Format[T]): Format[Nel[T]] = new Format[Nel[T]] {
-    def reads(json: JsValue): JsResult[Nel[T]] = for {
-      list <- json.validate[List[T]]
-      nel <- list match {
-        case Nil          => JsError("list is empty")
-        case head :: tail => JsSuccess(Nel(head, tail))
-      }
-    } yield nel
-
-    def writes(x: Nel[T]): JsValue = Json toJson x.toList
-  }
-
   implicit def newNelFormat[T](implicit format: Format[T]): Format[NewNel[T]] = new Format[NewNel[T]] {
     def reads(json: JsValue): JsResult[NewNel[T]] = for {
       list <- json.validate[List[T]]

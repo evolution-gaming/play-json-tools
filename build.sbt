@@ -45,7 +45,7 @@ lazy val playJsonTools = (project in file("."))
       "-feature",
       "-unchecked",
       "-deprecation",
-//      "-Xfatal-warnings",
+      "-Xfatal-warnings",
       "-Xlint",
       "-Yno-adapted-args",
       "-Ywarn-dead-code",
@@ -53,5 +53,5 @@ lazy val playJsonTools = (project in file("."))
       "-Xfuture"
     ),
 
-    libraryDependencies ++= Seq(playJson, jacksonDatabind, nel, scalaTools, scalaTest).map(excludeLog4j)
+    libraryDependencies ++= Seq(playJson, jacksonDatabind, nel, scalaTest).map(excludeLog4j)
   ))

@@ -1,5 +1,6 @@
 package com.evolutiongaming.util
 
+import com.evolutiongaming.nel.Nel
 import com.evolutiongaming.util.JsonFormats._
 import org.scalatest.{FunSuite, Matchers}
 import play.api.libs.json.{JsNumber, JsSuccess, Json}
