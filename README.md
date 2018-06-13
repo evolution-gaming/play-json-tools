@@ -2,7 +2,7 @@
 
 Set of implicit Play-JSON `Format` helper classes
 
-Example in [FlatFormatSpec](./src/test/scala/com/evolutiongaming/util/FlatFormatSpec.scala)
+Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolutiongaming/util/FlatFormatSpec.scala)
 
 ## Setup
 

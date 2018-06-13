@@ -6,6 +6,15 @@ trait NameCodingStrategy {
 }
 
 trait LowPriority {
+  implicit val default: NameCodingStrategy = new NameCodingStrategy {
+    override def encode(s: String): String = s
+    override def decode(s: String): String = s
+  }
+}
+
+object NameCodingStrategy extends LowPriority
+
+object NameCodingStrategies {
   implicit val kebabCase: NameCodingStrategy = new NameCodingStrategy {
     override def encode(s: String): String =
       s.foldLeft(List.empty[String]) {
@@ -18,12 +27,5 @@ trait LowPriority {
       }.reverse.mkString("-")
 
     override def decode(s: String): String = s.split("-").map(_.capitalize).mkString("")
-  }
-}
-
-object NameCodingStrategy extends LowPriority {
-  implicit val asIs: NameCodingStrategy = new NameCodingStrategy {
-    override def encode(s: String): String = s
-    override def decode(s: String): String = s
   }
 }

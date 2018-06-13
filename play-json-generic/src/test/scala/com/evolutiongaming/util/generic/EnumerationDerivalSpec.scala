@@ -29,7 +29,7 @@ class EnumerationDerivalSpec extends FlatSpec with Matchers {
 object EnumerationDerivalSpec {
   object Formats {
     object Kebab {
-      import NameCodingStrategy.kebabCase
+      import NameCodingStrategies.kebabCase
       implicit val aReads: Reads[AnEvent] = EnumerationReads.deriveEnumerationReads
       implicit val aWrites: Writes[AnEvent] = EnumerationWrites.deriveEnumerationWrites
     }
