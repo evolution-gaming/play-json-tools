@@ -53,5 +53,5 @@ lazy val playJsonTools = (project in file("."))
       "-Xfuture"
     ),
 
-    libraryDependencies ++= Seq(playJson, jacksonDatabind, nel, scalaTest).map(excludeLog4j)
+    libraryDependencies ++= Seq(shapeless, playJson, nel, scalaTest).map(excludeLog4j)
   ))
