@@ -10,13 +10,16 @@ trait EnumerationReads[T] extends Reads[T]{
 }
 
 object EnumerationReads {
-  def apply[A](f: JsValue => JsResult[A]): EnumerationReads[A] = new EnumerationReads[A] {
+
+  def apply[A](implicit decode: EnumerationReads[A]): Reads[A] = decode
+
+  def create[A](f: JsValue => JsResult[A]): EnumerationReads[A] = new EnumerationReads[A] {
     override def reads(jsValue: JsValue): JsResult[A] = f(jsValue)
   }
 
   def deriveEnumerationReads[A](implicit decode: EnumerationReads[A]): EnumerationReads[A] = decode
 
-  implicit val decodeEnumerationCNil: EnumerationReads[CNil] = apply[CNil] { _ =>
+  implicit val decodeEnumerationCNil: EnumerationReads[CNil] = create[CNil] { _ =>
     JsError("could not decode cnil")
   }
 
@@ -25,7 +28,7 @@ object EnumerationReads {
     gv: LabelledGeneric.Aux[V, HNil],
     dr: EnumerationReads[R],
     ncs: NameCodingStrategy
-  ): EnumerationReads[FieldType[K, V] :+: R] = apply[FieldType[K, V] :+: R] { jsValue =>
+  ): EnumerationReads[FieldType[K, V] :+: R] = create[FieldType[K, V] :+: R] { jsValue =>
     jsValue.validate[String] match {
       case JsSuccess(s, _) if ncs.decode(s) == wit.value.name => JsSuccess(Inl(field[K](gv.from(HNil))))
       case JsSuccess(_, _)                        => dr.reads(jsValue).map(Inr(_))
@@ -36,5 +39,5 @@ object EnumerationReads {
   implicit def decodeEnumeration[A, Repr <: Coproduct](implicit
     gen: LabelledGeneric.Aux[A, Repr],
     rr: EnumerationReads[Repr]
-  ): EnumerationReads[A] = apply[A] { jsValue => rr.reads(jsValue).map(gen.from) }
+  ): EnumerationReads[A] = create[A] { jsValue => rr.reads(jsValue).map(gen.from) }
 }
