@@ -2,20 +2,15 @@ import sbt._
 
 
 object Dependencies {
-  private val fasterXmlVersion = "2.9.4"
   private val playVersion = "2.6.9"
 
-  val jacksonDatabind: ModuleID = "com.fasterxml.jackson.core" % "jackson-databind" % fasterXmlVersion % Compile
+  val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
 
   val nel = "com.evolutiongaming" %% "nel" % "1.1"
 
   val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % "3.0.5" % Test
 
-  val playJson: ModuleID = "com.typesafe.play" %% "play-json" % playVersion % Compile excludeAll (
-    ExclusionRule("org.scala-lang", "scala-reflect"),
-    ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
-    ExclusionRule("com.fasterxml.jackson.core", "jackson-core"),
-    ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"))
+  val playJson: ModuleID = "com.typesafe.play" %% "play-json" % playVersion % Provided
 
   def excludeLog4j(moduleID: ModuleID): ModuleID = moduleID.excludeAll(
     ExclusionRule("log4j", "log4j"),
