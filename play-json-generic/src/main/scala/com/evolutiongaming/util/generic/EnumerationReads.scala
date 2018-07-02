@@ -30,7 +30,7 @@ object EnumerationReads {
     ncs: NameCodingStrategy
   ): EnumerationReads[FieldType[K, V] :+: R] = create[FieldType[K, V] :+: R] { jsValue =>
     jsValue.validate[String] match {
-      case JsSuccess(s, _) if ncs.decode(s) == wit.value.name => JsSuccess(Inl(field[K](gv.from(HNil))))
+      case JsSuccess(s, _) if  ncs.matches(s, wit.value.name) => JsSuccess(Inl(field[K](gv.from(HNil))))
       case JsSuccess(_, _)                        => dr.reads(jsValue).map(Inr(_))
       case JsError(err)                           => JsError.apply(err)
     }

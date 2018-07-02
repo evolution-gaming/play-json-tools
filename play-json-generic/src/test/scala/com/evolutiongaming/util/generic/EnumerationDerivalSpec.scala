@@ -34,6 +34,17 @@ class EnumerationDerivalSpec extends FlatSpec with Matchers {
     js.as[AnEvent] shouldBe typ
   }
 
+  it should "be able to encode and decode in no sep case" in {
+    import EnumerationDerivalSpec.Formats.NoSepCase._
+
+    val typ: AnEvent = AnEvent.DoneSome
+    val json = Json.toJson(typ)
+
+    json.toString() shouldBe "\"donesome\""
+    json.as[AnEvent] shouldBe typ
+    succeed
+  }
+
 }
 
 object EnumerationDerivalSpec {
@@ -43,6 +54,13 @@ object EnumerationDerivalSpec {
       implicit val aReads: Reads[AnEvent] = EnumerationReads[AnEvent]
       implicit val aWrites: Writes[AnEvent] = EnumerationWrites[AnEvent]
     }
+
+    object NoSepCase {
+      import NameCodingStrategies.noSepCase
+      implicit val aReads: Reads[AnEvent] = EnumerationReads[AnEvent]
+      implicit val aWrites: Writes[AnEvent] = EnumerationWrites[AnEvent]
+    }
+
     object Default {
       implicit val aReads: Reads[AnEvent] = EnumerationReads[AnEvent]
       implicit val aWrites: Writes[AnEvent] = EnumerationWrites[AnEvent]
