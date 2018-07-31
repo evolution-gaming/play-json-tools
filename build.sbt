@@ -7,7 +7,7 @@ import sbt.{Resolver, _}
 // allow `+` prefix for cross-building project: https://github.com/sbt/sbt/issues/3422
 lazy val build = taskKey[Unit]("Build, test, and package artifacts for publishing")
 
-lazy val Scala212 = "2.12.4"
+lazy val Scala212 = "2.12.6"
 lazy val Scala211 = "2.11.12"
 
 val commonSettings = Seq(

@@ -6,7 +6,7 @@ object Dependencies {
 
   val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
 
-  val nel = "com.evolutiongaming" %% "nel" % "1.1"
+  val nel = "com.evolutiongaming" %% "nel" % "1.2"
 
   val scalaTest: ModuleID = "org.scalatest" %% "scalatest" % "3.0.5" % Test
 
