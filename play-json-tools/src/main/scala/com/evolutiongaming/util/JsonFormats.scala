@@ -240,6 +240,38 @@ object JsonFormats {
     }
   }
 
+  trait FoldedTypeFormat[T] extends OFormat[T] {
+    type Pf = PartialFunction[String, JsResult[T]]
+
+    def readsPf(json: JsValue): Pf
+
+    def reads(json: JsValue): JsResult[T] = {
+      def reads(json: JsValue, t: String) = {
+        val pf = readsPf(json)
+        if (pf isDefinedAt t) pf(t)
+        else JsError(s"No Reads defined for $t")
+      }
+
+      for {
+        typ <- (json \ "type").validate[String]
+        result <- typ.split("#").toList match {
+          case head :: Nil  => reads(json, head)
+          case head :: tail =>
+            val j = json.as[JsObject] ++ Json.obj("type" -> tail.mkString("#"))
+            reads(j, head)
+          case Nil          => sys error "It's impossible"
+        }
+      } yield result
+    }
+
+    def writes(t: String, json: JsObject = Json.obj()): JsObject = {
+      (json \ "type").validate[String] match {
+        case JsSuccess(typ, _) => json ++ Json.obj("type" -> s"$t#$typ")
+        case _: JsError        => Json.obj("type" -> t) ++ json
+      }
+    }
+  }
+
 
   implicit def newNelFormat[T](implicit format: Format[T]): Format[NewNel[T]] = new Format[NewNel[T]] {
     def reads(json: JsValue): JsResult[NewNel[T]] = for {
