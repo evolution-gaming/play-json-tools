@@ -5,6 +5,7 @@ import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{Instant, LocalTime, ZoneOffset}
 
 import com.evolutiongaming.nel.{Nel => NewNel}
+import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json._
 
 import scala.annotation.tailrec
@@ -215,7 +216,7 @@ object JsonFormats {
   }
 
 
-  trait TypeFormat[T] extends OFormat[T] {
+  trait TypeFormat[T] extends OFormat[T] with LazyLogging {
     type Pf = PartialFunction[String, JsResult[T]]
 
     def readsPf(json: JsValue): Pf
@@ -234,6 +235,7 @@ object JsonFormats {
     }
 
     def writes(t: String, json: JsObject = Json.obj()): JsObject = {
+      if (json.keys contains "type") logger warn s"Inner JSON for '$t' subtype already contains 'type' field"
       Json.obj("type" -> t) ++ json
     }
   }

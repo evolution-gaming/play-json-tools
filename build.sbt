@@ -66,4 +66,4 @@ lazy val playJsonTools = (project in file("play-json-tools"))
     moduleName := "play-json-tools",
     name := "play-json-tools"
   ))
-  .settings(libraryDependencies ++= Seq(playJson, nel, scalaTest).map(excludeLog4j))
+  .settings(libraryDependencies ++= Seq(playJson, nel, scalaTest, logback, logging).map(excludeLog4j))
