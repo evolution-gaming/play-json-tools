@@ -12,10 +12,6 @@ object Dependencies {
 
   val playJson: ModuleID = "com.typesafe.play" %% "play-json" % playVersion % Provided
 
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
-
-  lazy val logging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
-
   def excludeLog4j(moduleID: ModuleID): ModuleID = moduleID.excludeAll(
     ExclusionRule("log4j", "log4j"),
     ExclusionRule("org.slf4j", "slf4j-log4j12"),
