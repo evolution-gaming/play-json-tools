@@ -48,12 +48,11 @@ class FoldedTypeFormatSpec extends WordSpec with Matchers {
     }
   }
 
-  val GenericFoldedTypeFormat: OFormat[Generic] = new FoldedTypeFormat[Generic] {
-    def readsPf(json: JsValue): Pf = {
+  val GenericFoldedTypeFormat: OFormat[Generic] = OFormat(
+    FoldedTypeFormat.reads[Generic](json => {
       case "Specific" => SpecificFormat.reads(json)
-    }
-    def writes(x: Generic): JsObject = x match {
-      case x: Specific => writes("Specific", SpecificFormat.writes(x))
-    }
-  }
+    }),
+    FoldedTypeFormat.writes[Generic]({
+      case x: Specific => ("Specific", SpecificFormat.writes(x))
+    }))
 }
