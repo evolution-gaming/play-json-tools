@@ -234,6 +234,7 @@ object JsonFormats {
     }
 
     def writes(t: String, json: JsObject = Json.obj()): JsObject = {
+      if (json.keys contains "type") sys error s"Inner JSON for '$t' subtype already contains 'type' field"
       Json.obj("type" -> t) ++ json
     }
   }
