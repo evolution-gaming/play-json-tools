@@ -234,7 +234,42 @@ object JsonFormats {
     }
 
     def writes(t: String, json: JsObject = Json.obj()): JsObject = {
+      if (json.keys contains "type") sys error s"Inner JSON for '$t' subtype already contains 'type' field"
       Json.obj("type" -> t) ++ json
+    }
+  }
+
+
+  object FoldedTypeFormat {
+
+    def reads[T](readsPf: JsValue => PartialFunction[String, JsResult[T]]): Reads[T] = new Reads[T] {
+      def reads(json: JsValue): JsResult[T] = {
+        def reads(json: JsValue, t: String) = {
+          val pf = readsPf(json)
+          if (pf isDefinedAt t) pf(t)
+          else JsError(s"No Reads defined for $t")
+        }
+
+        for {
+          typ <- (json \ "type").validate[String]
+          result <- typ.split("#").toList match {
+            case head :: Nil  => reads(json, head)
+            case head :: tail =>
+              val j = json.as[JsObject] ++ Json.obj("type" -> tail.mkString("#"))
+              reads(j, head)
+            case Nil          => sys error "It's impossible"
+          }
+        } yield result
+      }
+    }
+
+    def writes[T](writesFunc: T => (String, JsObject)): OWrites[T] = new OWrites[T] {
+      def writes(o: T): JsObject = writesFunc(o) match {
+        case (t, json) => (json \ "type").validate[String] match {
+          case JsSuccess(typ, _) => json ++ Json.obj("type" -> s"$t#$typ")
+          case _: JsError        => Json.obj("type" -> t) ++ json
+        }
+      }
     }
   }
 
