@@ -239,6 +239,7 @@ object JsonFormats {
     }
   }
 
+
   object FoldedTypeFormat {
 
     def reads[T](readsPf: JsValue => PartialFunction[String, JsResult[T]]): Reads[T] = new Reads[T] {
@@ -262,16 +263,16 @@ object JsonFormats {
       }
     }
 
-    def writes[T](writesPf: PartialFunction[T, (String, JsObject)]): OWrites[T] = new OWrites[T] {
-      def writes(o: T): JsObject = if (writesPf isDefinedAt o) writesPf(o) match {
+    def writes[T](writesFunc: T => (String, JsObject)): OWrites[T] = new OWrites[T] {
+      def writes(o: T): JsObject = writesFunc(o) match {
         case (t, json) => (json \ "type").validate[String] match {
           case JsSuccess(typ, _) => json ++ Json.obj("type" -> s"$t#$typ")
           case _: JsError        => Json.obj("type" -> t) ++ json
         }
       }
-      else sys error s"No Writes defined for $o"
     }
   }
+
 
   implicit def newNelFormat[T](implicit format: Format[T]): Format[NewNel[T]] = new Format[NewNel[T]] {
     def reads(json: JsValue): JsResult[NewNel[T]] = for {
