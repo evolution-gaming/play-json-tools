@@ -3,7 +3,7 @@ package com.evolutiongaming.util
 import com.evolutiongaming.nel.Nel
 import com.evolutiongaming.util.JsonFormats._
 import org.scalatest.{FunSuite, Matchers}
-import play.api.libs.json.{JsNumber, JsSuccess, Json}
+import play.api.libs.json.{JsNull, JsNumber, JsSuccess, Json}
 
 class JsonFormatsSpec extends FunSuite with Matchers {
 
@@ -26,5 +26,12 @@ class JsonFormatsSpec extends FunSuite with Matchers {
     val json = Json.toJson(value)
     json shouldEqual JsNumber(2)
     Json.fromJson[Either[String, Int]](json) shouldEqual JsSuccess(value)
+  }
+
+  test("unitFormat") {
+    val value = ()
+    val json = Json.toJson(value)
+    json shouldEqual JsNull
+    Json.fromJson[Unit](json) shouldEqual JsSuccess(value)
   }
 }
