@@ -1,6 +1,4 @@
 import Dependencies._
-import sbt.Keys.{scalaVersion, _}
-import sbt.{Resolver, _}
 
 
 val commonSettings = Seq(
