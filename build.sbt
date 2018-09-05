@@ -14,7 +14,6 @@ val commonSettings = Seq(
   licenses := Seq(("MIT", url("https://opensource.org/licenses/MIT"))),
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
-
   scalaVersion := crossScalaVersions.value.last,
   crossScalaVersions := Seq("2.11.12", "2.12.6"),
   scalacOptions in(Compile, doc) ++= Seq("-no-link-warnings"),
