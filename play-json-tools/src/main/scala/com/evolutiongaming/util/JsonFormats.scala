@@ -286,7 +286,7 @@ object JsonFormats {
     def writes(x: NewNel[T]): JsValue = Json toJson x.toList
   }
 
-  implicit val unitFormat = new Format[Unit] {
+  implicit val UnitFormat = new Format[Unit] {
     override def writes(o: Unit): JsValue = JsNull
 
     override def reads(json: JsValue): JsResult[Unit] = json match {
