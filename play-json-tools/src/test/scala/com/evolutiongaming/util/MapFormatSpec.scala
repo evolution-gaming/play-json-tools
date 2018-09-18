@@ -1,9 +1,9 @@
 package com.evolutiongaming.util
 
-import com.evolutiongaming.util.JsonFormats._
+import com.evolutiongaming.util.JsonFormats.MapFormat
 import com.evolutiongaming.util.MapFormatSpec._
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsSuccess, Json, OFormat}
+import play.api.libs.json.{JsError, JsSuccess, Json, OFormat}
 
 class MapFormatSpec extends WordSpec with Matchers {
 
@@ -33,6 +33,11 @@ class MapFormatSpec extends WordSpec with Matchers {
 
     "parse from json" in {
       mapFormat.reads(json) shouldEqual JsSuccess(map)
+    }
+
+    "fail to parse json with duplicate key" in {
+      val array = json :+ Json.obj("id" -> Json.obj("value" -> "k1"), "value" -> 10)
+      mapFormat.reads(array) shouldEqual JsError("Duplicate key Key(k1) found")
     }
 
   }
