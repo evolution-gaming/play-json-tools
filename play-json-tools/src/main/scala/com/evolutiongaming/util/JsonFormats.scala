@@ -294,4 +294,15 @@ object JsonFormats {
       case _ => JsError("error.expected.jsnull")
     }
   }
+
+  implicit def javaListFormat[T](implicit format: Format[T]): Format[java.util.List[T]] = new Format[java.util.List[T]] {
+    import scala.collection.JavaConverters._
+
+    def reads(json: JsValue): JsResult[java.util.List[T]] = for {
+      list <- json.validate[List[T]]
+    } yield list.asJava
+
+    def writes(x: java.util.List[T]): JsValue =
+      Json toJson x.asScala.toList
+  }
 }
