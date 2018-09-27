@@ -8,6 +8,7 @@ import com.evolutiongaming.nel.{Nel => NewNel}
 import play.api.libs.json._
 
 import scala.annotation.tailrec
+import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -296,8 +297,6 @@ object JsonFormats {
   }
 
   implicit def javaListFormat[T](implicit format: Format[T]): Format[java.util.List[T]] = new Format[java.util.List[T]] {
-    import scala.collection.JavaConverters._
-
     def reads(json: JsValue): JsResult[java.util.List[T]] = for {
       list <- json.validate[List[T]]
     } yield list.asJava
