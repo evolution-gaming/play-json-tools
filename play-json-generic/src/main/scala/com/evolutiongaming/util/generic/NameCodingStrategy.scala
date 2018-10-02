@@ -1,39 +1,22 @@
 package com.evolutiongaming.util.generic
 
-trait NameCodingStrategy {
-  def encode(input: String): String
-  def matches(encoded: String, compareAgainst: String): Boolean
-}
+trait NameCodingStrategy extends ((String) => String)
 
 trait LowPriority {
-  implicit val default: NameCodingStrategy = new NameCodingStrategy {
-    override def encode(input: String): String = input
-    override def matches(encoded: String, compareAgainst: String): Boolean = encoded == compareAgainst
-  }
+  implicit val default: NameCodingStrategy = identity[String]
 }
 
 object NameCodingStrategy extends LowPriority
 
 object NameCodingStrategies {
-  private def lowerCaseSepCoding(sep: String): NameCodingStrategy = new NameCodingStrategy {
-
-    override def encode(input: String): String =
-      input.foldLeft(List.empty[String]) {
-        case (ll, n) if n.isUpper =>
-          n.toLower.toString :: ll
-        case (h :: t, n)          =>
-          h + n :: t
-        case (nil, n)             =>
-          n.toString :: nil
-      }.reverse.mkString(sep)
-
-    override def matches(encoded: String, compareAgainst: String): Boolean =
-      encoded == encode(compareAgainst)
-  }
+  private def lowerCaseSepCoding(sep: String): NameCodingStrategy =
+    _.split("(?<!^)(?=[A-Z])").map(_.toLowerCase).mkString(sep)
 
   implicit val kebabCase: NameCodingStrategy = lowerCaseSepCoding("-")
 
   implicit val snakeCase: NameCodingStrategy = lowerCaseSepCoding("_")
 
-  implicit val noSepCase: NameCodingStrategy = lowerCaseSepCoding("")
+  implicit val noSepCase: NameCodingStrategy = _.toLowerCase
+
+  implicit val upperCase: NameCodingStrategy = _.toUpperCase
 }

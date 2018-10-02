@@ -1,12 +1,12 @@
 package com.evolutiongaming.util.generic
 
 import org.scalatest.{FlatSpec, Matchers}
-import play.api.libs.json.{Json, Reads, Writes}
+import play.api.libs.json.{Format, Json}
 
 class EnumerationDerivalSpec extends FlatSpec with Matchers {
 
   it should "be able to encode and decode case object enumerations using default low prio implicit" in {
-    import EnumerationDerivalSpec.Formats.Default._
+    implicit val format: Format[AnEvent] = EnumerationFormats[AnEvent]
 
     val typ: AnEvent = AnEvent.DoneSome
     val js = Json.toJson(typ)
@@ -15,7 +15,8 @@ class EnumerationDerivalSpec extends FlatSpec with Matchers {
   }
 
   it should "be able to encode and decode in kebab case" in {
-    import EnumerationDerivalSpec.Formats.Kebab._
+    import NameCodingStrategies.kebabCase
+    implicit val format: Format[AnEvent] = EnumerationFormats[AnEvent]
 
     val typ: AnEvent = AnEvent.DoneSome
     val json = Json.toJson(typ)
@@ -35,7 +36,8 @@ class EnumerationDerivalSpec extends FlatSpec with Matchers {
   }
 
   it should "be able to encode and decode in no sep case" in {
-    import EnumerationDerivalSpec.Formats.NoSepCase._
+    import NameCodingStrategies.noSepCase
+    implicit val format: Format[AnEvent] = EnumerationFormats[AnEvent]
 
     val typ: AnEvent = AnEvent.DoneSome
     val json = Json.toJson(typ)
@@ -45,25 +47,4 @@ class EnumerationDerivalSpec extends FlatSpec with Matchers {
     succeed
   }
 
-}
-
-object EnumerationDerivalSpec {
-  object Formats {
-    object Kebab {
-      import NameCodingStrategies.kebabCase
-      implicit val aReads: Reads[AnEvent] = EnumerationReads[AnEvent]
-      implicit val aWrites: Writes[AnEvent] = EnumerationWrites[AnEvent]
-    }
-
-    object NoSepCase {
-      import NameCodingStrategies.noSepCase
-      implicit val aReads: Reads[AnEvent] = EnumerationReads[AnEvent]
-      implicit val aWrites: Writes[AnEvent] = EnumerationWrites[AnEvent]
-    }
-
-    object Default {
-      implicit val aReads: Reads[AnEvent] = EnumerationReads[AnEvent]
-      implicit val aWrites: Writes[AnEvent] = EnumerationWrites[AnEvent]
-    }
-  }
 }
