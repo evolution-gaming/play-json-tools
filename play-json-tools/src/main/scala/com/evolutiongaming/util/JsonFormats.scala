@@ -119,37 +119,42 @@ object JsonFormats {
     loop(entries, Map.empty)
   }
 
-  class StringKeyMapFormat[K, V](toStr: K => String, fromStr: String => Option[K])(implicit format: Format[V])
-    extends OFormat[Map[K, V]] {
+  object StringKeyMapFormat {
+    def reads[K, V](keyF: String => Option[K])(implicit format: Format[V]): Reads[Map[K, V]] = new Reads[Map[K, V]] {
 
       def keyValExtractor(kv: (String, JsValue)) = kv match {
         case (k, v) =>
           for {
-            k <- fromStr(k) match {
+            k <- keyF(k) match {
               case Some(k) => JsSuccess(k)
-              case None    => JsError(s"cannot parse key from $k")
+              case None => JsError(s"cannot parse key from $k")
             }
             v <- v.validate[V]
           } yield (k, v)
       }
 
-      def reads(json: JsValue): JsResult[Map[K, V]] = {
-
+      override def reads(json: JsValue): JsResult[Map[K, V]] = {
         for {
           obj <- json.validate[JsObject]
           map <- readMapEntries(obj.fields, keyValExtractor)
         } yield map
       }
+    }
 
-      def writes(map: Map[K, V]): JsObject = {
-        val values = map.map { case (k, v) => (toStr(k), Json.toJson(v)) }
+    def writes[K, V](keyF: K => String)(implicit format: Format[V]): OWrites[Map[K, V]] = new OWrites[Map[K, V]] {
+      override def writes(o: Map[K, V]): JsObject = {
+        val values = o.map { case (k, v) => (keyF(k), Json.toJson(v)) }
         JsObject(values)
       }
     }
+  }
 
 
-  class AnyKeyMap[K, V](toStr: K => String, fromStr: String => K)(implicit vf: Format[V])
-    extends StringKeyMapFormat(toStr, s => Try(fromStr(s)).toOption)(vf)
+  class AnyKeyMap[K, V](toStr: K => String, fromStr: String => K)(implicit vf: Format[V]) extends OFormat[Map[K, V]] {
+    override def reads(json: JsValue): JsResult[Map[K, V]] = StringKeyMapFormat.reads[K, V](k => Try { fromStr(k) }.toOption) reads json
+
+    override def writes(o: Map[K, V]): JsObject = StringKeyMapFormat.writes[K, V](toStr) writes o
+  }
 
   class MapFormat[K, V](keyName: String)(implicit kf: Format[K], vf: Format[V], tag: ClassTag[V]) extends Format[Map[K, V]] {
     private val fieldNotFound = try {
