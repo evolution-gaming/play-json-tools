@@ -19,8 +19,7 @@ object EnumMappings {
   implicit def enumMappingsCCons[A, K <: Symbol, L <: A, R <: Coproduct](implicit
     l: Witness.Aux[L],
     k: Witness.Aux[K],
-    r: MappingsAux[A, R],
-    ncs: NameCodingStrategy
+    r: MappingsAux[A, R]
   ): MappingsAux[A, FieldType[K, L] :+: R] =
-    MappingsAux[A, FieldType[K, L] :+: R](r.labels + (l.value -> ncs(k.value.name)))
+    MappingsAux[A, FieldType[K, L] :+: R](r.labels + (l.value -> k.value.name))
 }
