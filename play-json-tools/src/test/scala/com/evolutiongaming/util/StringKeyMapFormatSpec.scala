@@ -4,6 +4,7 @@ package com.evolutiongaming.util
 import com.evolutiongaming.util.JsonFormats.{StringKeyMapFormat}
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsError, JsSuccess, Json, OFormat}
+import StringKeyMapFormat._
 
 import scala.util.Try
 
@@ -13,12 +14,10 @@ class StringKeyMapFormatSpec extends WordSpec with Matchers {
 
     implicit val entryFormat = Json.format[Value]
 
-    val mapFormat = {
-      import StringKeyMapFormat._
-      OFormat(
-        reads(k => Try{ Key(k) }.toOption),
-        writes[Key, Value](_.id.toString))
-    }
+    val mapFormat = OFormat(
+      reads(k => Try{ Key(k) }.toOption),
+      writes[Key, Value](_.id.toString)
+    )
 
     val map = Map(Key(42) -> Value(1), Key(1) -> Value(42))
 

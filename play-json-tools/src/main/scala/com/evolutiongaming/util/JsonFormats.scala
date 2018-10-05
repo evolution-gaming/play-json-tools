@@ -120,17 +120,17 @@ object JsonFormats {
   }
 
   object StringKeyMapFormat {
-    def reads[K, V](keyF: String => Option[K])(implicit format: Format[V]): Reads[Map[K, V]] = new Reads[Map[K, V]] {
+    def reads[K, V](readKey: String => Option[K])(implicit format: Format[V]): Reads[Map[K, V]] = new Reads[Map[K, V]] {
 
       def keyValExtractor(kv: (String, JsValue)) = kv match {
         case (k, v) =>
           for {
-            k <- keyF(k) match {
+            k <- readKey(k) match {
               case Some(k) => JsSuccess(k)
               case None => JsError(s"cannot parse key from $k")
             }
             v <- v.validate[V]
-          } yield (k, v)
+          } yield k -> v
       }
 
       override def reads(json: JsValue): JsResult[Map[K, V]] = {
@@ -141,9 +141,9 @@ object JsonFormats {
       }
     }
 
-    def writes[K, V](keyF: K => String)(implicit format: Format[V]): OWrites[Map[K, V]] = new OWrites[Map[K, V]] {
+    def writes[K, V](writeKey: K => String)(implicit format: Format[V]): OWrites[Map[K, V]] = new OWrites[Map[K, V]] {
       override def writes(o: Map[K, V]): JsObject = {
-        val values = o.map { case (k, v) => (keyF(k), Json.toJson(v)) }
+        val values = o.map { case (k, v) => writeKey(k) -> Json.toJson(v) }
         JsObject(values)
       }
     }
