@@ -3,7 +3,7 @@ package com.evolutiongaming.util
 import com.evolutiongaming.nel.Nel
 import com.evolutiongaming.util.JsonFormats._
 import org.scalatest.{FunSuite, Matchers}
-import play.api.libs.json.{JsNull, JsNumber, JsSuccess, Json}
+import play.api.libs.json._
 
 class JsonFormatsSpec extends FunSuite with Matchers {
 
@@ -34,4 +34,24 @@ class JsonFormatsSpec extends FunSuite with Matchers {
     json shouldEqual JsNull
     Json.fromJson[Unit](json) shouldEqual JsSuccess(value)
   }
+
+  test("constFormat") {
+    val format = const(ConstObject)
+    val value = ConstObject
+    val json = Json.obj()
+    format.writes(value) shouldEqual json
+    format.reads(json) shouldEqual JsSuccess(value)
+  }
+
+  test("nestedFormat") {
+    val format = nested[Data]("nestedData")
+    val data = Data(123)
+    val json = Json.obj("nestedData" -> Json.obj("value" -> 123))
+    format.writes(data) shouldEqual json
+    format.reads(json) shouldEqual JsSuccess(data)
+  }
+
+  case object ConstObject
+  case class Data(value: Int)
+  implicit val dataFormat: OFormat[Data] = Json.format[Data]
 }

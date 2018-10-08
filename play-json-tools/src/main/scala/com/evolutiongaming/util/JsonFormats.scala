@@ -100,16 +100,61 @@ object JsonFormats {
     def writes(xs: Map[K, V]): JsValue = Json.toJson(xs.values)
   }
 
+  private def readMapEntries[K, V, T](entries: Seq[T], keyValExtractor: T => JsResult[(K, V)]) = {
 
-  class AnyKeyMap[K, V](toStr: K => String, fromStr: String => K)(implicit format: Format[V]) extends Format[Map[K, V]] {
-    def reads(json: JsValue): JsResult[Map[K, V]] = {
-      for {x <- json.validate[Map[String, V]]} yield for {(k, v) <- x} yield (fromStr(k), v)
+    @tailrec
+    def loop(entries: Seq[T], acc: Map[K, V]): JsResult[Map[K, V]] = {
+
+      entries match {
+        case Seq()   => JsSuccess(acc)
+        case x +: xs =>
+          keyValExtractor(x) match {
+            case JsSuccess(result@(k, _), _) if !acc.contains(k) => loop(xs, acc + result)
+            case JsSuccess((k, _), _)                            => JsError(s"Duplicate key $k found")
+            case result: JsError                                 => result
+          }
+      }
     }
-    def writes(x: Map[K, V]): JsValue = {
-      Json toJson (for {(k, v) <- x} yield (toStr(k), v))
+
+    loop(entries, Map.empty)
+  }
+
+  object StringKeyMapFormat {
+    def reads[K, V](readKey: String => Option[K])(implicit format: Format[V]): Reads[Map[K, V]] = new Reads[Map[K, V]] {
+
+      def keyValExtractor(kv: (String, JsValue)) = kv match {
+        case (k, v) =>
+          for {
+            k <- readKey(k) match {
+              case Some(k) => JsSuccess(k)
+              case None => JsError(s"cannot parse key from $k")
+            }
+            v <- v.validate[V]
+          } yield k -> v
+      }
+
+      override def reads(json: JsValue): JsResult[Map[K, V]] = {
+        for {
+          obj <- json.validate[JsObject]
+          map <- readMapEntries(obj.fields, keyValExtractor)
+        } yield map
+      }
+    }
+
+    def writes[K, V](writeKey: K => String)(implicit format: Format[V]): OWrites[Map[K, V]] = new OWrites[Map[K, V]] {
+      override def writes(o: Map[K, V]): JsObject = {
+        val values = o.map { case (k, v) => writeKey(k) -> Json.toJson(v) }
+        JsObject(values)
+      }
     }
   }
 
+
+  class AnyKeyMap[K, V](toStr: K => String, fromStr: String => K)(implicit vf: Format[V]) extends OFormat[Map[K, V]] {
+    override def reads(json: JsValue): JsResult[Map[K, V]] = StringKeyMapFormat.reads[K, V](k => Try { fromStr(k) }.toOption) reads json
+
+    override def writes(o: Map[K, V]): JsObject = StringKeyMapFormat.writes[K, V](toStr) writes o
+  }
 
   class MapFormat[K, V](keyName: String)(implicit kf: Format[K], vf: Format[V], tag: ClassTag[V]) extends Format[Map[K, V]] {
     private val fieldNotFound = try {
@@ -123,24 +168,15 @@ object JsonFormats {
 
     def reads(json: JsValue): JsResult[Map[K, V]] = {
 
-      @tailrec def loop(jsons: List[JsValue], kvs: List[(K, V)]): JsResult[List[(K, V)]] = jsons match {
-        case Nil           => JsSuccess(kvs)
-        case json :: jsons =>
-          val result = for {
-            key <- (json \ keyName).validate[K]
-            value <- (json \ "value").validate[V] orElse json.validate[V]
-          } yield (key, value)
-
-          result match {
-            case result: JsError      => result
-            case JsSuccess(result, _) => loop(jsons, result :: kvs)
-          }
-      }
+      def keyValExtractor(json: JsValue) = for {
+        key <- (json \ keyName).validate[K]
+        value <- (json \ "value").validate[V] orElse json.validate[V]
+      } yield (key, value)
 
       for {
         array <- json.validate[JsArray]
-        kvs <- loop(array.value.toList, Nil)
-      } yield kvs.toMap
+        map <- readMapEntries(array.value, keyValExtractor)
+      } yield map
     }
 
     def writes(x: Map[K, V]) = JsArray {
@@ -293,5 +329,21 @@ object JsonFormats {
       case JsNull => JsSuccess(())
       case _ => JsError("error.expected.jsnull")
     }
+  }
+
+
+  def const[T](value: T): OFormat[T] = new OFormat[T] {
+    def writes(o: T): JsObject = Json.obj()
+
+    def reads(json: JsValue): JsResult[T] = json match {
+      case JsObject(fields) if fields.isEmpty => JsSuccess(value)
+      case _ => JsError("error.expected.emptyObject")
+    }
+  }
+
+
+  def nested[T](name: String)(implicit format: Format[T]): OFormat[T] = new OFormat[T] {
+    def writes(x: T): JsObject = Json.obj(name -> format.writes(x))
+    def reads(json: JsValue): JsResult[T] = (json \ name).validate(format)
   }
 }
