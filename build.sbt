@@ -20,7 +20,6 @@ val commonSettings = Seq(
     "-feature",
     "-unchecked",
     "-deprecation",
-    "-Xfatal-warnings",
     "-Xlint",
     "-Yno-adapted-args",
     "-Ywarn-dead-code",
