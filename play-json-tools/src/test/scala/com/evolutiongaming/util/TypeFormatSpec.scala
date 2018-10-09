@@ -2,41 +2,41 @@ package com.evolutiongaming.util
 
 import com.evolutiongaming.util.JsonFormats.{TypeFormat, const}
 import org.scalatest.{FunSuite, Matchers}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, JsSuccess, JsValue, Json}
 
 class TypeFormatSpec extends FunSuite with Matchers {
   private val mammalJson = Json.obj("type" -> "Mammal", "legs" -> 4)
   private val slothJson = Json.obj("type" -> "Sloth")
 
   implicit val animalFormat = new TypeFormat[Animal] {
-    val MammalFormat = Json.format[Mammal]
-    val SlothFormat = const(Sloth)
+    val mammalFormat = Json.format[Mammal]
+    val slothFormat = const(Sloth)
 
     def readsPf(json: JsValue): Pf = {
-      case "Mammal" => MammalFormat.reads(json)
-      case "Sloth"  => SlothFormat.reads(json)
+      case "Mammal" => mammalFormat.reads(json)
+      case "Sloth"  => slothFormat.reads(json)
     }
 
     def writes(o: Animal): JsObject = o match {
-      case x: Mammal => writes("Mammal", MammalFormat.writes(x))
-      case Sloth => writes("Sloth", SlothFormat.writes(Sloth))
+      case x: Mammal => writes("Mammal", mammalFormat.writes(x))
+      case Sloth => writes("Sloth", slothFormat.writes(Sloth))
     }
   }
 
   test("read case class") {
-    Json.fromJson[Animal](mammalJson).get shouldEqual Mammal(4)
+    animalFormat.reads(mammalJson) shouldEqual JsSuccess(Mammal(4))
   }
 
   test("write case class") {
-    Json.toJson(Mammal(4)) shouldEqual mammalJson
+    animalFormat.writes(Mammal(4)) shouldEqual mammalJson
   }
 
   test("read case object") {
-    Json.fromJson[Animal](slothJson).get shouldEqual Sloth
+    animalFormat.reads(slothJson) shouldEqual JsSuccess(Sloth)
   }
 
   test("write case object") {
-    Json.toJson(Sloth) shouldEqual slothJson
+    animalFormat.writes(Sloth) shouldEqual slothJson
   }
 
   sealed trait Animal
