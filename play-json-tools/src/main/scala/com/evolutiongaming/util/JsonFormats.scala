@@ -257,15 +257,16 @@ object JsonFormats {
     def readsPf(json: JsValue): Pf
 
     def reads(json: JsValue): JsResult[T] = {
-      def reads(t: String) = {
-        val pf = readsPf(json)
+      def reads(t: String, inner: JsObject) = {
+        val pf = readsPf(inner)
         if (pf isDefinedAt t) pf(t)
         else JsError(s"No Reads defined for $t")
       }
 
       for {
+        o <- json.validate[JsObject]
         typ <- (json \ "type").validate[String]
-        result <- reads(typ)
+        result <- reads(typ, o - "type")
       } yield result
     }
 
