@@ -288,21 +288,25 @@ object JsonFormats {
         }
 
         for {
+          o <- json.validate[JsObject]
           typ <- (json \ "type").validate[String]
-          result <- typ.split("#").toList match {
-            case head :: Nil  => reads(json, head)
-            case head :: tail =>
-              val j = json.as[JsObject] ++ Json.obj("type" -> tail.mkString("#"))
-              reads(j, head)
-            case Nil          => sys error "It's impossible"
+          inner = o - "type"
+
+          result <- typ.span(_ != '#') match {
+            case (t, "")   => reads(inner, t)
+            case (t, rest) =>
+              val j = inner ++ Json.obj("type" -> rest.tail)
+              reads(j, t)
           }
         } yield result
       }
     }
 
     def writes[T](writesFunc: T => (String, JsObject)): OWrites[T] = new OWrites[T] {
-      def writes(o: T): JsObject = writesFunc(o) match {
-        case (t, json) => (json \ "type").validate[String] match {
+      def writes(o: T): JsObject = {
+        val (t, json) = writesFunc(o)
+
+        (json \ "type").validate[String] match {
           case JsSuccess(typ, _) => json ++ Json.obj("type" -> s"$t#$typ")
           case _: JsError        => Json.obj("type" -> t) ++ json
         }
