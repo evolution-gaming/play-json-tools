@@ -46,44 +46,44 @@ class FoldedTypeFormatSpec extends WordSpec with Matchers {
   case object SpecificObj extends Specific
   final case class SpecificClass(value: String) extends Specific
 
-  val GenericObjFormat = const(GenericObj)
-  val GenericClassFormat = Json.format[GenericClass]
-  val SpecificObjFormat = const(SpecificObj)
-  val SpecificClassFormat = Json.format[SpecificClass]
+  val genericObjFormat = const(GenericObj)
+  val genericClassFormat = Json.format[GenericClass]
+  val specificObjFormat = const(SpecificObj)
+  val specificClassFormat = Json.format[SpecificClass]
 
   val SpecificFormat: OFormat[Specific] = new TypeFormat[Specific] {
     def readsPf(json: JsValue): Pf = {
-      case "SpecificObj"   => SpecificObjFormat.reads(json)
-      case "SpecificClass" => SpecificClassFormat.reads(json)
+      case "SpecificObj"   => specificObjFormat.reads(json)
+      case "SpecificClass" => specificClassFormat.reads(json)
     }
     def writes(x: Specific): JsObject = x match {
-      case SpecificObj      => writes("SpecificObj", SpecificObjFormat.writes(SpecificObj))
-      case x: SpecificClass => writes("SpecificClass", SpecificClassFormat.writes(x))
+      case SpecificObj      => writes("SpecificObj", specificObjFormat.writes(SpecificObj))
+      case x: SpecificClass => writes("SpecificClass", specificClassFormat.writes(x))
     }
   }
 
   val GenericTypeFormat: OFormat[Generic] = new TypeFormat[Generic] {
     def readsPf(json: JsValue): Pf = {
-      case "GenericClass" => GenericClassFormat.reads(json)
-      case "GenericObj"   => GenericObjFormat.reads(json)
+      case "GenericClass" => genericClassFormat.reads(json)
+      case "GenericObj"   => genericObjFormat.reads(json)
       case "Specific"     => SpecificFormat.reads(json)
     }
     def writes(x: Generic): JsObject = x match {
-      case x: GenericClass => writes("GenericClass", GenericClassFormat.writes(x))
-      case GenericObj      => writes("GenericObj", GenericObjFormat.writes(GenericObj))
+      case x: GenericClass => writes("GenericClass", genericClassFormat.writes(x))
+      case GenericObj      => writes("GenericObj", genericObjFormat.writes(GenericObj))
       case x: Specific     => writes("Specific", SpecificFormat.writes(x))
     }
   }
 
   val GenericFoldedTypeFormat: OFormat[Generic] = OFormat(
     FoldedTypeFormat.reads[Generic](json => {
-      case "GenericClass" => GenericClassFormat.reads(json)
-      case "GenericObj"   => GenericObjFormat.reads(json)
+      case "GenericClass" => genericClassFormat.reads(json)
+      case "GenericObj"   => genericObjFormat.reads(json)
       case "Specific"     => SpecificFormat.reads(json)
     }),
     FoldedTypeFormat.writes[Generic] {
-      case GenericObj      => ("GenericObj", GenericObjFormat.writes(GenericObj))
-      case x: GenericClass => ("GenericClass", GenericClassFormat.writes(x))
+      case GenericObj      => ("GenericObj", genericObjFormat.writes(GenericObj))
+      case x: GenericClass => ("GenericClass", genericClassFormat.writes(x))
       case x: Specific     => ("Specific", SpecificFormat.writes(x))
     })
 }
