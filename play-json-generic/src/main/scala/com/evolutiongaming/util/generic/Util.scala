@@ -4,7 +4,7 @@ import scala.reflect.ClassTag
 
 object Util {
 
-  implicit class ClassTagOps[T](self: ClassTag[T]) extends AnyRef {
+  implicit class ClassTagOps[T](val self: ClassTag[T]) extends AnyVal {
 
     def classFullName(omitBaseClass: Boolean = true): String = {
       val name = self.runtimeClass.getName
