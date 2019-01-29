@@ -3,7 +3,7 @@ package com.evolutiongaming.util
 
 import com.evolutiongaming.util.JsonFormats.{StringKeyMapFormat}
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsError, JsSuccess, Json, OFormat}
+import play.api.libs.json.{JsSuccess, Json, OFormat}
 import StringKeyMapFormat._
 
 import scala.util.Try
@@ -35,7 +35,7 @@ class StringKeyMapFormatSpec extends WordSpec with Matchers {
 
     "fail to parse invalid json" in {
       val invalidJson = json + ("foo" -> Json.obj("value" -> 10))
-      mapFormat.reads(invalidJson) shouldBe JsError(s"cannot parse key from foo")
+      mapFormat.reads(invalidJson).isError shouldBe true
     }
   }
 

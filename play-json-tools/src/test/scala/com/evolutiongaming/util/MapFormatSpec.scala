@@ -3,13 +3,13 @@ package com.evolutiongaming.util
 import com.evolutiongaming.util.JsonFormats.MapFormat
 import com.evolutiongaming.util.MapFormatSpec._
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsError, JsSuccess, Json, OFormat}
+import play.api.libs.json.{JsSuccess, Json, OFormat}
 
 class MapFormatSpec extends WordSpec with Matchers {
 
   "MapFormat" should {
 
-    val mapFormat = new MapFormat[Key, Value]("id")
+    val mapFormat = MapFormat[Key, Value]("id")
 
     val map = Map(
       (Key("k1"), Value(1)),
@@ -34,17 +34,11 @@ class MapFormatSpec extends WordSpec with Matchers {
     "parse from json" in {
       mapFormat.reads(json) shouldEqual JsSuccess(map)
     }
-
-    "fail to parse json with duplicate key" in {
-      val array = json :+ Json.obj("id" -> Json.obj("value" -> "k1"), "value" -> 10)
-      mapFormat.reads(array) shouldEqual JsError("Duplicate key Key(k1) found")
-    }
-
   }
 
   "MapFormat primitive key" should {
 
-    val mapFormat = new MapFormat[String, Int]("id")
+    val mapFormat = MapFormat[String, Int]("id")
 
     val map = Map(
       ("k1", 1),
@@ -75,12 +69,12 @@ class MapFormatSpec extends WordSpec with Matchers {
 
     "not be named after a field of the value" in {
       an[IllegalArgumentException] should be thrownBy {
-        new MapFormat[ComboKey, RichValue]("key")
+        MapFormat[ComboKey, RichValue]("key")
       }
     }
 
     "be present twice in result JSON if it's part of the value" in {
-      val mapFormat = new MapFormat[ComboKey, RichValue]("id")
+      val mapFormat = MapFormat[ComboKey, RichValue]("id")
 
       val value1 = RichValue(ComboKey("k1_1", "k1_2"), Value(42))
 

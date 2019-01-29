@@ -5,6 +5,8 @@ import org.scalatest.{FunSuite, Matchers}
 import play.api.libs.json.{JsObject, JsSuccess, JsValue, Json}
 
 class TypeFormatSpec extends FunSuite with Matchers {
+  import TypeFormatSpec._
+
   private val mammalJson = Json.obj("type" -> "Mammal", "legs" -> 4)
   private val slothJson = Json.obj("type" -> "Sloth")
 
@@ -38,7 +40,9 @@ class TypeFormatSpec extends FunSuite with Matchers {
   test("write case object") {
     animalFormat.writes(Sloth) shouldEqual slothJson
   }
+}
 
+object TypeFormatSpec {
   sealed trait Animal
   final case class Mammal(legs: Int) extends Animal
   object Sloth extends Animal

@@ -8,6 +8,6 @@
 ```scala
 resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
 
-libraryDependencies += "com.evolutiongaming" %% "play-json-tools" % "0.2.8"
-libraryDependencies += "com.evolutiongaming" %% "play-json-generic" % "0.2.8"
+libraryDependencies += "com.evolutiongaming" %% "play-json-tools"   % "0.3.10"
+libraryDependencies += "com.evolutiongaming" %% "play-json-generic" % "0.3.10"
 ```

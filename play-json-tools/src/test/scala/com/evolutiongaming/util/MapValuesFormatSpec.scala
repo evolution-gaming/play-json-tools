@@ -8,7 +8,7 @@ class MapValuesFormatSpec extends WordSpec with Matchers {
 
   "MapValuesFormat" should {
     implicit val entryFormat = Json.format[Entry]
-    val mapFormat = new MapValuesFormat[String, Entry](_.id)
+    val mapFormat = MapValuesFormat[String, Entry](_.id)
 
     val values = List(
       Entry("k1", 1),

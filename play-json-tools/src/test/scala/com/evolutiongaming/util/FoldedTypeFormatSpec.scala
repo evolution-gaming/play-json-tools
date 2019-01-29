@@ -5,6 +5,7 @@ import org.scalatest.{Assertion, Matchers, WordSpec}
 import play.api.libs.json._
 
 class FoldedTypeFormatSpec extends WordSpec with Matchers {
+  import FoldedTypeFormatSpec._
 
   "FoldedTypeFormat" should {
 
@@ -38,13 +39,6 @@ class FoldedTypeFormatSpec extends WordSpec with Matchers {
   val specificClassJson = Json.obj("type" -> "Specific#SpecificClass", "value" -> "test")
   val genericObjJson = Json.obj("type" -> "GenericObj")
   val genericClassJson = Json.obj("type" -> "GenericClass", "value" -> 42)
-
-  sealed trait Generic
-  final case class GenericClass(value: Int) extends Generic
-  case object GenericObj extends Generic
-  sealed trait Specific extends Generic
-  case object SpecificObj extends Specific
-  final case class SpecificClass(value: String) extends Specific
 
   val genericObjFormat = const(GenericObj)
   val genericClassFormat = Json.format[GenericClass]
@@ -86,4 +80,13 @@ class FoldedTypeFormatSpec extends WordSpec with Matchers {
       case x: GenericClass => ("GenericClass", genericClassFormat.writes(x))
       case x: Specific     => ("Specific", SpecificFormat.writes(x))
     })
+}
+
+object FoldedTypeFormatSpec {
+  sealed trait Generic
+  final case class GenericClass(value: Int) extends Generic
+  case object GenericObj extends Generic
+  sealed trait Specific extends Generic
+  case object SpecificObj extends Specific
+  final case class SpecificClass(value: String) extends Specific
 }
