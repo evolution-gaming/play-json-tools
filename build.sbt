@@ -13,7 +13,7 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := crossScalaVersions.value.last,
-  crossScalaVersions := Seq("2.11.12", "2.12.6"),
+  crossScalaVersions := Seq("2.11.12", "2.12.8"),
   scalacOptions in(Compile, doc) ++= Seq("-no-link-warnings"),
   scalacOptions ++= Seq(
     "-encoding", "UTF-8",
