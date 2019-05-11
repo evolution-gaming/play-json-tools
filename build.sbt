@@ -17,9 +17,10 @@ val commonSettings = Seq(
 
 
 lazy val root = (project in file(".")
-  settings (name := "play-json-tools")
   settings commonSettings
-  settings (skip in publish := true)
+  settings(
+    name := "play-json-tools",
+    skip in publish := true)
   aggregate(
     playJsonTools,
     playJsonGeneric))
