@@ -9,13 +9,9 @@ trait FlatTypeWrites[A] extends Writes[A] {
 
 object FlatTypeWrites {
 
-  def apply[A](implicit encode: FlatTypeWrites[A]): Writes[A] = new Writes[A] {
-    def writes(o: A): JsValue = encode writes o
-  }
+  def apply[A](implicit encode: FlatTypeWrites[A]): Writes[A] = (o: A) => encode writes o
 
-  def create[A](f: A => JsObject): FlatTypeWrites[A] = new FlatTypeWrites[A] {
-    override def writes(o: A): JsObject = f(o)
-  }
+  def create[A](f: A => JsObject): FlatTypeWrites[A] = (o: A) => f(o)
 
   implicit def cnilWrites: FlatTypeWrites[CNil] = create[CNil] { _ =>
     sys.error("Cannot encode CNil")
@@ -24,10 +20,11 @@ object FlatTypeWrites {
   implicit def cconsWrites[Key <: Symbol, Head, Tail <: Coproduct](implicit
       key: Witness.Aux[Key],
       headWrites: OWrites[Head],
-      tailWrites: FlatTypeWrites[Tail]): FlatTypeWrites[FieldType[Key, Head] :+: Tail] =
+      tailWrites: FlatTypeWrites[Tail],
+      nameCodingStrategy: NameCodingStrategy): FlatTypeWrites[FieldType[Key, Head] :+: Tail] =
     create[FieldType[Key, Head] :+: Tail] {
       _.eliminate(
-        head => Json.obj("type" -> s"${ key.value.name }") ++ (headWrites writes head),
+        head => Json.obj("type" -> s"${ nameCodingStrategy(key.value.name) }") ++ (headWrites writes head),
         tail => tailWrites writes tail
       )
     }
