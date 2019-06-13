@@ -12,9 +12,7 @@ object FlatTypeReads {
 
   def apply[A](implicit decode: FlatTypeReads[A]): FlatTypeReads[A] = decode
 
-  def create[A](f: JsValue => JsResult[A]): FlatTypeReads[A] = new FlatTypeReads[A] {
-    override def reads(json: JsValue): JsResult[A] = f(json)
-  }
+  def create[A](f: JsValue => JsResult[A]): FlatTypeReads[A] = (json: JsValue) => f(json)
 
   implicit def cnilReads: FlatTypeReads[CNil] = create[CNil] { _ =>
     JsError("could not decode cnil")
@@ -23,13 +21,14 @@ object FlatTypeReads {
   implicit def cconsReads[Key <: Symbol, Head, Tail <: Coproduct](implicit
       key: Witness.Aux[Key],
       headReads: Reads[Head],
-      tailReads: FlatTypeReads[Tail]): FlatTypeReads[FieldType[Key, Head] :+: Tail] =
+      tailReads: FlatTypeReads[Tail],
+      nameCodingStrategy: NameCodingStrategy): FlatTypeReads[FieldType[Key, Head] :+: Tail] =
     create[FieldType[Key, Head] :+: Tail] { json =>
 
       for {
         o <- json.validate[JsObject]
         typ <- (o \ "type").validate[String]
-        res <- if (typ == key.value.name) {
+        res <- if (typ == nameCodingStrategy(key.value.name)) {
           headReads reads (o - "type") map { z => Inl(field[Key](z)) }
         }
         else {
