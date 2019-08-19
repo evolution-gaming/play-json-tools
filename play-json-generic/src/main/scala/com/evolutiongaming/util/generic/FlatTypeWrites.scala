@@ -17,7 +17,22 @@ object FlatTypeWrites {
     sys.error("Cannot encode CNil")
   }
 
-  implicit def cconsWrites[Key <: Symbol, Head, Tail <: Coproduct](implicit
+  @deprecated("Method exists only for backward compatibility", "0.3.12")
+  def cconsWrites[Key <: Symbol, Head, Tail <: Coproduct](
+      key: Witness.Aux[Key],
+      headWrites: OWrites[Head],
+      tailWrites: FlatTypeWrites[Tail]): FlatTypeWrites[FieldType[Key, Head] :+: Tail] =
+    cconsWritesWithNameCoding(key, headWrites, tailWrites, NameCodingStrategy.default)
+
+  @deprecated("Method exists only for backward compatibility", "0.3.12")
+  def cconsWrites[Key <: Symbol, Head, Tail <: Coproduct](
+      key: Witness.Aux[Key],
+      headWrites: OWrites[Head],
+      tailWrites: FlatTypeWrites[Tail],
+      nameCodingStrategy: NameCodingStrategy): FlatTypeWrites[FieldType[Key, Head] :+: Tail] =
+  cconsWritesWithNameCoding(key ,headWrites, tailWrites, nameCodingStrategy)
+
+  implicit def cconsWritesWithNameCoding[Key <: Symbol, Head, Tail <: Coproduct](implicit
       key: Witness.Aux[Key],
       headWrites: OWrites[Head],
       tailWrites: FlatTypeWrites[Tail],
