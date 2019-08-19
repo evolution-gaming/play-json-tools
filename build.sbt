@@ -17,6 +17,7 @@ val commonSettings = Seq(
 
 
 lazy val root = (project in file(".")
+  disablePlugins MimaPlugin
   settings commonSettings
   settings(
     name := "play-json-tools",
