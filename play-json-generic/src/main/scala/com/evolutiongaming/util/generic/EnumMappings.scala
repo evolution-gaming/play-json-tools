@@ -8,7 +8,7 @@ case class EnumMappings[A](labels: Map[A, String])
 object EnumMappings {
 
   implicit def enumMappings[A, Repr <: Coproduct](implicit
-    gen: LabelledGeneric.Aux[A, Repr],
+    gen: LabelledGeneric.Aux[A, Repr], // this is USED to generate `Enumeration`, not sure how, though
     e: MappingsAux[A, Repr]
   ): EnumMappings[A] = EnumMappings(e.labels)
 

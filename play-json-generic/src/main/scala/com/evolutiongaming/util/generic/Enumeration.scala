@@ -6,8 +6,8 @@ class Enumeration[A] private(enumMappings: EnumMappings[A]) {
 
   def format(implicit nameCodingStrategy: NameCodingStrategy): Format[A] = new Format[A] {
 
-    val labelsLookup = enumMappings.labels.mapValues(nameCodingStrategy)
-    val valuesLookup = labelsLookup.map(_.swap)
+    val labelsLookup: Map[A, String] = enumMappings.labels.map { case (k, v) => (k, nameCodingStrategy(v)) }
+    val valuesLookup: Map[String, A] = labelsLookup.map(_.swap)
 
     def writes(o: A): JsValue = JsString(labelsLookup(o))
 

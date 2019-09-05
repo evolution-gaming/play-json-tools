@@ -13,21 +13,26 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := crossScalaVersions.value.last,
-  crossScalaVersions := Seq("2.12.8"))
+  crossScalaVersions := Seq("2.12.9", "2.13.0"),
+)
 
 
-lazy val root = (project in file(".")
-  disablePlugins MimaPlugin
-  settings commonSettings
-  settings(
+lazy val root = project
+  .in(file("."))
+  .disablePlugins(MimaPlugin)
+  .settings(commonSettings)
+  .settings(
     name := "play-json-tools",
-    skip in publish := true)
-  aggregate(
+    publish / skip := true,
+  )
+  .aggregate(
     playJsonTools,
-    playJsonGeneric))
+    playJsonGeneric,
+  )
 
 
-lazy val playJsonGeneric = (project in file("play-json-generic"))
+lazy val playJsonGeneric = project
+  .in(file("play-json-generic"))
   .settings(commonSettings)
   .settings(Seq(
     moduleName := "play-json-generic",
@@ -36,11 +41,12 @@ lazy val playJsonGeneric = (project in file("play-json-generic"))
     libraryDependencies ++= Seq(
       shapeless,
       playJson,
-      scalaTest % Test
+      scalaTest % Test,
     ).map(excludeLog4j)))
 
 
-lazy val playJsonTools = (project in file("play-json-tools"))
+lazy val playJsonTools = project
+  .in(file("play-json-tools"))
   .settings(commonSettings)
   .settings(Seq(
     moduleName := "play-json-tools",
@@ -48,5 +54,5 @@ lazy val playJsonTools = (project in file("play-json-tools"))
     libraryDependencies ++= Seq(
       playJson,
       nel,
-      scalaTest % Test
+      scalaTest % Test,
     ).map(excludeLog4j)))
