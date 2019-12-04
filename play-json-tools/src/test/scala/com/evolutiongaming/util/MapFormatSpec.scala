@@ -2,10 +2,11 @@ package com.evolutiongaming.util
 
 import com.evolutiongaming.util.JsonFormats.MapFormat
 import com.evolutiongaming.util.MapFormatSpec._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json, OFormat}
 
-class MapFormatSpec extends WordSpec with Matchers {
+class MapFormatSpec extends AnyWordSpec with Matchers {
 
   "MapFormat" should {
 

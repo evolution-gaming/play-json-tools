@@ -1,14 +1,14 @@
 
 package com.evolutiongaming.util
 
-import com.evolutiongaming.util.JsonFormats.{StringKeyMapFormat}
-import org.scalatest.{Matchers, WordSpec}
+import com.evolutiongaming.util.JsonFormats.StringKeyMapFormat._
 import play.api.libs.json.{JsSuccess, Json, OFormat}
-import StringKeyMapFormat._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.util.Try
 
-class StringKeyMapFormatSpec extends WordSpec with Matchers {
+class StringKeyMapFormatSpec extends AnyWordSpec with Matchers {
 
   "StringKeyMapFormat" should {
 

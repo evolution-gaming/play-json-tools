@@ -1,9 +1,10 @@
 package com.evolutiongaming.util.generic
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{Format, Json}
 
-class EnumerationDerivalSpec extends FlatSpec with Matchers {
+class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
 
   it should "be able to encode and decode case object enumerations using default low prio implicit" in {
     implicit val format: Format[AnEvent] = Enumeration[AnEvent].format

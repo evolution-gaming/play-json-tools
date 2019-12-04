@@ -1,10 +1,11 @@
 package com.evolutiongaming.util
 
 import com.evolutiongaming.util.JsonFormats.{TypeFormat, const}
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsObject, JsSuccess, JsValue, Json}
 
-class TypeFormatSpec extends FunSuite with Matchers {
+class TypeFormatSpec extends AnyFunSuite with Matchers {
   import TypeFormatSpec._
 
   private val mammalJson = Json.obj("type" -> "Mammal", "legs" -> 4)

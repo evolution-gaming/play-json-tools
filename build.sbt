@@ -12,8 +12,8 @@ val commonSettings = Seq(
   licenses := Seq(("MIT", url("https://opensource.org/licenses/MIT"))),
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
-  scalaVersion := crossScalaVersions.value.last,
-  crossScalaVersions := Seq("2.12.9", "2.13.0"),
+  scalaVersion := crossScalaVersions.value.head,
+  crossScalaVersions := Seq("2.13.1", "2.12.10"),
 )
 
 

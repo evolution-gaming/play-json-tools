@@ -2,10 +2,11 @@ package com.evolutiongaming.util
 
 import com.evolutiongaming.nel.Nel
 import com.evolutiongaming.util.JsonFormats._
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
 
-class JsonFormatsSpec extends FunSuite with Matchers {
+class JsonFormatsSpec extends AnyFunSuite with Matchers {
 
   test("nelFormat") {
     val value = Nel(1, 2)

@@ -1,10 +1,11 @@
 package com.evolutiongaming.util
 
 import com.evolutiongaming.util.JsonFormats.MapValuesFormat
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json}
 
-class MapValuesFormatSpec extends WordSpec with Matchers {
+class MapValuesFormatSpec extends AnyWordSpec with Matchers {
 
   "MapValuesFormat" should {
     implicit val entryFormat = Json.format[Entry]

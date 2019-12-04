@@ -1,10 +1,12 @@
 package com.evolutiongaming.util
 
 import com.evolutiongaming.util.JsonFormats.{FoldedTypeFormat, TypeFormat, const}
-import org.scalatest.{Assertion, Matchers, WordSpec}
+import org.scalatest.Assertion
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json._
 
-class FoldedTypeFormatSpec extends WordSpec with Matchers {
+class FoldedTypeFormatSpec extends AnyWordSpec with Matchers {
   import FoldedTypeFormatSpec._
 
   "FoldedTypeFormat" should {

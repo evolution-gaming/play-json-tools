@@ -1,10 +1,11 @@
 package com.evolutiongaming.util
 
 import com.evolutiongaming.util.JsonFormats.MapFormatUnsafe
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json}
 
-  class MapFormatUnsafeSpec extends WordSpec with Matchers {
+  class MapFormatUnsafeSpec extends AnyWordSpec with Matchers {
 
   "StringMapFormat" should {
 
