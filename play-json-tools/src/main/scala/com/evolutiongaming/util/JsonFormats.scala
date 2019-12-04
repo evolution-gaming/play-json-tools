@@ -374,9 +374,55 @@ object JsonFormats {
   }
 
 
-  implicit class ReadsOps[A](val self: Reads[A]) extends AnyVal {
-    def collectSubtype[B <: A](implicit tag: ClassTag[B]): Reads[B] = {
-      self.collect(JsonValidationError(s"${ tag.runtimeClass } expected")) { case tag(x) => x }
+  implicit class ReadsOpsJsonFormat[A](val self: Reads[A]) extends AnyVal {
+
+    @deprecated("use narrowReads instead", "0.3.14")
+    def collectSubtype[B <: A](implicit tag: ClassTag[B]): Reads[B] = narrowReads[B]
+
+    def narrowReads[B <: A](implicit tag: ClassTag[B]): Reads[B] = {
+      Reads[B] { json =>
+        self
+          .reads(json)
+          .flatMap {
+            case tag(a) => JsSuccess(a)
+            case _      => JsError(JsonValidationError(s"${ tag.runtimeClass } expected"))
+          }
+      }
+    }
+  }
+
+
+  implicit class WritesOpsJsonFormat[A](val self: Writes[A]) extends AnyVal {
+
+    def narrowWrites[B <: A]: Writes[B] = self.contramap[B](identity)
+  }
+
+
+  implicit class OWritesOpsJsonFormat[A](val self: OWrites[A]) extends AnyVal {
+
+    def narrowOWrites[B <: A]: OWrites[B] = self.contramap[B](identity)
+  }
+
+
+  @deprecated("use ReadsOpsJsonFormat instead", "0.3.14")
+  class ReadsOps[A](val self: Reads[A]) extends AnyVal {
+
+    def collectSubtype[B <: A](implicit tag: ClassTag[B]): Reads[B] = self.narrowReads[B]
+  }
+
+
+  implicit class FormatOpsJsonFormat[A](val self: Format[A]) extends AnyVal {
+
+    def narrowFormat[B <: A](implicit tag: ClassTag[B]): Format[B] = {
+      Format(self.narrowReads[B], self.narrowWrites[B])
+    }
+  }
+
+
+  implicit class OFormatOpsJsonFormat[A](val self: OFormat[A]) extends AnyVal {
+
+    def narrowOFormat[B <: A](implicit tag: ClassTag[B]): OFormat[B] = {
+      OFormat(self.narrowReads[B], self.narrowOWrites[B])
     }
   }
 
