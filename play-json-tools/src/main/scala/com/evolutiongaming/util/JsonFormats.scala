@@ -205,6 +205,7 @@ object JsonFormats {
 
     def apply[K, V: Writes](toStr: K => String): OWrites[Map[K, V]] = {
 
+//      val mapWrites = Writes.genericMapWrites[V, Map] play-json v2.8.0
       val mapWrites = Writes.mapWrites[V]
 
       new OWrites[Map[K, V]] {
