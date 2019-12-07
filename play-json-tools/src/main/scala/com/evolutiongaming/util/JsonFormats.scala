@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
-@deprecated("use JsonFormats instead", "0.5.0")
+@deprecated("use com.evolutiongaming.playjsontools.PlayJsonHelper instead", "0.5.0")
 object JsonFormats {
 
   implicit val UrlFormat: Format[URL] = new Format[URL] {
