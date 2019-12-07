@@ -405,13 +405,6 @@ object JsonFormats {
   }
 
 
-  @deprecated("use ReadsOpsJsonFormat instead", "0.3.14")
-  class ReadsOps[A](val self: Reads[A]) extends AnyVal {
-
-    def collectSubtype[B <: A](implicit tag: ClassTag[B]): Reads[B] = self.narrowReads[B]
-  }
-
-
   implicit class FormatOpsJsonFormat[A](val self: Format[A]) extends AnyVal {
 
     def narrowFormat[B <: A](implicit tag: ClassTag[B]): Format[B] = {
@@ -425,6 +418,13 @@ object JsonFormats {
     def narrowOFormat[B <: A](implicit tag: ClassTag[B]): OFormat[B] = {
       OFormat(self.narrowReads[B], self.narrowOWrites[B])
     }
+  }
+
+
+  class ReadsOps[A](val self: Reads[A]) extends AnyVal {
+
+    @deprecated("use ReadsOpsJsonFormat instead", "0.3.14")
+    def collectSubtype[B <: A](implicit tag: ClassTag[B]): Reads[B] = self.narrowReads[B]
   }
 
 
