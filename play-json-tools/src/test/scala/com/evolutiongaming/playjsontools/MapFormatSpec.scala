@@ -1,7 +1,7 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
-import com.evolutiongaming.util.JsonFormats.MapFormat
-import com.evolutiongaming.util.MapFormatSpec._
+import com.evolutiongaming.playjsontools.PlayJsonHelper.MapFormat
+import com.evolutiongaming.playjsontools.MapFormatSpec._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json, OFormat}

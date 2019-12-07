@@ -1,18 +1,18 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
 import java.net.URL
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{Instant, LocalTime, ZoneOffset}
 
-import com.evolutiongaming.nel.{Nel => NewNel}
+import com.evolutiongaming.nel.Nel
 import play.api.libs.json._
 
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
-@deprecated("use JsonFormats instead", "0.5.0")
-object JsonFormats {
+
+object PlayJsonHelper {
 
   implicit val UrlFormat: Format[URL] = new Format[URL] {
 
@@ -76,20 +76,6 @@ object JsonFormats {
   }
 
 
-  @deprecated("use ObjectFormat.apply instead", "0.3.10")
-  class ObjectFormat[A](
-    from: String => Option[A],
-    to: A => String = (x: A) => x.toString)(implicit
-    tag: ClassTag[A]
-  ) extends Format[A] {
-
-    private val format = ObjectFormat[A](from, to)
-
-    def reads(json: JsValue): JsResult[A] = format.reads(json)
-
-    def writes(x: A) = format.writes(x)
-  }
-
   object ObjectFormat {
 
     def apply[A](
@@ -111,20 +97,6 @@ object JsonFormats {
   }
 
 
-  @deprecated("use ObjectNumericFormat.apply instead", "0.3.10")
-  class ObjectNumericFormat[A](
-    from: BigDecimal => Option[A],
-    to: A => BigDecimal)(implicit
-    tag: ClassTag[A]
-  ) extends Format[A] {
-
-    private val format = ObjectNumericFormat[A](from, to)
-
-    def reads(json: JsValue): JsResult[A] = format.reads(json)
-
-    def writes(a: A) = format.writes(a)
-  }
-
   object ObjectNumericFormat {
 
     def apply[A](from: BigDecimal => Option[A], to: A => BigDecimal)(implicit tag: ClassTag[A]): Format[A] = {
@@ -141,16 +113,6 @@ object JsonFormats {
     }
   }
 
-
-  @deprecated("use MapValuesFormat.apply instead", "0.3.10")
-  class MapValuesFormat[K, V](key: V => K)(implicit format: Format[V]) extends Format[Map[K, V]] {
-
-    private val format1 = MapValuesFormat[K, V](key)
-
-    def reads(json: JsValue): JsResult[Map[K, V]] = format1.reads(json)
-
-    def writes(xs: Map[K, V]): JsValue = format1.writes(xs)
-  }
 
   object MapValuesFormat {
 
@@ -205,7 +167,7 @@ object JsonFormats {
 
     def apply[K, V: Writes](toStr: K => String): OWrites[Map[K, V]] = {
 
-//      val mapWrites = Writes.genericMapWrites[V, Map] play-json v2.8.0
+      //      val mapWrites = Writes.genericMapWrites[V, Map] play-json v2.8.0
       val mapWrites = Writes.mapWrites[V]
 
       new OWrites[Map[K, V]] {
@@ -225,16 +187,6 @@ object JsonFormats {
   }
 
 
-  @deprecated("use MapFormatUnsafe instead", "0.3.10")
-  class AnyKeyMap[K, V](toStr: K => String, fromStr: String => K)(implicit vf: Format[V]) extends OFormat[Map[K, V]] {
-
-    private val format = MapFormatUnsafe[K, V](toStr, fromStr)
-
-    def reads(json: JsValue): JsResult[Map[K, V]] = format.reads(json)
-
-    def writes(o: Map[K, V]): JsObject = format.writes(o)
-  }
-
   object MapFormatUnsafe {
 
     def apply[K, V](toStr: K => String, fromStr: String => K)(implicit vf: Format[V]): OFormat[Map[K, V]] = {
@@ -248,17 +200,6 @@ object JsonFormats {
         def writes(o: Map[K, V]) = format.writes(o)
       }
     }
-  }
-
-
-  @deprecated("use MapFormat.apply instead", "0.3.10")
-  class MapFormat[K, V](keyName: String)(implicit kf: Format[K], vf: Format[V], tag: ClassTag[V]) extends Format[Map[K, V]] {
-
-    private val format = MapFormat.apply[K, V](keyName)
-
-    def reads(json: JsValue) = format.reads(json)
-
-    def writes(kvs: Map[K, V]) = format.writes(kvs)
   }
 
 
@@ -335,16 +276,6 @@ object JsonFormats {
   }
 
 
-  @deprecated("use FlatFormat.apply instead", "0.3.10")
-  class FlatFormat[A](field: String, format: OFormat[A])(implicit tag: ClassTag[A]) extends OFormat[A] {
-
-    private val format1 = FlatFormat[A](field, format)
-
-    def reads(json: JsValue): JsResult[A] = format1.reads(json)
-
-    def writes(o: A): JsObject = format1.writes(o)
-  }
-
   object FlatFormat {
 
     def apply[A](field: String, format: OFormat[A])(implicit tag: ClassTag[A]): OFormat[A] = {
@@ -375,14 +306,71 @@ object JsonFormats {
   }
 
 
-  implicit class ReadsOps[A](val self: Reads[A]) extends AnyVal {
-    def collectSubtype[B <: A](implicit tag: ClassTag[B]): Reads[B] = {
-      self.collect(JsonValidationError(s"${ tag.runtimeClass } expected")) { case tag(x) => x }
+  implicit class ReadsOpsPlayJsonHelper[A](val self: Reads[A]) extends AnyVal {
+
+    def narrowReads[B <: A](implicit tag: ClassTag[B]): Reads[B] = {
+      Reads[B] { json =>
+        self
+          .reads(json)
+          .flatMap {
+            case tag(a) => JsSuccess(a)
+            case _      => JsError(JsonValidationError(s"${ tag.runtimeClass } expected"))
+          }
+      }
     }
   }
 
 
-  implicit class EitherFormats[L, R](val self: Either[L, R]) extends AnyVal {
+  implicit class WritesOpsPlayJsonHelper[A](val self: Writes[A]) extends AnyVal {
+
+    def narrowWrites[B <: A]: Writes[B] = self.contramap[B](identity)
+  }
+
+
+  implicit class OWritesOpsPlayJsonHelper[A](val self: OWrites[A]) extends AnyVal {
+
+    def narrowOWrites[B <: A]: OWrites[B] = self.contramap[B](identity)
+  }
+
+
+  implicit class FormatOpsPlayJsonHelper[A](val self: Format[A]) extends AnyVal {
+
+    def narrowFormat[B <: A](implicit tag: ClassTag[B]): Format[B] = {
+      Format(self.narrowReads[B], self.narrowWrites[B])
+    }
+  }
+
+
+  implicit class OFormatOpsPlayJsonHelper[A](val self: OFormat[A]) extends AnyVal {
+
+    def narrowOFormat[B <: A](implicit tag: ClassTag[B]): OFormat[B] = {
+      OFormat(self.narrowReads[B], self.narrowOWrites[B])
+    }
+  }
+
+  implicit class OFormatObjOpsPlayJsonHelper(val self: OFormat.type) extends AnyVal {
+    
+    def const[A](value: A): OFormat[A] = new OFormat[A] {
+
+      def writes(o: A): JsObject = Json.obj()
+
+      def reads(json: JsValue): JsResult[A] = json match {
+        case JsObject(a) if a.isEmpty => JsSuccess(value)
+        case _                        => JsError("error.expected.emptyObject")
+      }
+    }
+
+    def nested[A](name: String)(implicit format: Format[A]): OFormat[A] = new OFormat[A] {
+
+      def writes(x: A): JsObject = Json.obj(name -> format.writes(x))
+
+      def reads(json: JsValue): JsResult[A] = (json \ name).validate(format)
+    }
+  }
+
+
+  implicit class EitherOpsPlayJsonHelper[L, R](val self: Either[L, R]) extends AnyVal {
+
     def jsResult: JsResult[R] = self match {
       case Left(x)  => JsError(x.toString)
       case Right(x) => JsSuccess(x)
@@ -470,17 +458,17 @@ object JsonFormats {
   }
 
 
-  implicit def newNelFormat[A: Format]: Format[NewNel[A]] = new Format[NewNel[A]] {
+  implicit def nelFormat[A: Format]: Format[Nel[A]] = new Format[Nel[A]] {
 
-    def reads(json: JsValue): JsResult[NewNel[A]] = for {
+    def reads(json: JsValue): JsResult[Nel[A]] = for {
       list <- json.validate[List[A]]
       nel <- list match {
         case Nil          => JsError("list is empty")
-        case head :: tail => JsSuccess(NewNel(head, tail))
+        case head :: tail => JsSuccess(Nel(head, tail))
       }
     } yield nel
 
-    def writes(x: NewNel[A]): JsValue = Json toJson x.toList
+    def writes(x: Nel[A]): JsValue = Json toJson x.toList
   }
 
 
@@ -492,24 +480,5 @@ object JsonFormats {
       case JsNull => JsSuccess(())
       case _      => JsError("error.expected.jsnull")
     }
-  }
-
-
-  def const[A](value: A): OFormat[A] = new OFormat[A] {
-
-    def writes(o: A): JsObject = Json.obj()
-
-    def reads(json: JsValue): JsResult[A] = json match {
-      case JsObject(a) if a.isEmpty => JsSuccess(value)
-      case _                        => JsError("error.expected.emptyObject")
-    }
-  }
-
-
-  def nested[A](name: String)(implicit format: Format[A]): OFormat[A] = new OFormat[A] {
-
-    def writes(x: A): JsObject = Json.obj(name -> format.writes(x))
-
-    def reads(json: JsValue): JsResult[A] = (json \ name).validate(format)
   }
 }

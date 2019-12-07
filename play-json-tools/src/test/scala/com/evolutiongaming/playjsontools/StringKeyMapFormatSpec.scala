@@ -1,22 +1,28 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
-import com.evolutiongaming.util.JsonFormats.MapFormatUnsafe
+import com.evolutiongaming.playjsontools.PlayJsonHelper.StringKeyMapFormat._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsSuccess, Json, OFormat}
 
-  class MapFormatUnsafeSpec extends AnyWordSpec with Matchers {
+import scala.util.Try
 
-  "StringMapFormat" should {
+class StringKeyMapFormatSpec extends AnyWordSpec with Matchers {
+
+  "StringKeyMapFormat" should {
+
+    implicit val entryFormat = Json.format[Value]
+
+    val mapFormat = OFormat(
+      reads(k => Try{ Key(k) }.toOption),
+      writes[Key, Value](_.id.toString)
+    )
+
+    val map = Map(Key(42) -> Value(1), Key(1) -> Value(42))
 
     val json = Json.obj(
       "42" -> Json.obj("value" -> 1),
       "1" -> Json.obj("value" -> 42))
-
-    implicit val entryFormat = Json.format[Value]
-    val mapFormat = MapFormatUnsafe[Key, Value](_.id.toString, Key(_))
-
-    val map = Map(Key(42) -> Value(1), Key(1) -> Value(42))
 
     "convert to json" in {
       mapFormat.writes(map) shouldEqual json

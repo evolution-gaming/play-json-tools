@@ -1,6 +1,6 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
-import com.evolutiongaming.util.PlayJson27xCompat._
+import com.evolutiongaming.playjsontools.PlayJson27xCompat._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsString, Json, Writes}

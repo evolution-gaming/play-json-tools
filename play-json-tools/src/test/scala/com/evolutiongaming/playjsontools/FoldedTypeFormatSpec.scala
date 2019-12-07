@@ -1,6 +1,6 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
-import com.evolutiongaming.util.JsonFormats.{FoldedTypeFormat, TypeFormat, const}
+import com.evolutiongaming.playjsontools.PlayJsonHelper._
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -42,9 +42,9 @@ class FoldedTypeFormatSpec extends AnyWordSpec with Matchers {
   val genericObjJson = Json.obj("type" -> "GenericObj")
   val genericClassJson = Json.obj("type" -> "GenericClass", "value" -> 42)
 
-  val genericObjFormat = const(GenericObj)
+  val genericObjFormat = OFormat.const(GenericObj)
   val genericClassFormat = Json.format[GenericClass]
-  val specificObjFormat = const(SpecificObj)
+  val specificObjFormat = OFormat.const(SpecificObj)
   val specificClassFormat = Json.format[SpecificClass]
 
   val SpecificFormat: OFormat[Specific] = new TypeFormat[Specific] {

@@ -1,4 +1,4 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
 import play.api.libs.json.{JsObject, Json, Writes}
 

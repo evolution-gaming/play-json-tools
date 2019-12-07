@@ -1,6 +1,6 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
-import com.evolutiongaming.util.JsonFormats.FlatFormat
+import com.evolutiongaming.playjsontools.PlayJsonHelper.FlatFormat
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{Format, Json}

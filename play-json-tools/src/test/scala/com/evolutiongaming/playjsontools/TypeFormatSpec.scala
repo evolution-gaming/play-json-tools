@@ -1,9 +1,9 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
-import com.evolutiongaming.util.JsonFormats.{TypeFormat, const}
+import com.evolutiongaming.playjsontools.PlayJsonHelper._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsObject, JsSuccess, JsValue, Json}
+import play.api.libs.json.{JsObject, JsSuccess, JsValue, Json, OFormat}
 
 class TypeFormatSpec extends AnyFunSuite with Matchers {
   import TypeFormatSpec._
@@ -13,7 +13,7 @@ class TypeFormatSpec extends AnyFunSuite with Matchers {
 
   implicit val animalFormat = new TypeFormat[Animal] {
     val mammalFormat = Json.format[Mammal]
-    val slothFormat = const(Sloth)
+    val slothFormat = OFormat.const(Sloth)
 
     def readsPf(json: JsValue): Pf = {
       case "Mammal" => mammalFormat.reads(json)

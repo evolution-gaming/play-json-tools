@@ -1,7 +1,7 @@
-package com.evolutiongaming.util
+package com.evolutiongaming.playjsontools
 
 import com.evolutiongaming.nel.Nel
-import com.evolutiongaming.util.JsonFormats._
+import com.evolutiongaming.playjsontools.PlayJsonHelper._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
@@ -37,7 +37,7 @@ class JsonFormatsSpec extends AnyFunSuite with Matchers {
   }
 
   test("constFormat") {
-    val format = const(ConstObject)
+    val format = OFormat.const(ConstObject)
     val value = ConstObject
     val json = Json.obj()
     format.writes(value) shouldEqual json
@@ -45,7 +45,7 @@ class JsonFormatsSpec extends AnyFunSuite with Matchers {
   }
 
   test("nestedFormat") {
-    val format = nested[Data]("nestedData")
+    val format = OFormat.nested[Data]("nestedData")
     val data = Data(123)
     val json = Json.obj("nestedData" -> Json.obj("value" -> 123))
     format.writes(data) shouldEqual json
