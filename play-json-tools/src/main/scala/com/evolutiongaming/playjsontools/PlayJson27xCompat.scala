@@ -1,21 +1,19 @@
 package com.evolutiongaming.playjsontools
 
-import play.api.libs.json.{JsObject, Json, Writes}
+import play.api.libs.json.{JsArray, JsValue, OWrites, Writes}
+
+import scala.collection.immutable.Iterable
+import scala.collection.mutable
 
 object PlayJson27xCompat {
 
-  implicit def mapWritesPlayJson27xCompat[K, V](implicit
-    writesK: Writes[K],
-    writesV: Writes[V]
-  ): Writes[Map[K, V]] = {
-    as: Map[K, V] =>
-      val as1 = as.toList
-      val as2 = as1.collect { case (k: String, v) => (k, v) }
-      if (as1.size == as2.size) {
-        val as3 = as2.map { case (k, v) => (k, writesV.writes(v)) }
-        JsObject(as3)
-      } else {
-        Json.toJson(as1)
-      }
+  implicit def iterableWrites[A, B](implicit ev: B <:< Iterable[A], writes: Writes[A]): Writes[B] = {
+    Writes[B] { as =>
+      val builder = mutable.ArrayBuilder.make[JsValue]
+      as.foreach { a: A => builder += writes.writes(a) }
+      JsArray(builder.result())
+    }
   }
+
+  implicit def mapWrites[A: Writes]: OWrites[Map[String, A]] = Writes.mapWrites[A]
 }
