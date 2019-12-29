@@ -25,12 +25,10 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestDataGenerators.jsonBody))
       .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
 
-    //println(expected)
     val bts = Json.toBytes(Json.toJson(expected))
     val jsValue = PlayJsonJsoniter.deserialize(bts)
     val actual = Json.fromJson[DataLine](jsValue)
 
-    //println(actual)
     JsSuccess(expected) shouldEqual actual
   }
 }

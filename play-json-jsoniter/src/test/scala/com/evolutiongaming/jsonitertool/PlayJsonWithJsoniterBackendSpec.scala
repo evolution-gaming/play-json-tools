@@ -28,7 +28,6 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
     val bools = batch.map { user =>
       val jsValue = Json.toJson(user)
       val bts = Json.toBytes(jsValue)
-      //Json.fromJson[User](jsValue)
       val actJsValue = PlayJsonJsoniter.deserialize(bts)
       user == Json.fromJson[User](actJsValue).get
     }
