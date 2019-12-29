@@ -53,7 +53,6 @@ lazy val playJsonTools = project
     libraryDependencies ++= Seq(
       playJson,
       nel,
-      jsoniter,
       scalaTest % Test,
     ).map(excludeLog4j)))
 
