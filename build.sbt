@@ -16,7 +16,6 @@ val commonSettings = Seq(
   crossScalaVersions := Seq("2.13.1", "2.12.10"),
 )
 
-
 lazy val root = project
   .in(file("."))
   .disablePlugins(MimaPlugin)
@@ -54,5 +53,20 @@ lazy val playJsonTools = project
     libraryDependencies ++= Seq(
       playJson,
       nel,
+      jsoniter,
       scalaTest % Test,
+    ).map(excludeLog4j)))
+
+lazy val playJsonJsoniter = project
+  .in(file("play-json-jsoniter"))
+  .settings(commonSettings)
+  .settings(Seq(
+    moduleName := "play-json-jsoniter",
+    name       := "play-json-jsoniter",
+    libraryDependencies ++= Seq(
+      playJson,
+      nel,
+      jsoniter,
+      scalaTest % Test,
+      generator % Test
     ).map(excludeLog4j)))

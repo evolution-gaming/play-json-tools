@@ -2,6 +2,7 @@
 
 1. play-json-tools - Set of implicit Play-JSON `Format` helper classes. Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolutiongaming/util/FlatFormatSpec.scala)
 1. play-json-generic - provides Format derivation for enum like adt's (sealed trait/case objects'). Examples in [EnumerationDerivalSpec](play-json-generic/src/test/scala/com/evolutiongaming/util/generic/EnumerationDerivalSpec.scala)
+1. play-json-jsoniter - provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
 
 ## Setup
 
