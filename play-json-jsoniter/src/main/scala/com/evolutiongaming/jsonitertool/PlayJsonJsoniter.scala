@@ -101,9 +101,15 @@ object PlayJsonJsoniter {
       override val nullValue: JsValue = JsNull
     }
 
+  /**
+   * @see See [[com.github.plokhotnyuk.jsoniter_scala.core.writeToArray]]
+   */
   def serialize(payload: JsValue): Array[Byte] =
     writeToArray(payload)
 
+  /**
+   * @see See [[com.github.plokhotnyuk.jsoniter_scala.core.readFromArray]]
+   */
   def deserialize(bytes: Array[Byte]): JsValue =
     readFromArray[JsValue](bytes)
 }

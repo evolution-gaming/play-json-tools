@@ -27,6 +27,7 @@ lazy val root = project
   .aggregate(
     playJsonTools,
     playJsonGeneric,
+    playJsonJsoniter
   )
 
 
