@@ -46,9 +46,7 @@ object PlayJsonJsoniter {
           val fields =
             if (in.isNextToken('}')) new java.util.LinkedHashMap[String, JsValue]()
             else {
-              /**
-                * Because of DoS vulnerability in Scala 2.12 HashMap https://github.com/scala/bug/issues/11203.
-               **/
+              //Because of DoS vulnerability in Scala 2.12 HashMap https://github.com/scala/bug/issues/11203.
               val underlying = new java.util.LinkedHashMap[String, JsValue]()
               in.rollbackToken()
               do {
@@ -61,8 +59,8 @@ object PlayJsonJsoniter {
               underlying
             }
           /**
-           * Create a fields map by wrapping a Java LinkedHashMap.
-           * Similar to PlayJson 2.8.x, we use this because the Java implementation better handles hash code collisions for Comparable keys.
+           * Similar to PlayJson 2.8.x, we use a Java LinkedHashMap because the Java implementation better handles hash code collisions
+           * for Comparable keys.
            */
           import scala.jdk.CollectionConverters._
           JsObject(fields.asScala)
