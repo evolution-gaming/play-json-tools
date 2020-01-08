@@ -13,7 +13,7 @@ object PlayJsonJsoniter {
        * and adapted to meet PlayJson criteria.
        */
       override def decodeValue(in: JsonReader, default: JsValue): JsValue = {
-        var b = in.nextToken
+        var b = in.nextToken()
         if (b == 'n') in.readNullOrError(default, "expected `null` value")
         else if (b == '"') {
           in.rollbackToken()
@@ -24,11 +24,11 @@ object PlayJsonJsoniter {
         } else if (b == '-' || (b >= '0' && b <= '9')) {
           JsNumber(
             {
-              in.rollbackToken
-              in.setMark
+              in.rollbackToken()
+              in.setMark()
               try {
                 do {
-                  b = in.nextByte
+                  b = in.nextByte()
                 } while ((b >= '0' && b <= '9') || b == '-')
               } catch {
                 case _: JsonReaderException => /* ignore end of input error */
