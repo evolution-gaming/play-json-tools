@@ -42,28 +42,25 @@ object PlayJsonJsoniter {
               else in.arrayEndOrCommaError()).toVector
             })
         } else if (b == '{') {
-
-          val fields =
-            if (in.isNextToken('}')) new java.util.LinkedHashMap[String, JsValue]()
+          /**
+            * Because of DoS vulnerability in Scala 2.12 HashMap https://github.com/scala/bug/issues/11203
+            * we construct JsObject from an ArrayBuffer of (String, JsValue) which uses a Java LinkedHashMap under the hood
+            * because the Java implementation better handles hash code collisions for Comparable keys.
+            */
+          JsObject(
+            if (in.isNextToken('}')) new scala.collection.mutable.ArrayBuffer[(String, JsValue)]()
             else {
-              //Because of DoS vulnerability in Scala 2.12 HashMap https://github.com/scala/bug/issues/11203.
-              val underlying = new java.util.LinkedHashMap[String, JsValue]()
+              val underlying = new scala.collection.mutable.ArrayBuffer[(String, JsValue)]()
               in.rollbackToken()
               do {
-                underlying.put(in.readKeyAsString(), decodeValue(in, default))
+                underlying.+=(in.readKeyAsString() -> decodeValue(in, default))
               } while (in.isNextToken(','))
 
               if (!in.isCurrentToken('}'))
                 in.objectEndOrCommaError()
 
               underlying
-            }
-          /**
-           * Similar to PlayJson 2.8.x, we use a Java LinkedHashMap because the Java implementation better handles hash code collisions
-           * for Comparable keys.
-           */
-          import scala.jdk.CollectionConverters._
-          JsObject(fields.asScala)
+            })
         } else in.decodeError("expected JSON value")
       }
 

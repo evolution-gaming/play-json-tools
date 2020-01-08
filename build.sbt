@@ -69,6 +69,6 @@ lazy val playJsonJsoniter = project
         case Some((2, v)) if v >= 13 =>
           Seq(playJson, nel, jsoniter, scalaTest % Test, jsonGenerator % Test).map(excludeLog4j)
         case _ =>
-          Seq(playJson, nel, jsoniter, collectionCompact, scalaTest % Test).map(excludeLog4j)
+          Seq(playJson, nel, jsoniter, scalaTest % Test).map(excludeLog4j)
       }
     }))
