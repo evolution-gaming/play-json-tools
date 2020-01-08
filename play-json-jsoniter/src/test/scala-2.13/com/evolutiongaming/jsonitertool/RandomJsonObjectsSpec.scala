@@ -1,7 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
-import org.scalacheck.{Arbitrary, Gen, Test}
 import org.scalacheck.Prop.forAll
+import org.scalacheck.{Arbitrary, Gen, Test}
 import play.api.libs.json.Json
 import valuegen.RandomJsObjGen
 
@@ -26,4 +26,3 @@ object RandomJsonObjectsSpec extends org.scalacheck.Properties("RandomJsonObject
     jsValue == actJsValue
   }
 }
-

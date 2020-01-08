@@ -57,16 +57,22 @@ lazy val playJsonTools = project
       scalaTest % Test,
     ).map(excludeLog4j)))
 
+//++ 2.12.10 or ++ 2.13.1
 lazy val playJsonJsoniter = project
   .in(file("play-json-jsoniter"))
   .settings(commonSettings)
   .settings(Seq(
     moduleName := "play-json-jsoniter",
     name       := "play-json-jsoniter",
-    libraryDependencies ++= Seq(
-      playJson,
-      nel,
-      jsoniter,
-      scalaTest % Test,
-      generator % Test
-    ).map(excludeLog4j)))
+    libraryDependencies ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, v)) if v >= 13 => {
+          println(s"scala version: 2.$v")
+          Seq(playJson, nel, jsoniter, scalaTest % Test, jsonGenerator % Test).map(excludeLog4j)
+        }
+        case Some((2, v)) => {
+          println(s"scala version: 2.$v")
+          Seq(playJson, nel, jsoniter, scalaTest % Test).map(excludeLog4j)
+        }
+      }
+    }))

@@ -1,7 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
-import org.scalacheck.{Arbitrary, Gen, Test}
 import org.scalacheck.Prop.forAll
+import org.scalacheck.{Arbitrary, Gen, Test}
 import play.api.libs.json.Json
 import valuegen.RandomJsArrayGen
 

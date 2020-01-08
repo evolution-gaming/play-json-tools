@@ -1,9 +1,9 @@
 package com.evolutiongaming.jsonitertool
 
-import TestDataGenerators._
-import org.scalacheck.Prop._
-import play.api.libs.json.Json
+import com.evolutiongaming.jsonitertool.TestDataGenerators.{User, genUser}
+import org.scalacheck.Prop.forAll
 import org.scalacheck.{Arbitrary, Gen, Test}
+import play.api.libs.json.Json
 
 //sbt playJsonJsoniter/test:"runMain com.evolutiongaming.jsonitertool.PlayJsonWithJsoniterBackendSpec"
 object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJsonWithJsoniterBackend") {

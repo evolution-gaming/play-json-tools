@@ -1,16 +1,16 @@
 package com.evolutiongaming.jsonitertool
 
-import com.evolutiongaming.jsonitertool.TestDataGenerators.DataLine
+import com.evolutiongaming.jsonitertool.TestData.DataLine
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsSuccess, Json}
-import TestDataGenerators._
+import TestData._
 
 class JsoniterSpec extends AnyFunSuite with Matchers {
 
   test("Write using PlayJson -> Read using Jsoniter: Compare bytes") {
 
-    val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestDataGenerators.jsonBody))
+    val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestData.jsonBody))
       .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
 
     val jsValue = Json.toJson(expected)
@@ -22,7 +22,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
 
   test("Write using PlayJson -> Read using Jsoniter: Compare objects") {
 
-    val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestDataGenerators.jsonBody))
+    val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestData.jsonBody))
       .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
 
     val bts = Json.toBytes(Json.toJson(expected))

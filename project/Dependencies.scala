@@ -8,7 +8,7 @@ object Dependencies {
   val playJson  = "com.typesafe.play"   %% "play-json" % "2.7.4"
   val scalaTest = "org.scalatest"       %% "scalatest" % "3.1.0"
   val jsoniter  = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"  % "2.0.4"
-  val generator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.0.0"
+  val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.0.0"
 
   def excludeLog4j(moduleID: ModuleID): ModuleID = moduleID.excludeAll(
     ExclusionRule("log4j", "log4j"),
