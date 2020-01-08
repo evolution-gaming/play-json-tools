@@ -1,7 +1,5 @@
 package com.evolutiongaming.jsonitertool
 
-import java.util.concurrent.ThreadLocalRandom
-
 import play.api.libs.json.Json
 import valuegen.Preamble._
 import valuegen.{JsArrayGen, JsObjGen}
@@ -16,9 +14,9 @@ object TestDataGenerators extends PlayJsonImplicits {
 
   def flagGen: Gen[Boolean] = Arbitrary.arbitrary[Boolean]
 
-  def nameGen: Gen[String] = str(ThreadLocalRandom.current.nextInt(5, 20))
+  def nameGen: Gen[String] = Gen.choose(5, 20).flatMap(str)
 
-  def birthDateGen: Gen[String] = str(ThreadLocalRandom.current.nextInt(5, 20))
+  def birthDateGen: Gen[String] = Gen.choose(5, 20).flatMap(str)
 
   def latitudeGen: Gen[Double] = Arbitrary.arbitrary[Double]
 
@@ -28,9 +26,9 @@ object TestDataGenerators extends PlayJsonImplicits {
 
   def ints: Gen[Int] = Arbitrary.arbitrary[Int]
 
-  def emailGen: Gen[String] = str(ThreadLocalRandom.current.nextInt(5, 20))
+  def emailGen: Gen[String] = Gen.choose(5, 20).flatMap(str)
 
-  def countryGen: Gen[String] = str(ThreadLocalRandom.current.nextInt(5, 20))
+  def countryGen: Gen[String] = Gen.choose(5, 20).flatMap(str)
 
   def friendGen(depth: Int): Gen[JsObj] = JsObjGen(
     "name" -> nameGen,
