@@ -17,7 +17,6 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
   property("Write using PlayJson -> Read using Jsoniter") = forAll { user: User =>
     val jsValue = Json.toJson(user)
     val bts = Json.toBytes(jsValue)
-    //println(s"${line.name}: ${bts.size / 1024} kb")
     val actJsValue = PlayJsonJsoniter.deserialize(bts)
     user == Json.fromJson[User](actJsValue).get
   }

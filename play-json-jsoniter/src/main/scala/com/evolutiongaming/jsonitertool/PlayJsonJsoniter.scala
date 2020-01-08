@@ -13,7 +13,7 @@ object PlayJsonJsoniter {
        * and adapted to meet PlayJson criteria.
        */
       override def decodeValue(in: JsonReader, default: JsValue): JsValue = {
-        var b = in.nextToken()
+        val b = in.nextToken()
         if (b == 'n') in.readNullOrError(default, "expected `null` value")
         else if (b == '"') {
           in.rollbackToken()
@@ -22,21 +22,8 @@ object PlayJsonJsoniter {
           in.rollbackToken()
           if (in.readBoolean()) JsTrue else JsFalse
         } else if (b == '-' || (b >= '0' && b <= '9')) {
-          JsNumber(
-            {
-              in.rollbackToken()
-              in.setMark()
-              try {
-                do {
-                  b = in.nextByte()
-                } while ((b >= '0' && b <= '9') || b == '-')
-              } catch {
-                case _: JsonReaderException => /* ignore end of input error */
-              } finally in.rollbackToMark
-              //PlayJson specific thing, since it uses BigDecimal to represent all numbers.
-              in.readBigDecimal(null)
-            }
-          )
+          in.rollbackToken()
+          JsNumber(in.readBigDecimal(null))
         } else if (b == '[') {
           JsArray(
             if (in.isNextToken(']')) Vector.empty[JsValue]
@@ -55,12 +42,15 @@ object PlayJsonJsoniter {
               else in.arrayEndOrCommaError()).toVector
             })
         } else if (b == '{') {
-          new JsObject(
-            if (in.isNextToken('}')) scala.collection.mutable.Map.empty[String, JsValue]
-            else {
-              val underlying = scala.collection.mutable.LinkedHashMap[String, JsValue]()
-              in.rollbackToken()
 
+          val fields =
+            if (in.isNextToken('}')) new java.util.LinkedHashMap[String, JsValue]()
+            else {
+              /**
+                * Because of DoS vulnerability in Scala 2.12 HashMap https://github.com/scala/bug/issues/11203.
+               **/
+              val underlying = new java.util.LinkedHashMap[String, JsValue]()
+              in.rollbackToken()
               do {
                 underlying.put(in.readKeyAsString(), decodeValue(in, default))
               } while (in.isNextToken(','))
@@ -70,7 +60,12 @@ object PlayJsonJsoniter {
 
               underlying
             }
-          )
+          /**
+           * Create a fields map by wrapping a Java LinkedHashMap.
+           * Similar to PlayJson 2.8.x, we use this because the Java implementation better handles hash code collisions for Comparable keys.
+           */
+          import scala.jdk.CollectionConverters._
+          JsObject(fields.asScala)
         } else in.decodeError("expected JSON value")
       }
 
