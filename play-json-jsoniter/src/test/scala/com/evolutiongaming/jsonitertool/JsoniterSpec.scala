@@ -8,7 +8,7 @@ import TestDataGenerators._
 
 class JsoniterSpec extends AnyFunSuite with Matchers {
 
-  test("Write using PlayJson -> Read using Jsoniter: Compare bites") {
+  test("Write using PlayJson -> Read using Jsoniter: Compare bytes") {
 
     val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestDataGenerators.jsonBody))
       .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
