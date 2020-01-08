@@ -1,7 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
 import com.github.plokhotnyuk.jsoniter_scala.core._
-import play.api.libs.json.{JsArray, JsBoolean, JsFalse, JsNull, JsNumber, JsObject, JsString, JsTrue, JsValue}
+import play.api.libs.json._
 
 object PlayJsonJsoniter {
 
