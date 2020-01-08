@@ -66,13 +66,9 @@ lazy val playJsonJsoniter = project
     name       := "play-json-jsoniter",
     libraryDependencies ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, v)) if v >= 13 => {
-          println(s"scala version: 2.$v")
+        case Some((2, v)) if v >= 13 =>
           Seq(playJson, nel, jsoniter, scalaTest % Test, jsonGenerator % Test).map(excludeLog4j)
-        }
-        case Some((2, v)) => {
-          println(s"scala version: 2.$v")
+        case _ =>
           Seq(playJson, nel, jsoniter, scalaTest % Test).map(excludeLog4j)
-        }
       }
     }))
