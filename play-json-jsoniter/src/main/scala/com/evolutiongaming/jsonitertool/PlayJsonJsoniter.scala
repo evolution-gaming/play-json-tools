@@ -10,8 +10,6 @@ object PlayJsonJsoniter {
   implicit val jsValueCodec: JsonValueCodec[JsValue] =
     new JsonValueCodec[JsValue] {
 
-      private val s = JsonParserSettings.settings.bigDecimalParseSettings
-
       /**
        * The implementation was borrowed from: https://github.com/plokhotnyuk/jsoniter-scala/blob/e80d51019b39efacff9e695de97dce0c23ae9135/jsoniter-scala-benchmark/src/main/scala/io/circe/CirceJsoniter.scala
        * and adapted to meet PlayJson criteria.
@@ -27,6 +25,7 @@ object PlayJsonJsoniter {
           if (in.readBoolean()) JsTrue else JsFalse
         } else if ((b >= '0' && b <= '9') || b == '-') {
           in.rollbackToken()
+          val s = JsonParserSettings.settings.bigDecimalParseSettings
           //In order to stay consistent with PlayJson which can parse 310 characters length numbers
           val dLimit = s.digitsLimit + 1
           JsNumber(in.readBigDecimal(null, s.mathContext, s.scaleLimit, dLimit))
