@@ -57,7 +57,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     jsValue0 shouldEqual jsValue1
   }
 
-  test("PlayJson and Jsoniter can parse 310 characters number") {
+  test("PlayJson and Jsoniter can parse 310 characters length numbers") {
 
     val number310ChsLenght = maxDoubleStr + "1" //309 + 1
 
@@ -68,7 +68,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     jsValue0 shouldEqual jsValue1
   }
 
-  test("PlayJson and Jsoniter fail to parse 311 characters lenght number") {
+  test("PlayJson and Jsoniter fail to parse 311 characters length numbers") {
 
     val number311ChsLenght = maxDoubleStr + "11" //309 + 2
 
