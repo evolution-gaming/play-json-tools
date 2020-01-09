@@ -3,6 +3,8 @@ package com.evolutiongaming.jsonitertool
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import play.api.libs.json._
 
+import scala.collection.IndexedSeq
+
 object PlayJsonJsoniter {
 
   implicit val jsValueCodec: JsonValueCodec[JsValue] =
@@ -21,11 +23,11 @@ object PlayJsonJsoniter {
         } else if (b == 'f' || b == 't') {
           in.rollbackToken()
           if (in.readBoolean()) JsTrue else JsFalse
-        } else if (b == '-' || (b >= '0' && b <= '9')) {
+        } else if ((b >= '0' && b <= '9') || b == '-') {
           in.rollbackToken()
           JsNumber(in.readBigDecimal(null))
         } else if (b == '[') {
-          JsArray(
+          val array: IndexedSeq[JsValue] =
             if (in.isNextToken(']')) Vector.empty[JsValue]
             else {
               in.rollbackToken()
@@ -37,30 +39,32 @@ object PlayJsonJsoniter {
                 i += 1
               } while (in.isNextToken(','))
 
-              (if (in.isCurrentToken(']'))
+              if (in.isCurrentToken(']'))
                 if (i == arr.length) arr else java.util.Arrays.copyOf(arr, i)
-              else in.arrayEndOrCommaError()).toVector
-            })
+              else in.arrayEndOrCommaError()
+            }
+          JsArray(array)
         } else if (b == '{') {
            /*
             * Because of DoS vulnerability in Scala 2.12 HashMap https://github.com/scala/bug/issues/11203
-            * we construct JsObject from an ArrayBuffer of (String, JsValue) which uses a Java LinkedHashMap under the hood
-            * because the Java implementation better handles hash code collisions for Comparable keys.
+            * we use a Java LinkedHashMap because it better handles hash code collisions for Comparable keys.
             */
-          JsObject(
-            if (in.isNextToken('}')) new scala.collection.mutable.ArrayBuffer[(String, JsValue)]()
+          val kvs =
+            if (in.isNextToken('}')) new java.util.LinkedHashMap[String, JsValue]()
             else {
-              val underlying = new scala.collection.mutable.ArrayBuffer[(String, JsValue)]()
+              val underlying = new java.util.LinkedHashMap[String, JsValue]()
               in.rollbackToken()
               do {
-                underlying.+=(in.readKeyAsString() -> decodeValue(in, default))
+                underlying.put(in.readKeyAsString(), decodeValue(in, default))
               } while (in.isNextToken(','))
 
               if (!in.isCurrentToken('}'))
                 in.objectEndOrCommaError()
 
               underlying
-            })
+            }
+          import scala.jdk.CollectionConverters._
+          JsObject(kvs.asScala)
         } else in.decodeError("expected JSON value")
       }
 
@@ -91,15 +95,9 @@ object PlayJsonJsoniter {
       override val nullValue: JsValue = JsNull
     }
 
-  /**
-   * @see See [[com.github.plokhotnyuk.jsoniter_scala.core.writeToArray]]
-   */
   def serialize(payload: JsValue): Array[Byte] =
     writeToArray(payload)
 
-  /**
-   * @see See [[com.github.plokhotnyuk.jsoniter_scala.core.readFromArray]]
-   */
   def deserialize(bytes: Array[Byte]): JsValue =
     readFromArray[JsValue](bytes)
 }
