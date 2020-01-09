@@ -36,8 +36,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
   test("Can write/read large number by play-json") {
     //when number size hits length 35, equality comparison doesn't work anymore
     val largeNum = "9999999999999999999999999999999911"
-    val jsValue = play.api.libs.json.JsNumber(BigDecimal(largeNum))
-    println("")
+    val jsValue = play.api.libs.json.JsNumber(BigDecimal(largeNum))s
     val bytes = Json.toBytes(jsValue)
     new String(bytes) shouldEqual largeNum
     Json.parse(bytes) shouldEqual jsValue
