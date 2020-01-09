@@ -28,7 +28,7 @@ object PlayJsonJsoniter {
           JsNumber(in.readBigDecimal(null))
         } else if (b == '[') {
           val array: IndexedSeq[JsValue] =
-            if (in.isNextToken(']')) Vector.empty[JsValue]
+            if (in.isNextToken(']')) new Array[JsValue](0)
             else {
               in.rollbackToken()
               var i = 0
