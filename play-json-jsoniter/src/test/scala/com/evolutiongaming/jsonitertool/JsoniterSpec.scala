@@ -3,7 +3,7 @@ package com.evolutiongaming.jsonitertool
 import com.evolutiongaming.jsonitertool.TestData.DataLine
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsSuccess, Json, JsonParserSettings}
 import TestData._
 
 class JsoniterSpec extends AnyFunSuite with Matchers {
@@ -36,7 +36,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
   test("Can write/read large number by play-json") {
     //when number size hits length 35, equality comparison doesn't work anymore
     val largeNum = "9999999999999999999999999999999911"
-    val jsValue = play.api.libs.json.JsNumber(BigDecimal(largeNum))s
+    val jsValue = play.api.libs.json.JsNumber(BigDecimal(largeNum))
     val bytes = Json.toBytes(jsValue)
     new String(bytes) shouldEqual largeNum
     Json.parse(bytes) shouldEqual jsValue
@@ -56,4 +56,29 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     val jsValue1 = PlayJsonJsoniter.deserialize(json.getBytes)
     jsValue0 shouldEqual jsValue1
   }
+
+  test("PlayJson and Jsoniter can parse 310 characters number") {
+
+    val number310ChsLenght = maxDoubleStr + "1" //309 + 1
+
+    val jsValue0 = Json.parse(number310ChsLenght.getBytes)
+    val jsValue1 = PlayJsonJsoniter.deserialize(number310ChsLenght.getBytes)
+
+    JsonParserSettings.settings.bigDecimalParseSettings.digitsLimit shouldEqual number310ChsLenght.length
+    jsValue0 shouldEqual jsValue1
+  }
+
+  test("PlayJson and Jsoniter fail to parse 311 characters lenght number") {
+
+    val number311ChsLenght = maxDoubleStr + "11" //309 + 2
+
+    assertThrows[java.lang.IllegalArgumentException] {
+      Json.parse(number311ChsLenght.getBytes)
+    }
+
+    assertThrows[com.github.plokhotnyuk.jsoniter_scala.core.JsonReaderException] {
+      PlayJsonJsoniter.deserialize(number311ChsLenght.getBytes)
+    }
+  }
+
 }
