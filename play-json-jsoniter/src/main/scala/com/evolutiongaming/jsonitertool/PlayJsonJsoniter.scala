@@ -42,7 +42,7 @@ object PlayJsonJsoniter {
               else in.arrayEndOrCommaError()).toVector
             })
         } else if (b == '{') {
-          /**
+           /*
             * Because of DoS vulnerability in Scala 2.12 HashMap https://github.com/scala/bug/issues/11203
             * we construct JsObject from an ArrayBuffer of (String, JsValue) which uses a Java LinkedHashMap under the hood
             * because the Java implementation better handles hash code collisions for Comparable keys.
