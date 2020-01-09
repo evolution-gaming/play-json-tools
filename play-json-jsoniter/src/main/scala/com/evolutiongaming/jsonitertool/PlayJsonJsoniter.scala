@@ -10,6 +10,8 @@ object PlayJsonJsoniter {
   implicit val jsValueCodec: JsonValueCodec[JsValue] =
     new JsonValueCodec[JsValue] {
 
+      private val playJsonSettings = JsonParserSettings.settings.bigDecimalParseSettings
+
       /**
        * The implementation was borrowed from: https://github.com/plokhotnyuk/jsoniter-scala/blob/e80d51019b39efacff9e695de97dce0c23ae9135/jsoniter-scala-benchmark/src/main/scala/io/circe/CirceJsoniter.scala
        * and adapted to meet PlayJson criteria.
@@ -25,7 +27,7 @@ object PlayJsonJsoniter {
           if (in.readBoolean()) JsTrue else JsFalse
         } else if ((b >= '0' && b <= '9') || b == '-') {
           in.rollbackToken()
-          JsNumber(in.readBigDecimal(null))
+          JsNumber(in.readBigDecimal(null, playJsonSettings.mathContext, playJsonSettings.scaleLimit, playJsonSettings.digitsLimit))
         } else if (b == '[') {
           val array: IndexedSeq[JsValue] =
             if (in.isNextToken(']')) new Array[JsValue](0)
