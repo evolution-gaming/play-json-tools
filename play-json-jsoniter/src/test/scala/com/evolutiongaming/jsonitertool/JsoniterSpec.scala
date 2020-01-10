@@ -57,28 +57,14 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     jsValue0 shouldEqual jsValue1
   }
 
-  test("PlayJson and Jsoniter can parse 310 characters length numbers") {
+  test("PlayJson and Jsoniter can parse negative double max number") {
 
-    val number310ChsLenght = maxDoubleStr + "1" //309 + 1
+    val number310ChsLength = "-" + maxDoubleStr
 
-    val jsValue0 = Json.parse(number310ChsLenght.getBytes)
-    val jsValue1 = PlayJsonJsoniter.deserialize(number310ChsLenght.getBytes)
+    val jsValue0 = Json.parse(number310ChsLength.getBytes)
+    val jsValue1 = PlayJsonJsoniter.deserialize(number310ChsLength.getBytes)
 
-    JsonParserSettings.settings.bigDecimalParseSettings.digitsLimit shouldEqual number310ChsLenght.length
+    JsonParserSettings.settings.bigDecimalParseSettings.digitsLimit shouldEqual number310ChsLength.length
     jsValue0 shouldEqual jsValue1
   }
-
-  test("PlayJson and Jsoniter fail to parse 311 characters length numbers") {
-
-    val number311ChsLenght = maxDoubleStr + "11" //309 + 2
-
-    assertThrows[java.lang.IllegalArgumentException] {
-      Json.parse(number311ChsLenght.getBytes)
-    }
-
-    assertThrows[com.github.plokhotnyuk.jsoniter_scala.core.JsonReaderException] {
-      PlayJsonJsoniter.deserialize(number311ChsLenght.getBytes)
-    }
-  }
-
 }

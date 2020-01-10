@@ -26,9 +26,7 @@ object PlayJsonJsoniter {
         } else if ((b >= '0' && b <= '9') || b == '-') {
           in.rollbackToken()
           val s = JsonParserSettings.settings.bigDecimalParseSettings
-          //In order to stay consistent with PlayJson which can parse 310 characters length numbers
-          val dLimit = s.digitsLimit + 1
-          JsNumber(in.readBigDecimal(null, s.mathContext, s.scaleLimit, dLimit))
+          JsNumber(in.readBigDecimal(null, s.mathContext, s.scaleLimit, s.digitsLimit))
         } else if (b == '[') {
           val array: IndexedSeq[JsValue] =
             if (in.isNextToken(']')) new Array[JsValue](0)
