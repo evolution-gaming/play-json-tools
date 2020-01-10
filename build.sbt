@@ -16,7 +16,6 @@ val commonSettings = Seq(
   crossScalaVersions := Seq("2.13.1", "2.12.10"),
 )
 
-
 lazy val root = project
   .in(file("."))
   .disablePlugins(MimaPlugin)
@@ -28,6 +27,7 @@ lazy val root = project
   .aggregate(
     playJsonTools,
     playJsonGeneric,
+    playJsonJsoniter
   )
 
 
@@ -56,3 +56,19 @@ lazy val playJsonTools = project
       nel,
       scalaTest % Test,
     ).map(excludeLog4j)))
+
+//++ 2.12.10 or ++ 2.13.1
+lazy val playJsonJsoniter = project
+  .in(file("play-json-jsoniter"))
+  .settings(commonSettings)
+  .settings(Seq(
+    moduleName := "play-json-jsoniter",
+    name       := "play-json-jsoniter",
+    libraryDependencies ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, v)) if v >= 13 =>
+          Seq(playJson, nel, jsoniter, scalaTest % Test, jsonGenerator % Test).map(excludeLog4j)
+        case _ =>
+          Seq(playJson, nel, jsoniter, collectionCompact, scalaTest % Test).map(excludeLog4j)
+      }
+    }))
