@@ -23,6 +23,6 @@ object RandomJsonArraysSpec extends org.scalacheck.Properties("RandomJsonSpec") 
     val jsValue = Json.parse(json)
     val bts = PlayJsonJsoniter.serialize(jsValue)
     val actJsValue = PlayJsonJsoniter.deserialize(bts)
-    jsValue == actJsValue
+    jsValue == actJsValue.get
   }
 }

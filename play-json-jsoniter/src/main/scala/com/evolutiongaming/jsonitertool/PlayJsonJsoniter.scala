@@ -4,6 +4,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core._
 import play.api.libs.json._
 
 import scala.collection.IndexedSeq
+import scala.util.Try
 
 object PlayJsonJsoniter {
 
@@ -99,6 +100,6 @@ object PlayJsonJsoniter {
   def serialize(payload: JsValue): Array[Byte] =
     writeToArray(payload)
 
-  def deserialize(bytes: Array[Byte]): JsValue =
-    readFromArray[JsValue](bytes)
+  def deserialize(bytes: Array[Byte]): Try[JsValue] =
+    Try(readFromArray[JsValue](bytes))
 }
