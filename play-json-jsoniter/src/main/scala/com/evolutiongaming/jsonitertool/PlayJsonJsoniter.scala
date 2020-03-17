@@ -1,5 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
+import java.io.InputStream
+
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import play.api.libs.json._
 
@@ -102,4 +104,10 @@ object PlayJsonJsoniter {
 
   def deserialize(bytes: Array[Byte]): Try[JsValue] =
     Try(readFromArray[JsValue](bytes))
+
+  def deserialize(in: InputStream): Try[JsValue] =
+    Try(readFromStream(in))
+
+  def deserialize(str: String): Try[JsValue] =
+    Try(readFromString(str))
 }
