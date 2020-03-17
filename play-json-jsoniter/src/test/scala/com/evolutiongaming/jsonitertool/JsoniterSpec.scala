@@ -1,5 +1,8 @@
 package com.evolutiongaming.jsonitertool
 
+import java.io.{ByteArrayInputStream, InputStream}
+import java.nio.charset.StandardCharsets
+
 import com.evolutiongaming.jsonitertool.TestData.DataLine
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -7,6 +10,7 @@ import play.api.libs.json.{JsSuccess, Json, JsonParserSettings}
 import TestData._
 
 import scala.util.Success
+import scala.util.control.NonFatal
 
 class JsoniterSpec extends AnyFunSuite with Matchers {
 
@@ -67,5 +71,26 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     val jsValue0 = Json.parse(maxDouble.getBytes)
     JsonParserSettings.settings.bigDecimalParseSettings.digitsLimit shouldEqual maxDouble.length
     jsValue0 shouldEqual PlayJsonJsoniter.deserialize(maxDouble.getBytes).get
+  }
+
+  test("Jsoniter can deserialize from string") {
+    val actual = Json.parse(TestData.jsonBody)
+    val expected = PlayJsonJsoniter.deserialize(TestData.jsonBody).get
+    actual shouldEqual expected
+  }
+
+  test("Jsoniter can deserialize from InputStream") {
+    val actual = Json.parse(TestData.jsonBody)
+    var in: InputStream = null
+    try {
+      in = new ByteArrayInputStream(TestData.jsonBody.getBytes(StandardCharsets.UTF_8))
+      val expected = PlayJsonJsoniter.deserialize(in).get
+      actual shouldEqual expected
+    } catch {
+      case NonFatal(ex) => fail(ex)
+    } finally {
+      if (in ne null)
+        in.close()
+    }
   }
 }
