@@ -9,7 +9,7 @@
 ```scala
 resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
 
-libraryDependencies += "com.evolutiongaming" %% "play-json-tools"   % "0.6.0"
-libraryDependencies += "com.evolutiongaming" %% "play-json-generic" % "0.6.0"
-libraryDependencies += "com.evolutiongaming" %% "play-json-jsoniter" % "0.6.0"
+libraryDependencies += "com.evolutiongaming" %% "play-json-tools"   % "0.6.1"
+libraryDependencies += "com.evolutiongaming" %% "play-json-generic" % "0.6.1"
+libraryDependencies += "com.evolutiongaming" %% "play-json-jsoniter" % "0.6.1"
 ```
