@@ -102,18 +102,18 @@ object PlayJsonJsoniter {
   def serialize(payload: JsValue): Array[Byte] =
     writeToArray(payload)
 
-  def serialize2Str(payload: JsValue): String =
+  def serializeToStr(payload: JsValue): String =
     writeToString(payload)
 
-  def serialize2Output(payload: JsValue, out: OutputStream): Unit =
+  def serializeToOutput(payload: JsValue, out: OutputStream): Unit =
     writeToStream(payload, out)
 
   def deserialize(bytes: Array[Byte]): Try[JsValue] =
     Try(readFromArray[JsValue](bytes))
 
-  def deserialize(in: InputStream): Try[JsValue] =
-    Try(readFromStream(in))
-
-  def deserialize(str: String): Try[JsValue] =
+  def deserializeFromStr(str: String): Try[JsValue] =
     Try(readFromString(str))
+
+  def deserializeFromInput(in: InputStream): Try[JsValue] =
+    Try(readFromStream(in))
 }
