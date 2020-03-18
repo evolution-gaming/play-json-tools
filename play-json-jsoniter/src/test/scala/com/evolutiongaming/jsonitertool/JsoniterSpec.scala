@@ -75,7 +75,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
 
   test("Jsoniter can deserialize from string") {
     val actual = Json.parse(TestData.jsonBody)
-    val expected = PlayJsonJsoniter.deserialize(TestData.jsonBody).get
+    val expected = PlayJsonJsoniter.deserializeFromStr(TestData.jsonBody).get
     actual shouldEqual expected
   }
 
@@ -84,7 +84,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     var in: InputStream = null
     try {
       in = new ByteArrayInputStream(TestData.jsonBody.getBytes(StandardCharsets.UTF_8))
-      val expected = PlayJsonJsoniter.deserialize(in).get
+      val expected = PlayJsonJsoniter.deserializeFromInput(in).get
       actual shouldEqual expected
     } catch {
       case NonFatal(ex) => fail(ex)
