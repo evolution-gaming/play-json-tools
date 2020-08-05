@@ -13,7 +13,7 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := crossScalaVersions.value.head,
-  crossScalaVersions := Seq("2.13.1", "2.12.10"),
+  crossScalaVersions := Seq("2.13.3", "2.12.12"),
 )
 
 lazy val root = project
