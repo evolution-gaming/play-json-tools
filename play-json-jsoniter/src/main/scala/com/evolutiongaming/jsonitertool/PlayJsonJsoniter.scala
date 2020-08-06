@@ -1,6 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
 import java.io.{InputStream, OutputStream}
+import java.nio.ByteBuffer
 
 import com.github.plokhotnyuk.jsoniter_scala.core._
 import play.api.libs.json._
@@ -20,6 +21,9 @@ object PlayJsonJsoniter {
   def serializeToStr(payload: JsValue): String =
     writeToString(payload)
 
+  def serializeToBuffer(payload: JsValue, bbuf: ByteBuffer): Unit =
+     writeToByteBuffer(payload, bbuf)
+
   def serializeToOutput(payload: JsValue, out: OutputStream): Unit =
     writeToStream(payload, out)
 
@@ -31,4 +35,7 @@ object PlayJsonJsoniter {
 
   def deserializeFromInput(in: InputStream): Try[JsValue] =
     Try(readFromStream(in))
+
+  def deserializeFromBuffer(bbuf: ByteBuffer): Try[JsValue] =
+    Try(readFromByteBuffer(bbuf))
 }

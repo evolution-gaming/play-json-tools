@@ -1,6 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
 import java.io.{ByteArrayInputStream, InputStream}
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 import com.evolutiongaming.jsonitertool.TestData.DataLine
@@ -93,4 +94,20 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
         in.close()
     }
   }
+
+  test("PlayJsonJsoniter: serializeToBuffer -> deserializeFromBuffer") {
+    val jsValue = Json.parse(TestData.jsonBody)
+
+    val buf = ByteBuffer.allocate(1 << 10)
+
+    PlayJsonJsoniter.serializeToBuffer(jsValue, buf)
+
+    buf.position() should be > 0
+    buf.flip()
+
+    val actual = PlayJsonJsoniter.deserializeFromBuffer(buf).get
+
+    actual shouldEqual jsValue
+  }
+
 }
