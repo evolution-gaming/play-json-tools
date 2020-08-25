@@ -349,7 +349,7 @@ object PlayJsonHelper {
   }
 
   implicit class OFormatObjOpsPlayJsonHelper(val self: OFormat.type) extends AnyVal {
-    
+
     def const[A](value: A): OFormat[A] = new OFormat[A] {
 
       def writes(o: A): JsObject = Json.obj()
@@ -393,6 +393,55 @@ object PlayJsonHelper {
     }
   }
 
+  object DiscriminatedEitherFormat {
+    def valueFromUnambiguousKey[A](key: String, otherKey: String)(implicit ra: Reads[A]): Reads[A] =
+      new Reads[A] {
+        def reads(js: JsValue) = js match {
+          case o: JsObject =>
+            o.value.get(key) match {
+              case Some(value) =>
+                if (o.value.contains(otherKey)) JsError(s"both discriminator keys received")
+                else ra.reads(value)
+              case None => JsError("no discriminator keys found")
+            }
+          case j => JsError(s"can't parse either for non-object for ${j}")
+        }
+      }
+
+    def eitherReads[A, B](
+      keyLeft: String,
+      keyRight: String,
+    )(
+      implicit ra: Reads[A],
+      rb: Reads[B],
+    ): Reads[Either[A, B]] =
+      Reads[Either[A, B]] { json =>
+        valueFromUnambiguousKey[A](keyLeft, keyRight).reads(json).map(Left(_))
+      }.orElse { json =>
+        valueFromUnambiguousKey[B](keyRight, keyLeft).reads(json).map(Right(_))
+      }
+
+    def eitherWrites[A, B](
+      keyLeft: String,
+      keyRight: String,
+    )(
+      implicit wa: Writes[A],
+      wb: Writes[B],
+    ): OWrites[Either[A, B]] =
+      OWrites[Either[A, B]] {
+        case Left(a) => Json.obj(keyLeft -> wa.writes(a))
+        case Right(b) => Json.obj(keyRight -> wb.writes(b))
+      }
+
+    def eitherFormat[A, B](
+      keyLeft: String,
+      keyRight: String,
+    )(
+      implicit fa: Format[A],
+      fb: Format[B],
+    ): OFormat[Either[A, B]] =
+      OFormat.apply(eitherReads[A, B](keyLeft, keyRight), eitherWrites[A, B](keyLeft, keyRight))
+  }
 
   trait TypeFormat[A] extends OFormat[A] {
     type Pf = PartialFunction[String, JsResult[A]]
