@@ -15,5 +15,5 @@ object PlayJson27xCompat {
     }
   }
 
-  implicit def mapWrites[A: Writes]: OWrites[Map[String, A]] = Writes.mapWrites[A]
+  implicit def mapWrites[A: Writes]: OWrites[Map[String, A]] = Writes.genericMapWrites
 }

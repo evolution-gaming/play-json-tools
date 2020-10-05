@@ -167,14 +167,12 @@ object PlayJsonHelper {
 
     def apply[K, V: Writes](toStr: K => String): OWrites[Map[K, V]] = {
 
-      //      val mapWrites = Writes.genericMapWrites[V, Map] play-json v2.8.0
-      val mapWrites = Writes.mapWrites[V]
-
       new OWrites[Map[K, V]] {
 
-        def writes(kvs: Map[K, V]) = {
-          val kvs1 = kvs.map { case (k, v) => (toStr(k), v) }
-          mapWrites.writes(kvs1)
+        def writes(kvs: Map[K, V]): JsObject = {
+          JsObject(
+            kvs.map { case (k, v) => (toStr(k), Writes.of[V].writes(v)) }
+          )
         }
       }
     }
