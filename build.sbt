@@ -1,6 +1,5 @@
 import Dependencies._
 
-
 val commonSettings = Seq(
   homepage := Some(new URL("https://github.com/evolution-gaming/play-json-tools")),
   resolvers += Resolver.bintrayRepo("evolutiongaming", "maven"),
@@ -13,7 +12,7 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := crossScalaVersions.value.head,
-  crossScalaVersions := Seq("2.13.3", "2.12.12"),
+  crossScalaVersions := Seq("2.13.5", "2.12.13"),
 )
 
 lazy val root = project
@@ -21,54 +20,59 @@ lazy val root = project
   .disablePlugins(MimaPlugin)
   .settings(commonSettings)
   .settings(
-    name := "play-json-tools",
-    publish / skip := true,
+    publish / skip := true
   )
   .aggregate(
-    playJsonTools,
-    playJsonGeneric,
-    playJsonJsoniter
+    `play-json-tools`,
+    `play-json-genericJVM`,
+    `play-json-genericJS`,
+    `play-json-jsoniterJVM`,
+    `play-json-jsoniterJS`
   )
 
+lazy val `play-json-genericJVM` = `play-json-generic`.jvm
 
-lazy val playJsonGeneric = project
-  .in(file("play-json-generic"))
+lazy val `play-json-genericJS` = `play-json-generic`.js
+
+lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
   .settings(commonSettings)
-  .settings(Seq(
-    moduleName := "play-json-generic",
-    name       := "play-json-generic",
+  .settings(
     scalacOptsFailOnWarn := Some(false),
     libraryDependencies ++= Seq(
       shapeless,
       playJson,
       scalaTest % Test,
-    ).map(excludeLog4j)))
+    ).map(excludeLog4j)
+  )
 
-
-lazy val playJsonTools = project
-  .in(file("play-json-tools"))
+lazy val `play-json-tools` = project
   .settings(commonSettings)
-  .settings(Seq(
-    moduleName := "play-json-tools",
-    name       := "play-json-tools",
+  .settings(
     libraryDependencies ++= Seq(
       playJson,
       nel,
       scalaTest % Test,
-    ).map(excludeLog4j)))
+    ).map(excludeLog4j)
+  )
 
-//++ 2.12.10 or ++ 2.13.1
-lazy val playJsonJsoniter = project
-  .in(file("play-json-jsoniter"))
+lazy val `play-json-jsoniterJVM` = `play-json-jsoniter`.jvm
+
+lazy val `play-json-jsoniterJS` = `play-json-jsoniter`.js
+
+lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Full)
   .settings(commonSettings)
-  .settings(Seq(
-    moduleName := "play-json-jsoniter",
-    name       := "play-json-jsoniter",
-    libraryDependencies ++= {
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, v)) if v >= 13 =>
-          Seq(playJson, nel, jsoniter, scalaTest % Test, jsonGenerator % Test).map(excludeLog4j)
-        case _ =>
-          Seq(playJson, nel, jsoniter, collectionCompact, scalaTest % Test).map(excludeLog4j)
-      }
-    }))
+  .settings(
+    libraryDependencies ++= (Seq(
+      playJson,
+      jsoniter,
+      collectionCompact,
+      scalaTest % Test
+    ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v >= 13 =>
+        Seq(jsonGenerator % Test)
+      case _ =>
+        Seq()
+    })).map(excludeLog4j)
+  )

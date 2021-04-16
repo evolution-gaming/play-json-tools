@@ -31,7 +31,7 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
       JsSuccess(user) == actJsValue
     }
 
-    bools.find(_ == false).isEmpty
+    !bools.contains(false)
   }
 
   property("Write using Jsoniter -> Read using Jsoniter. Batch") = forAll(
@@ -44,6 +44,6 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
       JsSuccess(user) == actJsValue.get
     }
 
-    bools.find(_ == false).isEmpty
+    !bools.contains(false)
   }
 }
