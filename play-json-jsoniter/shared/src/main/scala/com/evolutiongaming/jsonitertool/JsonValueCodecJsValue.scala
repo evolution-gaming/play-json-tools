@@ -10,10 +10,10 @@ object JsonValueCodecJsValue {
   def apply(bigDecimalParseSettings: BigDecimalParseSettings): JsonValueCodec[JsValue] = {
     new JsonValueCodec[JsValue] {
 
-      /**
-        * The implementation was borrowed from: https://github.com/plokhotnyuk/jsoniter-scala/blob/e80d51019b39efacff9e695de97dce0c23ae9135/jsoniter-scala-benchmark/src/main/scala/io/circe/CirceJsoniter.scala
-        * and adapted to meet PlayJson criteria.
-        */
+      /*
+       * The implementation was borrowed from: https://github.com/plokhotnyuk/jsoniter-scala/blob/e80d51019b39efacff9e695de97dce0c23ae9135/jsoniter-scala-benchmark/src/main/scala/io/circe/CirceJsoniter.scala
+       * and adapted to meet PlayJson criteria.
+       */
       def decodeValue(in: JsonReader, default: JsValue): JsValue = {
         val b = in.nextToken()
         if (b == 'n') in.readNullOrError(default, "expected `null` value")
@@ -75,7 +75,7 @@ object JsonValueCodecJsValue {
         }
       }
 
-      def encodeValue(jsValue: JsValue, out: JsonWriter): Unit = {
+      def encodeValue(jsValue: JsValue, out: JsonWriter): Unit =
         jsValue match {
           case JsBoolean(b) =>
             out.writeVal(b)
@@ -97,8 +97,8 @@ object JsonValueCodecJsValue {
             out.writeObjectEnd()
           case JsNull =>
             out.writeNull()
+          case _ => out.encodeError(s"Unsupported value: $jsValue")
         }
-      }
 
       val nullValue: JsValue = JsNull
     }
