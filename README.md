@@ -1,8 +1,8 @@
 # Play Json tools
 [![Build Status](https://github.com/evolution-gaming/play-json-tools/workflows/CI/badge.svg)](https://github.com/evolution-gaming/play-json-tools/actions?query=workflow%3ACI)
-[![Coverage Status](https://coveralls.io/repos/evolution-gaming/play-json-tools/badge.svg)](https://coveralls.io/r/evolution-gaming/play-json-tools)
+[![Coverage Status](https://coveralls.io/repos/github/evolution-gaming/play-json-tools/badge.svg?branch=master)](https://coveralls.io/github/evolution-gaming/play-json-tools?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c158d2f8c65147b18ab0a958876322cf)](https://www.codacy.com/app/evolution-gaming/play-json-tools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evolution-gaming/play-json-tools&amp;utm_campaign=Badge_Grade)
-[![version](https://api.bintray.com/packages/evolutiongaming/maven/play-json-tools/images/download.svg) ](https://bintray.com/evolutiongaming/maven/play-json-tools/_latestVersion)
+[![Version](https://img.shields.io/badge/version-click-blue)](https://evolution.jfrog.io/artifactory/api/search/latestVersion?g=com.evolutiongaming&a=play-json-tools_2.13&repos=public)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellowgreen.svg)](https://opensource.org/licenses/MIT)
 
 1. play-json-tools - Set of implicit Play-JSON `Format` helper classes. Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolutiongaming/playjsontools/FlatFormatSpec.scala)
@@ -12,9 +12,9 @@
 ## Setup
 
 ```scala
-resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
+addSbtPlugin("com.evolution" % "sbt-artifactory-plugin" % "0.0.2")
 
-libraryDependencies += "com.evolutiongaming" %% "play-json-tools"   % "0.7.0"
-libraryDependencies += "com.evolutiongaming" %% "play-json-generic" % "0.7.0"
-libraryDependencies += "com.evolutiongaming" %% "play-json-jsoniter" % "0.7.0"
+libraryDependencies += "com.evolutiongaming" %% "play-json-tools"   % "0.9.0"
+libraryDependencies += "com.evolutiongaming" %% "play-json-generic" % "0.9.0"
+libraryDependencies += "com.evolutiongaming" %% "play-json-jsoniter" % "0.9.0"
 ```

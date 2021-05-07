@@ -2,10 +2,9 @@ import Dependencies._
 
 val commonSettings = Seq(
   homepage := Some(new URL("https://github.com/evolution-gaming/play-json-tools")),
-  resolvers += Resolver.bintrayRepo("evolutiongaming", "maven"),
-  organizationName := "Evolution Gaming",
-  organizationHomepage := Some(url("http://evolutiongaming.com")),
-  bintrayOrganization := Some("evolutiongaming"),
+  publishTo := Some(Resolver.evolutionReleases),
+  organizationName := "Evolution",
+  organizationHomepage := Some(url("http://evolution.com")),
   releaseCrossBuild := true,
   organization := "com.evolutiongaming",
   licenses := Seq(("MIT", url("https://opensource.org/licenses/MIT"))),
