@@ -352,7 +352,7 @@ object PlayJsonHelper {
 
       def writes(a: A): JsObject = Json.obj()
 
-      def reads(a: JsValue): JsResult[A] = JsSuccess(value)
+      def reads(a: JsValue): JsResult[A] = a.validate[JsObject].map { _ => value }
     }
 
     def nested[A](name: String)(implicit format: Format[A]): OFormat[A] = new OFormat[A] {
