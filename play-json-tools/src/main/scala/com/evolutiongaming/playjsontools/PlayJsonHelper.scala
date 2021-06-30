@@ -350,12 +350,9 @@ object PlayJsonHelper {
 
     def const[A](value: A): OFormat[A] = new OFormat[A] {
 
-      def writes(o: A): JsObject = Json.obj()
+      def writes(a: A): JsObject = Json.obj()
 
-      def reads(json: JsValue): JsResult[A] = json match {
-        case JsObject(a) if a.isEmpty => JsSuccess(value)
-        case _                        => JsError("error.expected.emptyObject")
-      }
+      def reads(a: JsValue): JsResult[A] = JsSuccess(value)
     }
 
     def nested[A](name: String)(implicit format: Format[A]): OFormat[A] = new OFormat[A] {
