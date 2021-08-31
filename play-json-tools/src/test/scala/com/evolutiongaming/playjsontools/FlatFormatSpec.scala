@@ -5,6 +5,8 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{Format, Json}
 
+import scala.reflect.ClassTag
+
 
 class FlatFormatSpec extends AnyFunSuite with Matchers {
   private val json = Json.obj(
@@ -18,6 +20,15 @@ class FlatFormatSpec extends AnyFunSuite with Matchers {
 
   test("write flat json") {
     Json.toJson(outer) shouldEqual json
+  }
+
+  test("throw an exception if trying to create with non-existing field") {
+    assertThrows[NoSuchFieldException] {
+      implicitly[ClassTag[Outer]].runtimeClass.getDeclaredField("inner2")
+    }
+    assertThrows[IllegalArgumentException] {
+      FlatFormat("inner2", Json.format[Outer])
+    }
   }
 
   case class Inner(inner: String)
