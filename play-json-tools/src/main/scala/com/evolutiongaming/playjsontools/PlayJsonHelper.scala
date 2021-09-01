@@ -278,14 +278,14 @@ object PlayJsonHelper {
 
     def apply[A](field: String, format: OFormat[A])(implicit tag: ClassTag[A]): OFormat[A] = {
 
-      val fieldNotFound = try {
-        tag.runtimeClass.getField(field)
-        false
+      val fieldExists = try {
+        tag.runtimeClass.getDeclaredField(field)
+        true
       } catch {
-        case _: NoSuchFieldException => true
+        case _: NoSuchFieldException => false
       }
 
-      require(fieldNotFound, s"Cannot flatten field $field because it does not exist")
+      require(fieldExists, s"Cannot flatten field $field because it does not exist")
 
       new OFormat[A] {
 
