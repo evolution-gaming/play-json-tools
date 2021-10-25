@@ -1,6 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
 import play.api.libs.json.Json
+import java.time.OffsetDateTime
 
 object TestData {
 
@@ -21,7 +22,7 @@ object TestData {
     phone: String,
     address: String,
     about: String,
-    registered: String,
+    registered: OffsetDateTime,
     latitude: Double,
     longitude: Double,
     tags: List[String],
@@ -47,7 +48,7 @@ object TestData {
       |    "phone": "+1 (916) 543-2895",
       |    "address": "133 Stillwell Place, wrtywrt",
       |    "about": "Eiusmod excepteur do esse minim nisi occaecat enim non dolor labore ipsum ut. Fugiat deserunt est pariatur pariatur. Laboris aute cillum tempor in exercitation laboris laboris fugiat velit enim ut ad. Ea labore commodo consectetur ut anim anim sint consectetur commodo.\r\n",
-      |    "registered": "2015-05-01T05:24:06 -10:00",
+      |    "registered": "2015-05-01T05:24:06-10:00",
       |    "latitude": -29.132033,
       |    "longitude": -58.249295,
       |    "tags": [
@@ -77,7 +78,6 @@ object TestData {
       |    "favoriteFruit": "strawberry"
       |  }
           """.stripMargin
-
 
   implicit val a = Json.reads[Friend]
   implicit val b = Json.writes[Friend]
