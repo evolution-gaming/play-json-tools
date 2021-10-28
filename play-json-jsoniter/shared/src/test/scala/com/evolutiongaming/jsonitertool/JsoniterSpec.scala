@@ -3,25 +3,21 @@ package com.evolutiongaming.jsonitertool
 import java.io.{ByteArrayInputStream, InputStream}
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
-
 import com.evolutiongaming.jsonitertool.TestData.DataLine
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsSuccess, Json, JsonParserSettings}
 import TestData._
-
 import scala.util.Success
 import scala.util.control.NonFatal
 
 class JsoniterSpec extends AnyFunSuite with Matchers {
-  val isJS = 1.0.toString == "1"
+  val isJS: Boolean = 1.0.toString == "1"
   val maxDoubleStr = "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368"
 
   test("Write using PlayJson -> Read using Jsoniter: Compare bytes") {
-
     val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestData.jsonBody))
       .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
-
     val jsValue = Json.toJson(expected)
     val bts0 = PlayJsonJsoniter.serialize(jsValue)
     val bts1 = Json.toBytes(jsValue)
@@ -29,10 +25,8 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
   }
 
   test("Write using PlayJson -> Read using Jsoniter: Compare objects") {
-
     val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestData.jsonBody))
       .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
-
     val bts = Json.toBytes(Json.toJson(expected))
     val jsValue = PlayJsonJsoniter.deserialize(bts).map(Json.fromJson[DataLine](_))
     Success(JsSuccess(expected)) shouldEqual jsValue
