@@ -1,6 +1,6 @@
 externalResolvers += Resolver.bintrayIvyRepo("evolutiongaming", "sbt-plugins")
 
-val scalaJSVersion = Option(System.getenv("SCALAJS_VERSION")).getOrElse("1.5.1")
+val scalaJSVersion = Option(System.getenv("SCALAJS_VERSION")).getOrElse("1.11.0")
 
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
 
