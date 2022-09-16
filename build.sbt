@@ -11,7 +11,7 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := crossScalaVersions.value.head,
-  crossScalaVersions := Seq("2.13.8", "2.12.16")
+  crossScalaVersions := Seq("2.13.8", "2.12.17")
 )
 
 lazy val root = project
@@ -63,7 +63,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(commonSettings)
   .settings(
-    crossScalaVersions := Seq("2.13.8", "2.12.16", "3.2.0"),
+    crossScalaVersions := Seq("2.13.8", "2.12.17", "3.2.0"),
     libraryDependencies ++= (Seq(
       playJson,
       jsoniter,
