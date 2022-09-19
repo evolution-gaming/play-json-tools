@@ -11,21 +11,20 @@ object JsonValueCodecJsValue {
     new JsonValueCodec[JsValue] {
       def decodeValue(in: JsonReader, default: JsValue): JsValue = {
         val b = in.nextToken()
-        if (b == 'n') in.readNullOrError(default, "expected `null` value")
-        else if (b == '"') {
+        if (b == '"') {
           in.rollbackToken()
           new JsString(in.readString(null))
         } else if (b == 'f' || b == 't') {
           in.rollbackToken()
-          if (in.readBoolean()) JsTrue else JsFalse
+          if (in.readBoolean()) JsTrue
+          else JsFalse
         } else if ((b >= '0' && b <= '9') || b == '-') {
           in.rollbackToken()
-          val bigDecimal = in.readBigDecimal(
+          new JsNumber(in.readBigDecimal(
             null,
             bigDecimalParseSettings.mathContext,
             bigDecimalParseSettings.scaleLimit,
-            bigDecimalParseSettings.digitsLimit)
-          new JsNumber(bigDecimal)
+            bigDecimalParseSettings.digitsLimit))
         } else if (b == '[') {
           if (in.isNextToken(']')) JsArray.empty
           else {
@@ -57,13 +56,11 @@ object JsonValueCodecJsValue {
               kvs.asScala
             }) else in.objectEndOrCommaError()
           }
-        } else in.decodeError("expected JSON value")
+        } else in.readNullOrError(default, "expected JSON value")
       }
 
       def encodeValue(jsValue: JsValue, out: JsonWriter): Unit =
         jsValue match {
-          case JsNull =>
-            out.writeNull()
           case s: JsString =>
             out.writeVal(s.value)
           case b: JsBoolean =>
@@ -81,7 +78,8 @@ object JsonValueCodecJsValue {
               encodeValue(kv._2, out)
             }
             out.writeObjectEnd()
-          case _ => out.encodeError(s"unsupported value: $jsValue")
+          case _ =>
+            out.writeNull()
         }
 
       val nullValue: JsValue = JsNull

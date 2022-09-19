@@ -1,6 +1,7 @@
 package com.evolutiongaming.jsonitertool
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OWrites, Reads}
+
 import java.time.OffsetDateTime
 
 object TestData {
@@ -79,10 +80,10 @@ object TestData {
       |  }
           """.stripMargin
 
-  implicit val a = Json.reads[Friend]
-  implicit val b = Json.writes[Friend]
+  implicit val a: Reads[Friend] = Json.reads[Friend]
+  implicit val b: OWrites[Friend] = Json.writes[Friend]
 
-  implicit val c = Json.reads[DataLine]
-  implicit val d = Json.writes[DataLine]
+  implicit val c: Reads[DataLine] = Json.reads[DataLine]
+  implicit val d: OWrites[DataLine] = Json.writes[DataLine]
 
 }
