@@ -5,15 +5,35 @@ import io.circe.{Json => CirceJson}
 import play.api.libs.{json => PlayJson}
 
 object PlayCirceAstConversions {
-  def circeToPlay(circeJson: CirceJson): PlayJson.JsValue =
-    circeJson.fold(
-      jsonNull = PlayJson.JsNull,
-      jsonBoolean = b => PlayJson.JsBoolean(b),
-      jsonNumber = n => n.toBigDecimal.map(PlayJson.JsNumber).getOrElse(PlayJson.JsNumber(n.toDouble)),
-      jsonString = s => PlayJson.JsString(s),
-      jsonArray = as => PlayJson.JsArray(as.map(circeToPlay)),
-      jsonObject = o => PlayJson.JsObject(o.toIterable.map { case (k, v) => (k, circeToPlay(v)) }.toSeq),
-    )
+  private type Field[T] = (String, T)
+
+  private def evalZero[T]: Eval[Vector[T]] = Eval.now(Vector.empty[T])
+
+  def circeToPlay(circeJson: CirceJson): PlayJson.JsValue = {
+    def inner(json: Eval[CirceJson]): Eval[PlayJson.JsValue] =
+      json.flatMap(_.fold(
+        jsonNull = Eval.now(PlayJson.JsNull),
+        jsonBoolean = b => Eval.now(PlayJson.JsBoolean(b)),
+        jsonNumber = n => Eval.now(n.toBigDecimal.map(PlayJson.JsNumber).getOrElse(PlayJson.JsNumber(n.toDouble))),
+        jsonString = s => Eval.now(PlayJson.JsString(s)),
+        jsonArray = as =>
+          Eval
+            .defer {
+              as.foldLeft(evalZero[PlayJson.JsValue])((acc, c) => inner(Eval.now(c)).flatMap(p => acc.map(_ :+ p)))
+            }
+            .map(PlayJson.JsArray),
+        jsonObject = obj =>
+          Eval
+            .defer {
+              obj.toIterable.foldLeft(evalZero[Field[PlayJson.JsValue]]) { case (acc, (k, c)) =>
+                inner(Eval.now(c)).flatMap(p => acc.map(_ :+ (k -> p)))
+              }
+            }
+            .map(PlayJson.JsObject)
+      ))
+
+    inner(Eval.now(circeJson)).value
+  }
 
   def playToCirce(value: PlayJson.JsValue): CirceJson = {
     def inner(value: Eval[PlayJson.JsValue]): Eval[CirceJson] =
@@ -37,18 +57,22 @@ object PlayCirceAstConversions {
           if (values.isEmpty)
             Eval.now(CirceJson.arr())
           else
-            values.map(v => inner(Eval.now(v)))
-              .foldLeft(Eval.now(Vector.empty[CirceJson]))((acc, v) => v.flatMap(v => acc.map(_ :+ v)))
+            Eval
+              .defer {
+                values.foldLeft(evalZero[CirceJson])((acc, p) => inner(Eval.now(p)).flatMap(c => acc.map(_ :+ c)))
+              }
               .map(CirceJson.fromValues)
 
         case PlayJson.JsObject(value) =>
-          Eval.defer {
-            value.view.map { case (k, v) =>
-              inner(Eval.now(v)).map(k -> _)
-            }.foldLeft(Eval.now(Map.empty[String, CirceJson]))((acc, v) => v.flatMap(v => acc.map(_ + v)))
-              .map(CirceJson.fromFields)
-          }
+          Eval
+            .defer {
+              value.view.foldLeft(evalZero[Field[CirceJson]]) { case (acc, (k, p)) =>
+                inner(Eval.now(p)).flatMap(c => acc.map(_ :+ (k -> c)))
+              }
+            }
+            .map(CirceJson.fromFields)
       }
+
     inner(Eval.now(value)).value
   }
 
