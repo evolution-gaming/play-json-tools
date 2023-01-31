@@ -3,10 +3,9 @@ package com.evolutiongaming.util
 import com.evolutiongaming.util.PlayCirceAstConversions._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{JsObject, Json}
 
-class PlayCirceAstConversionsStackSafetySpec extends AnyFreeSpec with TableDrivenPropertyChecks with Matchers {
+class PlayCirceAstConversionsStackSafetySpec extends AnyFreeSpec with Matchers {
   "Play to Circe AST conversion" - {
     "can handle deeply nested structures" in {
       val playJson = (1 to 100000).foldLeft(JsObject.empty)((o, _) => Json.obj("n" -> o))
