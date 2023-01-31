@@ -7,7 +7,7 @@ import play.api.libs.{json => play}
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 
-class PlayCirceAstConversionsSpec extends AnyFreeSpec with TableDrivenPropertyChecks with Matchers {
+class PlayCirceAstConversionsSmokeSpec extends AnyFreeSpec with TableDrivenPropertyChecks with Matchers {
 
   "Play to/from Circe AST conversions" in {
     forAll {
