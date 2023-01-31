@@ -10,6 +10,12 @@ object Dependencies {
   val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.0.0"
   val collectionCompact = "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1"
 
+  object circe {
+    val version  = "0.14.3"
+    val core     = "io.circe" %% "circe-core"   % version
+    val parser   = "io.circe" %% "circe-parser" % version
+  }
+
   def excludeLog4j(moduleID: ModuleID): ModuleID = moduleID.excludeAll(
     ExclusionRule("log4j", "log4j"),
     ExclusionRule("org.slf4j", "slf4j-log4j12"),

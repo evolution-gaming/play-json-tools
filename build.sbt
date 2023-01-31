@@ -26,7 +26,8 @@ lazy val root = project
     `play-json-genericJVM`,
     `play-json-genericJS`,
     `play-json-jsoniterJVM`,
-    `play-json-jsoniterJS`
+    `play-json-jsoniterJS`,
+    `play-json-circe`
   )
 
 lazy val `play-json-genericJVM` = `play-json-generic`.jvm
@@ -75,4 +76,15 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
       case _ =>
         Seq()
     })).map(excludeLog4j)
+  )
+
+lazy val `play-json-circe` = project
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      playJson,
+      circe.core,
+      circe.parser,
+      scalaTest % Test
+    ).map(excludeLog4j)
   )
