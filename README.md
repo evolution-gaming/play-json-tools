@@ -8,7 +8,7 @@
 1. `play-json-tools` — Set of implicit Play-JSON `Format` helper classes. Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolutiongaming/playjsontools/FlatFormatSpec.scala)
 2. `play-json-generic` — provides Format derivation for enum like adt's (sealed trait/case objects'). Examples in [EnumerationDerivalSpec](play-json-generic/src/test/scala/com/evolutiongaming/util/generic/EnumerationDerivalSpec.scala)
 3. `play-json-jsoniter` — provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
-4. `play-json-circe` — provides efficient conversion from `circe` codec to `play-json` codecs. Examples in [CirceToPlayConversionsSpec](play-json-circe/src/test/scala/com/evolutiongaming/util/CirceToPlayConversionsSpec.scala).
+4. `play-json-circe` — provides conversions to/from `circe` codecs to ease transitions from one library to another. Examples in [CirceToPlayConversionsSpec](play-json-circe/src/test/scala/com/evolutiongaming/util/CirceToPlayConversionsSpec.scala) and [PlayToCirceConversionsSpec](play-json-circe/src/test/scala/com/evolutiongaming/util/PlayToCirceConversionsSpec.scala).
 
 ## Setup
 
