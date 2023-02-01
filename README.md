@@ -5,9 +5,10 @@
 [![Version](https://img.shields.io/badge/version-click-blue)](https://evolution.jfrog.io/artifactory/api/search/latestVersion?g=com.evolutiongaming&a=play-json-tools_2.13&repos=public)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellowgreen.svg)](https://opensource.org/licenses/MIT)
 
-1. play-json-tools - Set of implicit Play-JSON `Format` helper classes. Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolutiongaming/playjsontools/FlatFormatSpec.scala)
-1. play-json-generic - provides Format derivation for enum like adt's (sealed trait/case objects'). Examples in [EnumerationDerivalSpec](play-json-generic/src/test/scala/com/evolutiongaming/util/generic/EnumerationDerivalSpec.scala)
-1. play-json-jsoniter - provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
+1. `play-json-tools` — Set of implicit Play-JSON `Format` helper classes. Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolutiongaming/playjsontools/FlatFormatSpec.scala)
+2. `play-json-generic` — provides Format derivation for enum like adt's (sealed trait/case objects'). Examples in [EnumerationDerivalSpec](play-json-generic/src/test/scala/com/evolutiongaming/util/generic/EnumerationDerivalSpec.scala)
+3. `play-json-jsoniter` — provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
+4. `play-json-circe` — provides efficient conversion from `circe` codec to `play-json` codecs. Examples in [CirceToPlayConversionsSpec](play-json-circe/src/test/scala/com/evolutiongaming/util/CirceToPlayConversionsSpec.scala).
 
 ## Setup
 
