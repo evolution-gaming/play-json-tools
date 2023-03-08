@@ -18,21 +18,6 @@ object FlatTypeReads {
     JsError("could not decode cnil")
   }
 
-  @deprecated("Method exists only for backward compatibility", "0.3.12")
-  def cconsReads[Key <: Symbol, Head, Tail <: Coproduct](
-      key: Witness.Aux[Key],
-      headReads: Reads[Head],
-      tailReads: FlatTypeReads[Tail]): FlatTypeReads[FieldType[Key, Head] :+: Tail] =
-    cconsReadsWithNameCoding(key, headReads, tailReads, NameCodingStrategy.default)
-
-  @deprecated("Method exists only for backward compatibility", "0.3.12")
-  def cconsReads[Key <: Symbol, Head, Tail <: Coproduct](
-      key: Witness.Aux[Key],
-      headReads: Reads[Head],
-      tailReads: FlatTypeReads[Tail],
-      nameCodingStrategy: NameCodingStrategy): FlatTypeReads[FieldType[Key, Head] :+: Tail] =
-    cconsReadsWithNameCoding(key, headReads, tailReads, nameCodingStrategy)
-
   implicit def cconsReadsWithNameCoding[Key <: Symbol, Head, Tail <: Coproduct](implicit
       key: Witness.Aux[Key],
       headReads: Reads[Head],
