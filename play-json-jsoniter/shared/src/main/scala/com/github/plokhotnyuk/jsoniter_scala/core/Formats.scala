@@ -5,8 +5,9 @@ import play.api.libs.json._
 import java.nio.charset.StandardCharsets
 import scala.util.control.NonFatal
 
-/**
-  * INTERNAL API: It is an internal implementation for `com.evolutiongaming.jsonitertool.PlayJsonJsoniter`.
+/** INTERNAL API
+  *
+  * It is an internal implementation for [[com.evolution.playjson.jsoniter.PlayJsonJsoniter]]
   */
 object Formats {
   private[this] val pool = new ThreadLocal[(Array[Byte], JsonReader, JsonWriter)] {
