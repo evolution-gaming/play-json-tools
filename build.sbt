@@ -12,6 +12,9 @@ val commonSettings = Seq(
   startYear := Some(2017),
   crossScalaVersions := Seq("2.13.10", "2.12.17"),
   scalaVersion := crossScalaVersions.value.head,
+  scalacOptions ++= Seq(
+    "-Xsource:3"
+  )
 )
 
 lazy val root = project
