@@ -12,9 +12,16 @@ val commonSettings = Seq(
   startYear := Some(2017),
   crossScalaVersions := Seq("2.13.10", "2.12.17"),
   scalaVersion := crossScalaVersions.value.head,
-  scalacOptions ++= Seq(
-    "-Xsource:3"
-  )
+  scalacOptions ++= {
+    scalaBinaryVersion.value match {
+      case "2.13" => 
+        List(
+          "-Xsource:3",
+        )
+      case _ => 
+        Nil
+    }
+  },
 )
 
 lazy val root = project
