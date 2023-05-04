@@ -1,4 +1,9 @@
 import Dependencies._
+import ReleaseTransformations._
+
+val Scala213 = "2.13.10"
+val Scala212 = "2.12.17"
+val Scala3   = "3.2.2"
 
 val commonSettings = Seq(
   homepage := Some(new URL("https://github.com/evolution-gaming/play-json-tools")),
@@ -10,8 +15,8 @@ val commonSettings = Seq(
   licenses := Seq(("MIT", url("https://opensource.org/licenses/MIT"))),
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
-  crossScalaVersions := Seq("2.13.10", "2.12.17"),
-  scalaVersion := crossScalaVersions.value.head,
+  scalaVersion := Scala213,
+  crossScalaVersions := Seq(scalaVersion.value, Scala212),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 13 =>
@@ -27,9 +32,28 @@ val commonSettings = Seq(
 lazy val root = project
   .in(file("."))
   .disablePlugins(MimaPlugin)
-  .settings(commonSettings)
   .settings(
-    publish / skip := true
+    commonSettings,
+    publish / skip := true,
+    crossScalaVersions := Nil,
+
+    /* Support uneven cross scala versions in sub-projects.
+     * See https://www.scala-sbt.org/1.x/docs/Cross-Build.html#Note+about+sbt-release
+     */
+    releaseCrossBuild := false,
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      releaseStepCommandAndRemaining("+test"),
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publish"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    )
   )
   .aggregate(
     `play-json-tools`,
@@ -46,8 +70,8 @@ lazy val `play-json-genericJS` = `play-json-generic`.js
 
 lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
-  .settings(commonSettings)
   .settings(
+    commonSettings,
     scalacOptsFailOnWarn := Some(false),
     libraryDependencies ++= Seq(
       shapeless,
@@ -57,8 +81,8 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   )
 
 lazy val `play-json-tools` = project
-  .settings(commonSettings)
   .settings(
+    commonSettings,
     libraryDependencies ++= Seq(
       playJson,
       nel,
@@ -72,8 +96,8 @@ lazy val `play-json-jsoniterJS` = `play-json-jsoniter`.js
 
 lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
-  .settings(commonSettings)
   .settings(
+    commonSettings,
     crossScalaVersions := crossScalaVersions.value ++ Seq("3.2.2"),
     libraryDependencies ++= (Seq(
       playJson,
