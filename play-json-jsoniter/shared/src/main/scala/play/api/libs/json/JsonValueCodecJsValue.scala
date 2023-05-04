@@ -3,7 +3,7 @@ package play.api.libs.json
 import com.github.plokhotnyuk.jsoniter_scala.core.{JsonReader, JsonValueCodec, JsonWriter}
 
 /**
-  * INTERNAL API: It is an internal implementation for `com.evolutiongaming.jsonitertool.PlayJsonJsoniter`.
+  * INTERNAL API: It is an internal implementation for [[com.evolution.playjson.jsoniter.PlayJsonJsoniter]]`.
   */
 object JsonValueCodecJsValue {
 

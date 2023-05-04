@@ -4,14 +4,24 @@ val commonSettings = Seq(
   homepage := Some(new URL("https://github.com/evolution-gaming/play-json-tools")),
   publishTo := Some(Resolver.evolutionReleases),
   organizationName := "Evolution",
-  organizationHomepage := Some(url("http://evolution.com")),
+  organizationHomepage := Some(url("https://evolution.com")),
   releaseCrossBuild := true,
-  organization := "com.evolutiongaming",
+  organization := "com.evolution",
   licenses := Seq(("MIT", url("https://opensource.org/licenses/MIT"))),
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
+  crossScalaVersions := Seq("2.13.10", "2.12.17"),
   scalaVersion := crossScalaVersions.value.head,
-  crossScalaVersions := Seq("2.13.8", "2.12.17")
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v >= 13 =>
+        List(
+          "-Xsource:3",
+        )
+      case _ =>
+        Nil
+    }
+  },
 )
 
 lazy val root = project
@@ -64,7 +74,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(commonSettings)
   .settings(
-    crossScalaVersions := Seq("2.13.8", "2.12.17", "3.2.0"),
+    crossScalaVersions := crossScalaVersions.value ++ Seq("3.2.2"),
     libraryDependencies ++= (Seq(
       playJson,
       jsoniter,
