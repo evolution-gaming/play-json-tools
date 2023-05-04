@@ -13,12 +13,12 @@ val commonSettings = Seq(
   crossScalaVersions := Seq("2.13.10", "2.12.17"),
   scalaVersion := crossScalaVersions.value.head,
   scalacOptions ++= {
-    scalaBinaryVersion.value match {
-      case "2.13" => 
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v >= 13 =>
         List(
           "-Xsource:3",
         )
-      case _ => 
+      case _ =>
         Nil
     }
   },
