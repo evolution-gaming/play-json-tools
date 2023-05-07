@@ -48,8 +48,8 @@ object PlayJsonHelper {
 
     def reads(json: JsValue): JsResult[Instant] = {
       def readStr = for {x <- json.validate[String]} yield {
-        val temporal = Try { Format parse x } recover { case _: DateTimeParseException => IsoFormat parse x }
-        Instant from temporal.get
+        val temporal = Try { Format.parse(x) } recover { case _: DateTimeParseException => IsoFormat.parse(x) }
+        Instant.from(temporal.get)
       }
 
       def readNum = for {x <- json.validate[Long]} yield Instant.ofEpochMilli(x)
@@ -57,7 +57,7 @@ object PlayJsonHelper {
       readStr orElse readNum
     }
 
-    def writes(o: Instant): JsValue = JsString(Format format o)
+    def writes(o: Instant): JsValue = JsString(Format.format(o))
   }
 
 
@@ -71,7 +71,7 @@ object PlayJsonHelper {
       } yield LocalTime.parse(time, Format)
     }
 
-    def writes(o: LocalTime): JsValue = JsString(Format format o)
+    def writes(o: LocalTime): JsValue = JsString(Format.format(o))
   }
 
 
