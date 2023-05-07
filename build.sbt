@@ -72,12 +72,17 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .settings(
     commonSettings,
-    scalacOptsFailOnWarn := Some(false),
-    libraryDependencies ++= Seq(
-      shapeless,
+    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
+    //scalacOptsFailOnWarn := Some(false),
+    libraryDependencies ++= (Seq(
       playJson,
       scalaTest % Test
-    ).map(excludeLog4j)
+    ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v >= 12 =>
+        Seq(shapeless)
+      case _ =>
+        Seq()
+    })).map(excludeLog4j)
   )
 
 lazy val `play-json-tools` = project
