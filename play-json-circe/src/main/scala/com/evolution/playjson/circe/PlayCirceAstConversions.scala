@@ -1,8 +1,9 @@
 package com.evolution.playjson.circe
 
 import cats.Eval
-import io.circe.{Json => CirceJson}
+import io.circe.{Json => CirceJson, JsonNumber}
 import play.api.libs.{json => PlayJson}
+import io.circe.JsonObject
 
 object PlayCirceAstConversions {
   private type Field[T] = (String, T)
@@ -14,15 +15,15 @@ object PlayCirceAstConversions {
       json.flatMap(_.fold(
         jsonNull = Eval.now(PlayJson.JsNull),
         jsonBoolean = b => Eval.now(PlayJson.JsBoolean(b)),
-        jsonNumber = n => Eval.now(n.toBigDecimal.map(PlayJson.JsNumber).getOrElse(PlayJson.JsNumber(n.toDouble))),
-        jsonString = s => Eval.now(PlayJson.JsString(s)),
-        jsonArray = as =>
+        jsonNumber = (n: JsonNumber) => Eval.now(n.toBigDecimal.map(PlayJson.JsNumber(_)).getOrElse(PlayJson.JsNumber(n.toDouble))),
+        jsonString = (s: String) => Eval.now(PlayJson.JsString(s)),
+        jsonArray = (as: Vector[CirceJson]) =>
           Eval
             .defer {
               as.foldLeft(evalZero[PlayJson.JsValue])((acc, c) => inner(Eval.now(c)).flatMap(p => acc.map(_ :+ p)))
             }
             .map(PlayJson.JsArray),
-        jsonObject = obj =>
+        jsonObject = (obj: JsonObject) =>
           Eval
             .defer {
               obj.toIterable.foldLeft(evalZero[Field[PlayJson.JsValue]]) { case (acc, (k, c)) =>

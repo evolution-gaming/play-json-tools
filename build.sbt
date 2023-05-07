@@ -119,6 +119,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
 lazy val `play-json-circe` = project
   .settings(
     commonSettings,
+    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
     libraryDependencies ++= Seq(
       playJson,
       circe.core,
