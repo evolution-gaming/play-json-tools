@@ -1,9 +1,9 @@
 package com.evolution.playjson.generic
 
+import play.api.libs.json.*
+
 import scala.deriving.Mirror
 import scala.compiletime.*
-import play.api.libs.json.*
-import scala.annotation.nowarn
 
 trait FlatTypeWrites[A] extends Writes[A]:
   override def writes(o: A): JsObject
