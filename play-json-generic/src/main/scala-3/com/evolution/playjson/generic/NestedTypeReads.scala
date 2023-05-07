@@ -32,13 +32,11 @@ object NestedTypeReads:
       case m: Mirror.ProductOf[A] =>
         val name = constValue[m.MirroredLabel]
         val fullName = if prefix.isBlank() then name else s"$prefix.$name"
-        // println(s"Product: prefix: $prefix, name: $name, fullName: $fullName")
         if (fullName == typ) Some(summonInline[Reads[A]])
         else None
       case m: Mirror.SumOf[A] =>
         val sumName = constValue[m.MirroredLabel]
         val fullName = if prefix.isBlank() then sumName else s"$prefix.$sumName"
-        // println(s"Sum: prefix: $prefix, sumName: $sumName")
         deriveNestedTypeReadsForSum[A, m.MirroredElemTypes](
           typ, fullName
         ) match
@@ -48,7 +46,6 @@ object NestedTypeReads:
         // singleton type (object without `case` modifier)
         val name = valueOf.value.toString().split("\\$").dropRight(1).last
         val fullName = if prefix.isBlank() then name else s"$prefix.$name"
-        // println(s"Singleton: fullName: $fullName")
         if (fullName == typ) Some(summonInline[Reads[A]])
         else None
     }

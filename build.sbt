@@ -73,7 +73,6 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .settings(
     commonSettings,
     crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
-    //scalacOptsFailOnWarn := Some(false),
     libraryDependencies ++= (Seq(
       playJson,
       scalaTest % Test
