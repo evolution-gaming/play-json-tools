@@ -13,7 +13,18 @@ object NestedTypeReads:
   def create[A](f: JsValue => JsResult[A]): NestedTypeReads[A] =
     (jsValue: JsValue) => f(jsValue)
 
-  inline def deriveNestedTypeReadsForSum[A, T <: Tuple](
+  inline given derive[A](using m: Mirror.SumOf[A]): NestedTypeReads[A] =
+    create[A] { jsValue =>
+      for {
+        obj <- jsValue.validate[JsObject]
+        typ <- (obj \ "type").validate[String]
+        result <- deriveNestedTypeReadsForSum[A, m.MirroredElemTypes](typ, prefix = "") match
+          case Some(reads) => reads.reads(obj - "type")
+          case None        => JsError(s"Could not find a Reads for type $typ")
+      } yield result
+    }
+
+  private inline def deriveNestedTypeReadsForSum[A, T <: Tuple](
       typ: String,
       prefix: String
   ): Option[Reads[A]] =
@@ -24,7 +35,7 @@ object NestedTypeReads:
           case None        => deriveNestedTypeReadsForSum[A, tail](typ, prefix)
           case Some(reads) => Some(reads.asInstanceOf[Reads[A]])
 
-  inline def deriveNestedTypeReads[A](
+  private inline def deriveNestedTypeReads[A](
       typ: String,
       prefix: String
   ): Option[Reads[A]] =
@@ -35,27 +46,11 @@ object NestedTypeReads:
         else None
       case m: Mirror.SumOf[A] =>
         val sumName = constValue[m.MirroredLabel]
-        deriveNestedTypeReadsForSum[A, m.MirroredElemTypes](
-          typ, prefixName(prefix, sumName)
-        ) match
-          case None        => None
-          case Some(reads) => Some(reads)
+        deriveNestedTypeReadsForSum[A, m.MirroredElemTypes](typ, prefixName(prefix, sumName))
       case valueOf: ValueOf[A] =>
         // Singleton type (object without `case` modifier)
         val name = singletonName[A]
         if (prefixName(prefix, name) == typ) Some(summonInline[Reads[A]])
         else None
-    }
-
-  inline given derive[A](using m: Mirror.SumOf[A]): NestedTypeReads[A] =
-    create[A] { jsValue =>
-      val typ = jsValue \ "type"
-      typ.validate[String] match
-        case JsSuccess(typ, _) =>
-          deriveNestedTypeReadsForSum[A, m.MirroredElemTypes](typ, prefix = "") match
-            case Some(reads) => reads.reads(jsValue)
-            case None        => JsError(s"Could not find a Reads for type $typ")
-        case JsError(_) =>
-          JsError("Could not find a 'type' field in the JSON")
     }
 end NestedTypeReads
