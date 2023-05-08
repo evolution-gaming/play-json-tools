@@ -16,7 +16,7 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := Scala213,
-  crossScalaVersions := Seq(scalaVersion.value, Scala212),
+  crossScalaVersions := Seq(scalaVersion.value, Scala212, Scala3),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 13 =>
@@ -72,7 +72,6 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .settings(
     commonSettings,
-    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
     libraryDependencies ++= (Seq(
       playJson,
       scalaTest % Test
@@ -102,7 +101,6 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(
     commonSettings,
-    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
     libraryDependencies ++= (Seq(
       playJson,
       jsoniter,
@@ -119,7 +117,6 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
 lazy val `play-json-circe` = project
   .settings(
     commonSettings,
-    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
     libraryDependencies ++= Seq(
       playJson,
       circe.core,
