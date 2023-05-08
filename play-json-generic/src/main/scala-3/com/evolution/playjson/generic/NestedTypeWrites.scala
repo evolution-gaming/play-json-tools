@@ -18,19 +18,19 @@ object NestedTypeWrites:
     summonFrom {
       case m: Mirror.ProductOf[A] =>
         val name = constValue[m.MirroredLabel]
-        val writes = enrichWithType[A](sanitizeName(prefix, name))(identity)
+        val writes = summonEnrichedWrites[A](prefixName(prefix, name))
         create(value => writes.writes(value))
       case m: Mirror.SumOf[A] =>
         val sumName = constValue[m.MirroredLabel]
-        val allWrites = summonWrites[m.MirroredElemTypes](sanitizeName(prefix, sumName))
+        val allWrites = summonWrites[m.MirroredElemTypes](prefixName(prefix, sumName))
         create[A] { value =>
           val idx = m.ordinal(value)
           allWrites(idx).asInstanceOf[NestedTypeWrites[A]].writes(value)
         }
       case valueOf: ValueOf[A] =>
         // singleton type (object without `case` modifier)
-        val name = valueOf.value.toString().split("\\$").dropRight(1).last
-        val writes = enrichWithType[A](sanitizeName(prefix, name))(identity)
+        val name = singletonName[A]
+        val writes = summonEnrichedWrites[A](prefixName(prefix, name))
         create(value => writes.writes(value))
     }
 

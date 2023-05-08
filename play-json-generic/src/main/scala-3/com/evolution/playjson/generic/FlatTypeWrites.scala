@@ -22,7 +22,7 @@ object FlatTypeWrites:
       writes(m.ordinal(value)).asInstanceOf[FlatTypeWrites[A]].writes(value)
     }
 
-  inline def summonWrites[T <: Tuple](using
+  private inline def summonWrites[T <: Tuple](using
       nameCodingStrategy: NameCodingStrategy
   ): List[FlatTypeWrites[?]] =
     inline erasedValue[T] match
@@ -30,13 +30,13 @@ object FlatTypeWrites:
       case _: (head *: tail) =>
         summonWrite[head].asInstanceOf[FlatTypeWrites[?]] :: summonWrites[tail]
 
-  inline def summonWrite[A](using
+  private inline def summonWrite[A](using
       nameCodingStrategy: NameCodingStrategy
   ): FlatTypeWrites[A] =
     summonFrom {
       case m: Mirror.ProductOf[A] =>
         val name = constValue[m.MirroredLabel]
-        val writes = enrichWithType[A](nameCodingStrategy(name))(identity)
+        val writes = summonEnrichedWrites[A](nameCodingStrategy(name))
         create(value => writes.writes(value))
       case m: Mirror.SumOf[A] =>
         val allWrites = summonWrites[m.MirroredElemTypes]
@@ -45,9 +45,9 @@ object FlatTypeWrites:
           allWrites(idx).asInstanceOf[FlatTypeWrites[A]].writes(value)
         }
       case valueOf: ValueOf[A] =>
-        // singleton type (object without `case` modifier)
-        val name = valueOf.value.toString().split("\\$").dropRight(1).last
-        val writes = enrichWithType[A](nameCodingStrategy(name))(identity)
+        // Singleton type (object without `case` modifier)
+        val name = singletonName[A]
+        val writes = summonEnrichedWrites[A](nameCodingStrategy(name))
         create(value => writes.writes(value))
     }
 end FlatTypeWrites

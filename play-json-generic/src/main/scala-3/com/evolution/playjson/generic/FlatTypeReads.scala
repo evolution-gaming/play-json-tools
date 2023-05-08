@@ -22,13 +22,13 @@ object FlatTypeReads:
       for {
         obj <- json.validate[JsObject]
         typ <- (obj \ "type").validate[String]
-        result <- deriveReads[A]((obj), typ) match
+        result <- deriveReads[A](obj, typ) match
           case Some(reads) => reads.reads(obj - "type")
           case None        => JsError("Failed to find decoder")
       } yield result
     }
 
-  inline def deriveReadsForSum[A, T <: Tuple](
+  private inline def deriveReadsForSum[A, T <: Tuple](
       json: JsObject,
       typ: String
   )(using nameCodingStrategy: NameCodingStrategy): Option[Reads[A]] = {
@@ -40,26 +40,22 @@ object FlatTypeReads:
           case Some(value) => Some(value.asInstanceOf[Reads[A]])
   }
 
-  inline def deriveReads[A](json: JsObject, typ: String)(using nameCodingStrategy: NameCodingStrategy): Option[Reads[A]] =
+  private inline def deriveReads[A](json: JsObject, typ: String)(using nameCodingStrategy: NameCodingStrategy): Option[Reads[A]] =
     summonFrom {
       case m: Mirror.ProductOf[A] =>
         // product (case class or case object)
-        val name = constValue[m.MirroredLabel].asInstanceOf[String]
+        val name = constValue[m.MirroredLabel]
         if typ == nameCodingStrategy(name)
-        then
-          val reads = summonInline[Reads[A]]
-          Some(Reads(jsValue => reads.reads(json).asInstanceOf[JsResult[A]]))
+        then Some(summonInline[Reads[A]])
         else None
       case m: Mirror.SumOf[A] =>
         // sum (trait)
         deriveReadsForSum[A, m.MirroredElemTypes](json, typ)
       case v: ValueOf[A] =>
-        // singleton type (object without `case` modifier)
-        val name = v.value.toString().split("\\$").dropRight(1).last
+        // Singleton type (object without `case` modifier)
+        val name = singletonName[A]
         if typ == nameCodingStrategy(name)
-        then
-          val reads = summonInline[Reads[A]]
-          Some(Reads(jsValue => reads.reads(json).asInstanceOf[JsResult[A]]))
+        then Some(summonInline[Reads[A]])
         else None
     }
   end deriveReads
