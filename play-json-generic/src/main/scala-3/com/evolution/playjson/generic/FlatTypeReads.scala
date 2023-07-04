@@ -10,6 +10,9 @@ import scala.annotation.nowarn
   * It will look for a `type` field in the JSON object and use its value to determine which subtype to use.
   * The `type` field will be removed from the JSON object before the subtype's `Reads` is called.
   * 
+  * The difference between this class and `NestedTypeReads` is that this class uses the simple name of the subtype
+  * instead of the full prefixed name. This means that you cannot use the same simple name for multiple subtypes.
+  * 
   * Example:
   * 
   * {{{
