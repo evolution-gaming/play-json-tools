@@ -8,7 +8,7 @@ case class EnumMappings[A](labels: Map[A, String])
 
 object EnumMappings {
 
-  @nowarn("msg=parameter value gen in method enumMappings is never used")
+  @nowarn("cat=unused")
   implicit def enumMappings[A, Repr <: Coproduct](implicit
     gen: LabelledGeneric.Aux[A, Repr], // this is USED to generate `Enumeration`, not sure how, though
     e: MappingsAux[A, Repr]
