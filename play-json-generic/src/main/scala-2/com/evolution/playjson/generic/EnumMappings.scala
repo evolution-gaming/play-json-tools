@@ -2,11 +2,13 @@ package com.evolution.playjson.generic
 
 import shapeless.{:+:, CNil, Coproduct, LabelledGeneric, Witness}
 import shapeless.labelled.FieldType
+import scala.annotation.nowarn
 
 case class EnumMappings[A](labels: Map[A, String])
 
 object EnumMappings {
 
+  @nowarn("cat=unused")
   implicit def enumMappings[A, Repr <: Coproduct](implicit
     gen: LabelledGeneric.Aux[A, Repr], // this is USED to generate `Enumeration`, not sure how, though
     e: MappingsAux[A, Repr]
