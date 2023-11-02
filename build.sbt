@@ -1,9 +1,9 @@
 import Dependencies._
 import ReleaseTransformations._
 
-val Scala213 = "2.13.10"
-val Scala212 = "2.12.17"
-val Scala3   = "3.2.2"
+val Scala213 = "2.13.12"
+val Scala212 = "2.12.18"
+val Scala3   = "3.3.1"
 
 val commonSettings = Seq(
   homepage := Some(new URL("https://github.com/evolution-gaming/play-json-tools")),
@@ -98,7 +98,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(
     commonSettings,
-    crossScalaVersions := crossScalaVersions.value ++ Seq("3.2.2"),
+    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
     libraryDependencies ++= (Seq(
       playJson,
       jsoniter,

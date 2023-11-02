@@ -14,7 +14,7 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
 
   implicit def generator: Arbitrary[User] = Arbitrary(genUser)
 
-  property("Write using PlayJson -> Read using Jsoniter") = forAll { user: User =>
+  property("Write using PlayJson -> Read using Jsoniter") = forAll { (user: User) =>
     val jsValue = Json.toJson(user)
     val bts = Json.toBytes(jsValue)
     val actJsValue = PlayJsonJsoniter.deserialize(bts).map(Json.fromJson[User](_))
@@ -23,7 +23,7 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
 
   property("Write using PlayJson -> Read using Jsoniter. Batch") = forAll(
     Gen.containerOfN[Vector, User](Size, genUser),
-  ) { batch: Vector[User] =>
+  ) { (batch: Vector[User]) =>
     val bools = batch.map { user =>
       val jsValue = Json.toJson(user)
       val bts = Json.toBytes(jsValue)
@@ -36,7 +36,7 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
 
   property("Write using Jsoniter -> Read using Jsoniter. Batch") = forAll(
     Gen.containerOfN[Vector, User](Size, genUser),
-  ) { batch: Vector[User] =>
+  ) { (batch: Vector[User]) =>
     val bools = batch.map { user =>
       val jsValue = Json.toJson(user)
       val bts = PlayJsonJsoniter.serialize(jsValue)

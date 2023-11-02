@@ -7,7 +7,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{JsonReader, JsonValueCodec, J
   */
 object JsonValueCodecJsValue {
 
-  def apply(bigDecimalParseSettings: BigDecimalParseSettings): JsonValueCodec[JsValue] =
+  def apply(bigDecimalParseSettings: BigDecimalParseConfig): JsonValueCodec[JsValue] =
     new JsonValueCodec[JsValue] {
       def decodeValue(in: JsonReader, default: JsValue): JsValue = {
         val b = in.nextToken()
