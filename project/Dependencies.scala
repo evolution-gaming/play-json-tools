@@ -4,7 +4,7 @@ object Dependencies {
 
   val shapeless = "com.chuusai"         %% "shapeless" % "2.3.10"
   val nel       = "com.evolutiongaming" %% "nel"       % "1.3.4"
-  val playJson  = "com.typesafe.play"   %% "play-json" % "2.10.0-RC7"
+  val playJson  = "com.typesafe.play"   %% "play-json" % "2.10.2"
   val scalaTest = "org.scalatest"       %% "scalatest" % "3.2.15"
   val jsoniter  = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"  % "2.23.0"
   val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.0.0"

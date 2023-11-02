@@ -10,8 +10,8 @@ import scala.util.Try
 
 object PlayJsonJsoniter {
   implicit val jsValueCodec: JsonValueCodec[JsValue] = {
-    val settings = JsonParserSettings.settings
-    JsonValueCodecJsValue(settings.bigDecimalParseSettings)
+    val settings = JsonConfig.settings
+    JsonValueCodecJsValue(settings.bigDecimalParseConfig)
   }
   implicit val durationFormat: Format[Duration] =
     Formats.smallAsciiStringFormat[Duration]("Period", _.readDuration(_), _.writeVal(_))
