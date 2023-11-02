@@ -37,7 +37,7 @@ object PlayJsonHelper {
       readStr orElse readNum
     }
 
-    def writes(o: FiniteDuration) = JsString(o.toCoarsest.toString)
+    def writes(o: FiniteDuration): JsString = JsString(o.toCoarsest.toString)
   }
 
 
@@ -90,7 +90,7 @@ object PlayJsonHelper {
           a <- from(a) map { x => JsSuccess(x) } getOrElse JsError(s"No ${ tag.runtimeClass.getName } found for $a")
         } yield a
 
-        def writes(a: A) = JsString(to(a))
+        def writes(a: A): JsString = JsString(to(a))
       }
     }
   }
@@ -107,7 +107,7 @@ object PlayJsonHelper {
           a <- from(a) map { x => JsSuccess(x) } getOrElse JsError(s"No ${ tag.runtimeClass.getName } found for $a")
         } yield a
 
-        def writes(x: A) = JsNumber(to(x))
+        def writes(x: A): JsNumber = JsNumber(to(x))
       }
     }
   }
@@ -226,7 +226,7 @@ object PlayJsonHelper {
 
       implicit val writesTuple: Writes[(K, V)] = new Writes[(K, V)] {
 
-        def writes(kv: (K, V)) = {
+        def writes(kv: (K, V)): JsObject = {
           val (k, v) = kv
           val json = Json.toJson(v) match {
             case json: JsObject => json
@@ -237,7 +237,7 @@ object PlayJsonHelper {
       }
 
       new Writes[Map[K, V]] {
-        def writes(kvs: Map[K, V]) = {
+        def writes(kvs: Map[K, V]): JsValue = {
           Json.toJson(kvs.toList)
         }
       }

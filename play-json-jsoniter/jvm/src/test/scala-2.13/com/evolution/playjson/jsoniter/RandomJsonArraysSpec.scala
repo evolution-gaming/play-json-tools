@@ -18,7 +18,7 @@ object RandomJsonArraysSpec extends org.scalacheck.Properties("RandomJsonSpec") 
   override def overrideParameters(p: Test.Parameters): Test.Parameters =
     p.withMinSuccessfulTests(Size)
 
-  property("Random json arrays") = forAll { array: value.JsArray =>
+  property("Random json arrays") = forAll { (array: value.JsArray) =>
     val json = array.toString
     val jsValue = Json.parse(json)
     val bts = PlayJsonJsoniter.serialize(jsValue)

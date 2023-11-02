@@ -5,7 +5,7 @@ import Message._
 
 class NestedTypeFormatSpec extends JsonFormatSpec {
 
-  implicit val messageFormat = {
+  implicit val messageFormat: OFormat[Message] = {
     implicit val noopFormat: OFormat[Noop.type] = new OFormat[Noop.type] {
       def writes(o: Noop.type): JsObject = Json.obj()
       def reads(json: JsValue): JsResult[Message.Noop.type] = JsSuccess(Message.Noop)

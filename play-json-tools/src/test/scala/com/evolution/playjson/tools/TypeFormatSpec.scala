@@ -11,7 +11,7 @@ class TypeFormatSpec extends AnyFunSuite with Matchers {
   private val mammalJson = Json.obj("type" -> "Mammal", "legs" -> 4)
   private val slothJson = Json.obj("type" -> "Sloth")
 
-  implicit val animalFormat = new TypeFormat[Animal] {
+  implicit val animalFormat: TypeFormat[Animal] = new TypeFormat[Animal] {
     val mammalFormat = Json.format[Mammal]
     val slothFormat = OFormat.const(Sloth)
 

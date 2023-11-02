@@ -10,7 +10,7 @@ object PlayJson27xCompat {
   implicit def iterableWrites[A, B](implicit ev: B <:< Iterable[A], writes: Writes[A]): Writes[B] = {
     Writes[B] { as =>
       val builder = mutable.ArrayBuilder.make[JsValue]
-      as.foreach { a: A => builder += writes.writes(a) }
+      as.foreach { (a: A) => builder += writes.writes(a) }
       JsArray(builder.result())
     }
   }
