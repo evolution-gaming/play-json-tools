@@ -14,7 +14,7 @@ object PlayCirceAstConversions {
       json.flatMap(_.fold(
         jsonNull = Eval.now(PlayJson.JsNull),
         jsonBoolean = b => Eval.now(PlayJson.JsBoolean(b)),
-        jsonNumber = n => Eval.now(n.toBigDecimal.map(PlayJson.JsNumber).getOrElse(PlayJson.JsNumber(n.toDouble))),
+        jsonNumber = n => Eval.now(n.toBigDecimal.map(PlayJson.JsNumber.apply).getOrElse(PlayJson.JsNumber(n.toDouble))),
         jsonString = s => Eval.now(PlayJson.JsString(s)),
         jsonArray = as =>
           Eval
