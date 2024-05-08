@@ -1,9 +1,9 @@
 import Dependencies._
 import ReleaseTransformations._
 
-val Scala213 = "2.13.12"
-val Scala212 = "2.12.18"
-val Scala3   = "3.3.1"
+val Scala213 = "2.13.14"
+val Scala212 = "2.12.19"
+val Scala3   = "3.3.3"
 
 val commonSettings = Seq(
   homepage := Some(new URL("https://github.com/evolution-gaming/play-json-tools")),
@@ -16,7 +16,7 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := Scala213,
-  crossScalaVersions := Seq(scalaVersion.value, Scala212),
+  crossScalaVersions := Seq(scalaVersion.value, Scala212, Scala3),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 13 =>
@@ -72,12 +72,13 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .settings(
     commonSettings,
+    crossScalaVersions -= Scala3,
     scalacOptsFailOnWarn := Some(false),
     libraryDependencies ++= Seq(
       shapeless,
       playJson,
       scalaTest % Test
-    ).map(excludeLog4j)
+    ).map(excludeLog4j),
   )
 
 lazy val `play-json-tools` = project
@@ -98,7 +99,6 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(
     commonSettings,
-    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
     libraryDependencies ++= (Seq(
       playJson,
       jsoniter,

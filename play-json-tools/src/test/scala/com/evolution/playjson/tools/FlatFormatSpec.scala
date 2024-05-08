@@ -1,5 +1,6 @@
 package com.evolution.playjson.tools
 
+import com.evolution.playjson.tools.FlatFormatSpec.{Inner, Outer}
 import com.evolution.playjson.tools.PlayJsonHelper.FlatFormat
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -30,13 +31,17 @@ class FlatFormatSpec extends AnyFunSuite with Matchers {
       FlatFormat("inner2", Json.format[Outer])
     }
   }
+}
 
+object FlatFormatSpec {
   case class Inner(inner: String)
+
   object Inner {
     implicit val JsonFormat: Format[Inner] = Json.format[Inner]
   }
 
   case class Outer(outer: String, inner: Inner)
+
   object Outer {
     implicit val JsonFormat: Format[Outer] = FlatFormat("inner", Json.format[Outer])
   }

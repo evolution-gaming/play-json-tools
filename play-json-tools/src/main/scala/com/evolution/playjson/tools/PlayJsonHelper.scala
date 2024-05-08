@@ -3,7 +3,7 @@ package com.evolution.playjson.tools
 import com.evolutiongaming.nel.Nel
 import play.api.libs.json._
 
-import java.net.URL
+import java.net.{URI, URL}
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{Instant, LocalTime, ZoneOffset}
 import scala.concurrent.duration._
@@ -17,7 +17,7 @@ object PlayJsonHelper {
 
     def reads(json: JsValue): JsResult[URL] = for {
       s <- json.validate[String]
-      url <- Try(new URL(s)) match {
+      url <- Try(new URI(s).toURL) match {
         case Success(x) => JsSuccess(x)
         case Failure(t) => JsError(t.toString)
       }
