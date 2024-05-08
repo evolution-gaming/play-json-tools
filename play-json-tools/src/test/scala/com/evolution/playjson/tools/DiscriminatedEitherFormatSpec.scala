@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
 
 class DiscriminatedEitherFormatSpec extends AnyFunSuite with Matchers {
-  implicit val eitherFormat: OFormat[Either[String, Int]] = DiscriminatedEitherFormat.eitherFormat("L", "R"): OFormat[Either[String, Int]]
+  implicit val eitherFormat: OFormat[Either[String,Int]] = DiscriminatedEitherFormat.eitherFormat("L", "R"): OFormat[Either[String, Int]]
   val left: Either[String, Int] = Left("foo")
   val right: Either[String, Int] = Right(1)
   val fromEitherJson: JsValue => JsResult[Either[String, Int]] = Json.fromJson[Either[String, Int]](_)

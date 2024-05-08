@@ -28,7 +28,7 @@ class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "be able to derive formats" in {
-    implicit val fmt = Enumeration[AnEvent].format
+    implicit val fmt: Format[AnEvent] = Enumeration[AnEvent].format
 
     val typ: AnEvent = AnEvent.DoneSome
     val js = Json.toJson(typ)

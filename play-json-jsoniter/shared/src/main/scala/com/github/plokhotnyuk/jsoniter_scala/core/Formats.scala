@@ -10,7 +10,7 @@ import scala.util.control.NonFatal
   * It is an internal implementation for [[com.evolution.playjson.jsoniter.PlayJsonJsoniter]]
   */
 object Formats {
-  private[this] val pool = new ThreadLocal[(Array[Byte], JsonReader, JsonWriter)] {
+  private[Formats] val pool = new ThreadLocal[(Array[Byte], JsonReader, JsonWriter)] {
     override def initialValue(): (Array[Byte], JsonReader, JsonWriter) = {
       val buf = new Array[Byte](128)
       (buf, new JsonReader(buf, charBuf = new Array[Char](128)), new JsonWriter(buf))
