@@ -83,6 +83,7 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
 lazy val `play-json-tools` = project
   .settings(
     commonSettings,
+    crossScalaVersions := crossScalaVersions.value ++ Seq(Scala3),
     libraryDependencies ++= Seq(
       playJson,
       nel,
