@@ -1,12 +1,14 @@
-import Dependencies._
-import ReleaseTransformations._
+import Dependencies.*
+import ReleaseTransformations.*
+
+import scala.collection.Seq
 
 val Scala213 = "2.13.14"
 val Scala212 = "2.12.19"
 val Scala3   = "3.3.3"
 
 val commonSettings = Seq(
-  homepage := Some(new URL("https://github.com/evolution-gaming/play-json-tools")),
+  homepage := Some(url("https://github.com/evolution-gaming/play-json-tools")),
   publishTo := Some(Resolver.evolutionReleases),
   organizationName := "Evolution",
   organizationHomepage := Some(url("https://evolution.com")),
@@ -29,9 +31,15 @@ val commonSettings = Seq(
   },
 )
 
+val alias: Seq[sbt.Def.Setting[?]] =
+  //  addCommandAlias("check", "all versionPolicyCheck Compile/doc") ++
+  addCommandAlias("check", "show version") ++
+    addCommandAlias("build", "+all compile test")
+
 lazy val root = project
   .in(file("."))
   .disablePlugins(MimaPlugin)
+  .settings(alias)
   .settings(
     commonSettings,
     publish / skip := true,
