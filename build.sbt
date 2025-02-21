@@ -3,9 +3,9 @@ import ReleaseTransformations.*
 
 import scala.collection.Seq
 
-val Scala213 = "2.13.16"
-val Scala212 = "2.12.20"
-val Scala3   = "3.3.5"
+val Scala213 = "2.13.14"
+val Scala212 = "2.12.19"
+val Scala3   = "3.3.3"
 
 val commonSettings = Seq(
   homepage := Some(url("https://github.com/evolution-gaming/play-json-tools")),
