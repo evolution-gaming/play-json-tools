@@ -11,7 +11,6 @@ val commonSettings = Seq(
   publishTo := Some(Resolver.evolutionReleases),
   organizationName := "Evolution",
   organizationHomepage := Some(url("https://evolution.com")),
-  releaseCrossBuild := true,
   organization := "com.evolution",
   licenses := Seq(("MIT", url("https://opensource.org/licenses/MIT"))),
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
