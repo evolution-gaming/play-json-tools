@@ -1,5 +1,4 @@
 import Dependencies.*
-import ReleaseTransformations.*
 
 import scala.collection.Seq
 
@@ -43,25 +42,6 @@ lazy val root = project
   .settings(
     commonSettings,
     publish / skip := true,
-    crossScalaVersions := Nil,
-
-    /* Support uneven cross scala versions in sub-projects.
-     * See https://www.scala-sbt.org/1.x/docs/Cross-Build.html#Note+about+sbt-release
-     */
-    releaseCrossBuild := false,
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      releaseStepCommandAndRemaining("+test"),
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publish"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
-    )
   )
   .aggregate(
     `play-json-tools`,
