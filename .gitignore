@@ -11,7 +11,17 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
-.bsp/
+
+# Bloop
+.bsp
+
+# VS Code
+.vscode/
+
+# Metals
+.bloop/
+.metals/
+metals.sbt
 
 # Scala-IDE specific
 .scala_dependencies
@@ -31,3 +41,7 @@ scripts/tmp
 ignored/
 
 .java-version
+
+.bloop/
+.metals/
+.vscode
