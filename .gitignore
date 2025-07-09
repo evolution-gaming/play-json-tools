@@ -41,7 +41,3 @@ scripts/tmp
 ignored/
 
 .java-version
-
-.bloop/
-.metals/
-.vscode
