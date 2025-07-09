@@ -52,8 +52,10 @@ lazy val root = project
   )
 
 lazy val `play-json-genericJVM` = `play-json-generic`.jvm
+  .settings(crossScalaVersions -= Scala3)
 
 lazy val `play-json-genericJS` = `play-json-generic`.js
+  .settings(crossScalaVersions -= Scala3)
 
 lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
