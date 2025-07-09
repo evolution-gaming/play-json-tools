@@ -41,3 +41,6 @@ scripts/tmp
 ignored/
 
 .java-version
+
+.metals
+.vscode
