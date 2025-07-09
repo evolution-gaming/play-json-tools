@@ -3,6 +3,7 @@ package com.evolution.playjson.circe
 import cats.Eval
 import io.circe.{Json => CirceJson}
 import play.api.libs.{json => PlayJson}
+import io.circe.JsonObject
 
 object PlayCirceAstConversions {
   private type Field[T] = (String, T)
@@ -22,7 +23,7 @@ object PlayCirceAstConversions {
               as.foldLeft(evalZero[PlayJson.JsValue])((acc, c) => inner(Eval.now(c)).flatMap(p => acc.map(_ :+ p)))
             }
             .map(PlayJson.JsArray),
-        jsonObject = obj =>
+        jsonObject = (obj: JsonObject) =>
           Eval
             .defer {
               obj.toIterable.foldLeft(evalZero[Field[PlayJson.JsValue]]) { case (acc, (k, c)) =>
