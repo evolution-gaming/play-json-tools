@@ -1,7 +1,7 @@
 # Play Json tools
 [![Build Status](https://github.com/evolution-gaming/play-json-tools/workflows/CI/badge.svg)](https://github.com/evolution-gaming/play-json-tools/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/evolution-gaming/play-json-tools/badge.svg?branch=master)](https://coveralls.io/github/evolution-gaming/play-json-tools?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c158d2f8c65147b18ab0a958876322cf)](https://www.codacy.com/app/evolution-gaming/play-json-tools?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=evolution-gaming/play-json-tools&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/7be6ba59864a4624917487fab5809573)](https://app.codacy.com/gh/evolution-gaming/play-json-tools/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Version](https://img.shields.io/badge/version-click-blue)](https://evolution.jfrog.io/artifactory/api/search/latestVersion?g=com.evolution&a=play-json-tools_2.13&repos=public)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellowgreen.svg)](https://opensource.org/licenses/MIT)
 
