@@ -27,6 +27,11 @@ val commonSettings = Seq(
         Nil
     }
   },
+  // precaution to NOT allow accidental transitive dependency
+  excludeDependencies ++= Seq(
+    ExclusionRule("com.typesafe.play", "play-json_2.13"),
+    ExclusionRule("com.typesafe.play", "play-functional_2.13"),
+  ),
 )
 
 val alias: Seq[sbt.Def.Setting[?]] =
