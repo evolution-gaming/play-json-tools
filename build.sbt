@@ -2,9 +2,8 @@ import Dependencies.*
 
 import scala.collection.Seq
 
-val Scala213 = "2.13.16"
-val Scala212 = "2.12.20"
-val Scala3   = "3.3.6"
+val Scala213 = "2.13.18"
+val Scala3   = "3.3.8"
 
 val commonSettings = Seq(
   homepage := Some(url("https://github.com/evolution-gaming/play-json-tools")),
@@ -16,22 +15,21 @@ val commonSettings = Seq(
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := Scala213,
-  crossScalaVersions := Seq(scalaVersion.value, Scala212, Scala3),
+  crossScalaVersions := Seq(scalaVersion.value, Scala3),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v >= 13 =>
+      case Some((2, _)) =>
         List(
           "-Xsource:3",
         )
       case _ =>
-        Nil
+        List(
+          // improve error messages:
+          "-explain",
+          "-explain-types",
+        )
     }
   },
-  // precaution to NOT allow accidental transitive dependency
-  excludeDependencies ++= Seq(
-    ExclusionRule("com.typesafe.play", "play-json_2.13"),
-    ExclusionRule("com.typesafe.play", "play-functional_2.13"),
-  ),
 )
 
 val alias: Seq[sbt.Def.Setting[?]] =
@@ -69,7 +67,7 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
       playJson,
       scalaTest % Test
     ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v >= 12 =>
+      case Some((2, _)) =>
         Seq(shapeless)
       case _ =>
         Seq()
@@ -100,7 +98,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
       collectionCompact,
       scalaTest % Test
     ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v >= 13 =>
+      case Some((2, _)) =>
         Seq(jsonGenerator % Test)
       case _ =>
         Seq()
