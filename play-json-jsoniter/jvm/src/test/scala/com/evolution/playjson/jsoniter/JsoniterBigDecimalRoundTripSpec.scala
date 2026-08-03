@@ -3,15 +3,7 @@ package com.evolution.playjson.jsoniter
 import com.github.plokhotnyuk.jsoniter_scala.core.{JsonValueCodec, JsonWriterException, writeToString}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{
-  BigDecimalSerializerConfig,
-  JsNumber,
-  JsObject,
-  JsValue,
-  Json,
-  JsonConfig,
-  JsonValueCodecJsValue
-}
+import play.api.libs.json._
 
 import java.math.MathContext
 import scala.util.Success
@@ -108,8 +100,8 @@ class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
   test("drops the scale of a value whose trailing zeros are stripped") {
     // the round trip is by value, not by scale: play-json writes "100" for either of these
     new String(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00"))), "UTF-8") shouldEqual """{"amount":100}"""
-    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00")))).get shouldEqual
-      jsonOf(BigDecimal("100"))
+    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00")))) shouldEqual
+      Success(jsonOf(BigDecimal("100")))
   }
 
   test("keeps one decimal place when the serializer settings preserve it") {
@@ -128,6 +120,6 @@ class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
     val rounded = beyondDecimal128.round(MathContext.DECIMAL128)
 
     PlayJsonJsoniter.deserialize(bytes) shouldEqual Success(jsonOf(rounded))
-    PlayJsonJsoniter.deserialize(bytes).get shouldEqual Json.parse(bytes)
+    PlayJsonJsoniter.deserialize(bytes) shouldEqual Success(Json.parse(bytes))
   }
 }
