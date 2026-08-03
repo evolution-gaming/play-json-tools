@@ -1,9 +1,17 @@
 package com.evolution.playjson.jsoniter
 
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriterException
+import com.github.plokhotnyuk.jsoniter_scala.core.{JsonValueCodec, JsonWriterException, writeToString}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsNumber, JsObject, Json}
+import play.api.libs.json.{
+  BigDecimalSerializerConfig,
+  JsNumber,
+  JsObject,
+  JsValue,
+  Json,
+  JsonConfig,
+  JsonValueCodecJsValue
+}
 
 import java.math.MathContext
 import scala.util.Success
@@ -13,7 +21,7 @@ import scala.util.Success
  *
  * The contract is behavior parity with play-json plus round-trip consistency:
  *
- *   - serialization produces the same bytes as play-json's own serializer: trailing zeros are
+ *   - serialization produces the same bytes as play-json's own JVM serializer: trailing zeros are
  *     stripped and values outside `[minPlain, maxPlain]` of
  *     `JsonConfig.settings.bigDecimalSerializerConfig` are written in scientific notation.
  *   - every value the codec serializes it can also deserialize under the limits of
@@ -84,6 +92,35 @@ class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
     a[JsonWriterException] should be thrownBy {
       PlayJsonJsoniter.serialize(jsonOf(beyondScaleLimit))
     }
+  }
+
+  test("writes what play-json writes, even where play-json cannot read it back") {
+    // play-json's serializer and its parser disagree about how to count the digits of a number
+    // this long, so play-json rejects its own output here; byte parity means inheriting that
+    val borderline = BigDecimal("-0.0" + "3" * 307)
+    val bytes = PlayJsonJsoniter.serialize(jsonOf(borderline))
+
+    new String(bytes, "UTF-8") shouldEqual new String(Json.toBytes(jsonOf(borderline)), "UTF-8")
+    PlayJsonJsoniter.deserialize(bytes) shouldEqual Success(jsonOf(borderline.round(MathContext.DECIMAL128)))
+    a[RuntimeException] should be thrownBy Json.parse(bytes)
+  }
+
+  test("drops the scale of a value whose trailing zeros are stripped") {
+    // the round trip is by value, not by scale: play-json writes "100" for either of these
+    new String(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00"))), "UTF-8") shouldEqual """{"amount":100}"""
+    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00")))).get shouldEqual
+      jsonOf(BigDecimal("100"))
+  }
+
+  test("keeps one decimal place when the serializer settings preserve it") {
+    val settings = BigDecimalSerializerConfig(
+      minPlain = JsonConfig.settings.bigDecimalSerializerConfig.minPlain,
+      maxPlain = JsonConfig.settings.bigDecimalSerializerConfig.maxPlain,
+      preserveZeroDecimal = true)
+    implicit val codec: JsonValueCodec[JsValue] =
+      JsonValueCodecJsValue(JsonConfig.settings.bigDecimalParseConfig, settings)
+
+    writeToString[JsValue](jsonOf(BigDecimal("100.00"))) shouldEqual """{"amount":100.0}"""
   }
 
   test("reads high-precision values with DECIMAL128 rounding, same as play-json") {

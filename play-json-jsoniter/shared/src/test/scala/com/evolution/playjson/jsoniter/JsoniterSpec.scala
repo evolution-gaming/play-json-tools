@@ -32,6 +32,21 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     Success(JsSuccess(expected)) shouldEqual jsValue
   }
 
+  test("Write using Jsoniter and PlayJson: Compare bytes") {
+    val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestData.jsonBody))
+      .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
+    val jsValue = Json.toJson(expected)
+    val bts = PlayJsonJsoniter.serialize(jsValue)
+    new String(bts, "UTF-8") shouldEqual new String(Json.toBytes(jsValue), "UTF-8")
+  }
+
+  test("Write using Jsoniter -> Read using PlayJson: Compare objects") {
+    val expected: DataLine = Json.fromJson[DataLine](Json.parse(TestData.jsonBody))
+      .fold(errs => throw new Exception(s"Parsing error: ${errs.mkString(",")}"), identity)
+    val bts = PlayJsonJsoniter.serialize(Json.toJson(expected))
+    Json.fromJson[DataLine](Json.parse(bts)) shouldEqual JsSuccess(expected)
+  }
+
   test("Can write/read large number by play-json") {
     //when number size hits length 35, equality comparison doesn't work anymore
     val largeNum = "9999999999999999999999999999999911"
