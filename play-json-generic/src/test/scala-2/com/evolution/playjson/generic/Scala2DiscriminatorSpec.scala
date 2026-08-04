@@ -18,6 +18,13 @@ class Scala2DiscriminatorSpec extends JsonFormatSpec {
       check[Wrapper](Wrapper.Inner.Leaf(1), Json.obj("type" -> "Inner.Leaf", "value" -> 1))
     }
 
+    "leave out a sealed sub-trait declared at the top level" in {
+      implicit val leafFormat: OFormat[Branch.Leaf] = Json.format[Branch.Leaf]
+      implicit val rootFormat: OFormat[Root] = formatOf(NestedTypeFormat.of[Root])
+
+      check[Root](Branch.Leaf(1), Json.obj("type" -> "Leaf", "value" -> 1))
+    }
+
     /**
       * An empty name is unhelpful but unambiguous while it belongs to the only subtype, and it is
       * what earlier versions wrote, so documents holding it have to keep being readable.

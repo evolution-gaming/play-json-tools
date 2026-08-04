@@ -26,6 +26,13 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Signal](Ping(1), Json.obj("type" -> "Ping", "id" -> 1))
     }
 
+    "prefix with a sealed sub-trait declared at the top level" in {
+      given OFormat[Branch.Leaf] = Json.format[Branch.Leaf]
+      given OFormat[Root] = formatOf(NestedTypeFormat.of[Root])
+
+      check[Root](Branch.Leaf(1), Json.obj("type" -> "Branch.Leaf", "value" -> 1))
+    }
+
     "accept several subtypes declared at the top level" in {
       given openFormat: OFormat[Open] = Json.format[Open]
       given closeFormat: OFormat[Close] = Json.format[Close]

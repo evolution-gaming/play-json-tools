@@ -29,6 +29,34 @@ final case class Open(id: Int) extends Relay
 final case class Close(id: Int) extends Relay
 
 /**
+  * A leaf under a sealed sub-trait that is itself declared at the top level. Scala 2 sees one level
+  * of nesting to strip and Scala 3 sees a sub-trait to prefix with, so the two disagree.
+  */
+sealed trait Root
+
+sealed trait Branch extends Root
+
+object Branch {
+  final case class Leaf(value: Int) extends Branch
+}
+
+/**
+  * Two subtypes of the same simple name in different objects, which is all it takes for
+  * [[FlatTypeFormat]] to give them one name, since it names by the subtype alone.
+  */
+sealed trait Duct
+
+object Duct {
+  object In {
+    final case class Update(a: Int) extends Duct
+  }
+
+  object Out {
+    final case class Update(b: Int) extends Duct
+  }
+}
+
+/**
   * Two subtypes of the same name in different plain objects. Scala 2 keeps them apart through
   * lexical nesting, Scala 3 gives both the same name.
   */

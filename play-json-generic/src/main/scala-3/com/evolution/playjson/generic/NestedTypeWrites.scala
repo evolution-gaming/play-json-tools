@@ -9,11 +9,14 @@ import scala.annotation.nowarn
 /**
   * Writes a sealed hierarchy with a `type` field naming the subtype.
   *
-  * On Scala 3 the name comes from the sealed hierarchy, so only sealed sub-traits contribute to it:
-  * `Wrapper.Inner.Leaf`, nested in a plain object, is written as `Leaf`. The Scala 2 implementation
-  * takes the name from lexical nesting instead and writes `Inner.Leaf`. Documents written by one are
-  * therefore not readable by the other wherever the two forms of nesting do not coincide, which they
-  * do whenever subtypes sit directly under the sealed trait or under sealed sub-traits.
+  * On Scala 3 the name comes from the sealed hierarchy, so every sealed sub-trait contributes to it
+  * and nothing else does: `Wrapper.Inner.Leaf`, nested in a plain object, is written as `Leaf`, while
+  * a leaf under a top-level sealed sub-trait `Branch` is written as `Branch.Leaf`. The Scala 2
+  * implementation takes the name from lexical nesting instead, writing `Inner.Leaf` and `Leaf` for
+  * those two. Documents written by one are therefore not readable by the other wherever the two
+  * disagree, and they agree only when the sealed trait is declared at the top level and every
+  * subtype sits inside its companion object, either directly or inside the companion of a sealed
+  * sub-trait declared there.
   */
 trait NestedTypeWrites[A] extends Writes[A]:
   override def writes(o: A): JsObject

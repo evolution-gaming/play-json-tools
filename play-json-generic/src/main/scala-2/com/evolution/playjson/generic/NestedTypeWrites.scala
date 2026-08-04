@@ -9,12 +9,15 @@ import scala.reflect.ClassTag
 /**
   * Writes a sealed hierarchy with a `type` field naming the subtype.
   *
-  * On Scala 2 the name comes from where the subtype is lexically nested, so an object between the
-  * sealed trait and its subtype becomes part of it: `Wrapper.Inner.Leaf` is written as `Inner.Leaf`.
-  * The Scala 3 implementation takes the name from the sealed hierarchy instead and writes `Leaf`,
-  * because a plain object is not part of that hierarchy. Documents written by one are therefore not
-  * readable by the other wherever the two forms of nesting do not coincide, which they do whenever
-  * subtypes sit directly under the sealed trait or under sealed sub-traits.
+  * On Scala 2 the name comes from where the subtype is lexically nested, with the outermost class
+  * dropped, so an object between the sealed trait and its subtype becomes part of it:
+  * `Wrapper.Inner.Leaf` is written as `Inner.Leaf`. The Scala 3 implementation takes the name from
+  * the sealed hierarchy instead and writes `Leaf`, because a plain object is not part of that
+  * hierarchy. Documents written by one are therefore not readable by the other wherever the two
+  * disagree, and they agree only when the sealed trait is declared at the top level and every
+  * subtype sits inside its companion object, either directly or inside the companion of a sealed
+  * sub-trait declared there. A subtype at the top level, one behind a plain object, and one under a
+  * top-level sealed sub-trait are each named differently by the two.
   *
   * A subtype declared at the top level has no enclosing type to name it after, so it is written with
   * an empty `type`. That is readable while it is the only subtype, and [[NestedTypeFormat.of]]
