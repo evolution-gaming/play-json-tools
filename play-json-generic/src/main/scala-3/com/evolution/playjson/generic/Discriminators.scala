@@ -15,7 +15,7 @@ trait Discriminators[A]:
 
 object Discriminators:
 
-  inline def apply[A](using discriminators: Discriminators[A]): Discriminators[A] = discriminators
+  def apply[A](using discriminators: Discriminators[A]): Discriminators[A] = discriminators
 
   def create[A](values: List[Discriminator]): Discriminators[A] = new Discriminators[A]:
     def all: List[Discriminator] = values

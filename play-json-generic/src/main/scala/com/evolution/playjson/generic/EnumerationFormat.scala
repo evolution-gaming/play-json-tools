@@ -17,7 +17,8 @@ object EnumerationFormat {
     val labelsLookup = enumMappings.labels.map { case (value, name) => (value, nameCodingStrategy(name)) }
 
     val collisions = labelsLookup.groupBy { case (_, label) => label }.collect {
-      case (label, values) if values.size > 1 => s"$label from ${ values.keys.mkString(" and ") }"
+      case (label, collidingValues) if collidingValues.size > 1 =>
+        s"$label from ${ collidingValues.keys.mkString(" and ") }"
     }
 
     if (collisions.isEmpty) Right(formatOf(labelsLookup))
