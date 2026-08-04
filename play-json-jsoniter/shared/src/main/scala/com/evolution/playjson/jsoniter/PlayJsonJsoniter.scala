@@ -14,9 +14,9 @@ object PlayJsonJsoniter {
     JsonValueCodecJsValue(settings.bigDecimalParseConfig)
   }
   implicit val durationFormat: Format[Duration] =
-    Formats.smallAsciiStringFormat[Duration]("Period", _.readDuration(_), _.writeVal(_))
+    Formats.smallAsciiStringFormat[Duration]("Duration", _.readDuration(_), _.writeVal(_))
   implicit val instantFormat: Format[Instant] =
-    Formats.smallAsciiStringFormat[Instant]("Period", _.readInstant(_), _.writeVal(_))
+    Formats.smallAsciiStringFormat[Instant]("Instant", _.readInstant(_), _.writeVal(_))
   implicit val localDateFormat: Format[LocalDate] =
     Formats.smallAsciiStringFormat[LocalDate]("LocalDate", _.readLocalDate(_), _.writeVal(_))
   implicit val localDateTimeFormat: Format[LocalDateTime] =
@@ -31,8 +31,14 @@ object PlayJsonJsoniter {
     Formats.smallAsciiStringFormat[OffsetTime]("OffsetTime", _.readOffsetTime(_), _.writeVal(_))
   implicit val periodFormat: Format[Period] =
     Formats.smallAsciiStringFormat[Period]("Period", _.readPeriod(_), _.writeVal(_))
-  implicit val yearFormat: Reads[Year] =
+  implicit val yearJsonFormat: Format[Year] =
     Formats.smallAsciiStringFormat[Year]("Year", _.readYear(_), _.writeVal(_))
+  // `Year` was the only type here exposed as a `Reads`, so the implicit had to move to a new name:
+  // widening this one to `Format` would change its erased result type and break linkage for code
+  // compiled against 1.3.x. It is no longer implicit, which costs no binary compatibility, and can
+  // be dropped at the next major bump.
+  @deprecated("Use yearJsonFormat, which can write as well as read", "1.4.0")
+  val yearFormat: Reads[Year] = yearJsonFormat
   implicit val yearMonthFormat: Format[YearMonth] =
     Formats.smallAsciiStringFormat[YearMonth]("YearMonth", _.readYearMonth(_), _.writeVal(_))
   implicit val zonedDateTimeFormat: Format[ZonedDateTime] =

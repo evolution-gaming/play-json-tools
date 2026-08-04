@@ -35,6 +35,7 @@ class JavaTimeFormatsSpec extends AnyFunSuite with Matchers {
   test("OffsetDateTime round-trips") { assertRoundTrip(OffsetDateTime.parse("2026-08-03T10:15:30+02:00")) }
   test("OffsetTime round-trips") { assertRoundTrip(OffsetTime.parse("10:15:30+02:00")) }
   test("Period round-trips") { assertRoundTrip(Period.ofDays(3)) }
+  test("Year round-trips") { assertRoundTrip(Year.of(2026)) }
   test("YearMonth round-trips") { assertRoundTrip(YearMonth.of(2026, 8)) }
   test("ZonedDateTime round-trips") { assertRoundTrip(ZonedDateTime.parse("2026-08-03T10:15:30+02:00")) }
 
