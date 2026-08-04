@@ -6,6 +6,7 @@ import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
 
 import java.math.MathContext
+import java.nio.charset.StandardCharsets
 import scala.util.Success
 
 /**
@@ -49,8 +50,8 @@ class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
 
   private def assertParityWithPlayJson(value: BigDecimal): Unit = {
     val jsValue = jsonOf(value)
-    new String(PlayJsonJsoniter.serialize(jsValue), "UTF-8") shouldEqual
-      new String(Json.toBytes(jsValue), "UTF-8")
+    new String(PlayJsonJsoniter.serialize(jsValue), StandardCharsets.UTF_8) shouldEqual
+      new String(Json.toBytes(jsValue), StandardCharsets.UTF_8)
     ()
   }
 
@@ -128,14 +129,16 @@ class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
     val borderline = BigDecimal("-0.0" + "3" * 307)
     val bytes = PlayJsonJsoniter.serialize(jsonOf(borderline))
 
-    new String(bytes, "UTF-8") shouldEqual new String(Json.toBytes(jsonOf(borderline)), "UTF-8")
+    new String(bytes, StandardCharsets.UTF_8) shouldEqual
+      new String(Json.toBytes(jsonOf(borderline)), StandardCharsets.UTF_8)
     PlayJsonJsoniter.deserialize(bytes) shouldEqual Success(jsonOf(borderline.round(MathContext.DECIMAL128)))
     a[RuntimeException] should be thrownBy Json.parse(bytes)
   }
 
   test("drops the scale of a value whose trailing zeros are stripped") {
     // the round trip is by value, not by scale: play-json writes "100" for either of these
-    new String(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00"))), "UTF-8") shouldEqual """{"amount":100}"""
+    new String(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00"))), StandardCharsets.UTF_8) shouldEqual
+      """{"amount":100}"""
     PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(jsonOf(BigDecimal("100.00")))) shouldEqual
       Success(jsonOf(BigDecimal("100")))
   }

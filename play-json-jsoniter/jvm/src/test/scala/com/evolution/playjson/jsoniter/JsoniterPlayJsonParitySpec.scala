@@ -5,6 +5,8 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsSuccess, Json}
 
+import java.nio.charset.StandardCharsets
+
 /**
  * Covers the direction [[JsoniterSpec]] does not: documents written by this codec and read by
  * play-json.
@@ -24,7 +26,7 @@ class JsoniterPlayJsonParitySpec extends AnyFunSuite with Matchers {
     val jsValue = Json.toJson(dataLine)
     val bts = PlayJsonJsoniter.serialize(jsValue)
 
-    new String(bts, "UTF-8") shouldEqual new String(Json.toBytes(jsValue), "UTF-8")
+    new String(bts, StandardCharsets.UTF_8) shouldEqual new String(Json.toBytes(jsValue), StandardCharsets.UTF_8)
   }
 
   test("Write using Jsoniter -> Read using PlayJson: Compare objects") {

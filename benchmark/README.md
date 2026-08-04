@@ -18,7 +18,7 @@ Variants:
 
 | Variant | What it is |
 | --- | --- |
-| `pre 1.4` | `play-json-jsoniter` before BigDecimal write parity, `JsNumber` passed straight to jsoniter's `writeVal` |
+| `pre 1.4` | `play-json-jsoniter` before BigDecimal write parity, `JsNumber` passed straight to jsoniter's `writeVal`, the codec as of `cf23acb` |
 | `post 1.4` | `play-json-jsoniter` at 1.4, the `*Current` benchmarks |
 | `play-json` | play-json alone, `Json.toBytes` and `Json.parse` |
 | `circe` | circe alone, `noSpaces` and `io.circe.parser.parse`, on a circe `Json` |
@@ -33,11 +33,19 @@ Payloads:
 | `trailingZeros` | 1000 values with scale 4 and trailing zeros |
 | `document` | the shared `TestData` document, a realistic object with few numbers |
 
-Throughput in ops/s, higher is better. Apple M1 Pro, OpenJDK 25.0.3, Scala 2.13.18:
+Throughput in ops/s, higher is better. Each cell is the JMH score and its error.
 
-```sh
-sbt "benchmark/Jmh/run -f 1 -wi 5 -i 5 -w 2s -r 2s com.evolution.playjson.jsoniter.JsNumber.*Benchmark"
-```
+Measured on 2026-08-04:
+
+| | |
+| --- | --- |
+| Machine | Apple M1 Pro, macOS 26.5.2 |
+| JDK | OpenJDK 25.0.3 |
+| Scala | 2.13.18 |
+| Command | `sbt "benchmark/Jmh/run -f 1 -wi 5 -i 5 -w 2s -r 2s com.evolution.playjson.jsoniter.JsNumber.*Benchmark"` |
+
+Keep these figures as a record. A rerun on another JDK or machine belongs in a section of its own,
+so the older numbers stay available for comparison.
 
 ### Writing
 
@@ -59,5 +67,7 @@ sbt "benchmark/Jmh/run -f 1 -wi 5 -i 5 -w 2s -r 2s com.evolution.playjson.jsonit
 
 `circe` produces a circe `Json`. Every other column produces a play-json `JsValue`.
 
-`pre 1.4` was measured before the change. The code producing it is not in the repository, so a
-rerun reproduces every other column.
+The `pre 1.4` codec is not in the repository, so a rerun reproduces every column but that one:
+[JsonValueCodecJsValue.scala at cf23acb](https://github.com/evolution-gaming/play-json-tools/blob/cf23acb932f2f79cc06158da58a0480bec0bfd7c/play-json-jsoniter/shared/src/main/scala/play/api/libs/json/JsonValueCodecJsValue.scala).
+To measure it again, add that file to the benchmark sources under another name and give each
+benchmark a variant using it.
