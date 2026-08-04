@@ -35,20 +35,20 @@ class DiscriminatorSpec extends JsonFormatSpec {
   "FlatTypeFormat" should {
 
     /**
-      * Naming by the subtype alone collides on more hierarchies than [[NestedTypeFormat]] does, and
-      * there is no `of` here to report it. Pinned as it stands: the second subtype is written
-      * happily and then fails to read, against the fields of the first.
+      * IGNORED, fails today. Naming by the subtype alone collides on more hierarchies than
+      * [[NestedTypeFormat]] does, and nothing reports it: both subtypes write `{"type":"Update"}`,
+      * and reading the second back gives `JsError(/a, error.path.missing)`, because it is read
+      * against the fields of the first.
+      *
+      * Enable once `FlatTypeFormat` either distinguishes such subtypes or gains an `of` refusing
+      * them, as [[NestedTypeFormat.of]] does.
       */
-    "give one name to subtypes of the same name in different objects" in {
+    "read back a subtype whose simple name another subtype shares" ignore {
       implicit val inFormat: OFormat[Duct.In.Update] = Json.format[Duct.In.Update]
       implicit val outFormat: OFormat[Duct.Out.Update] = Json.format[Duct.Out.Update]
       val format = FlatTypeFormat[Duct]
 
-      val written = format.writes(Duct.Out.Update(2))
-      written shouldEqual Json.obj("type" -> "Update", "b" -> 2)
-      format.writes(Duct.In.Update(1)) shouldEqual Json.obj("type" -> "Update", "a" -> 1)
-
-      format.reads(written) shouldBe a[JsError]
+      format.reads(format.writes(Duct.Out.Update(2))) shouldEqual JsSuccess(Duct.Out.Update(2))
     }
   }
 

@@ -56,6 +56,14 @@ class Scala2DiscriminatorSpec extends JsonFormatSpec {
       }
     }
 
+    /** The counterpart of the ignored Scala 3 case: here the label comes from the name already. */
+    "label an enumeration value by its name, not by its toString" in {
+      EnumerationFormat.of[Mood] match {
+        case Right(format) => format.writes(Mood.Cheerful) shouldEqual JsString("Cheerful")
+        case Left(error)   => fail(error)
+      }
+    }
+
     "keep subtypes of the same name apart by the object holding them" in {
       implicit val firstFormat: OFormat[Tree.First.Node] = Json.format[Tree.First.Node]
       implicit val secondFormat: OFormat[Tree.Second.Node] = Json.format[Tree.Second.Node]

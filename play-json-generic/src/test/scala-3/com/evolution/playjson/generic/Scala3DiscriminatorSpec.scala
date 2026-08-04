@@ -71,6 +71,22 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Alarm](Chime, Json.obj("type" -> "com.evolution.playjson.generic.Chime"))
     }
 
+    /**
+      * IGNORED, fails today. `EnumMappings` on Scala 3 labels a value by `e.toString`, so this one
+      * is written as `in-a-good-mood` rather than `Cheerful`. Scala 2 labels it `Cheerful`, so the
+      * two versions also disagree on the wire for any enumeration that overrides `toString`.
+      *
+      * Enable once the Scala 3 `EnumMappings` takes the label from the type, as `singletonName` now
+      * does. That changes what Scala 3 writes for these enumerations, so it needs deciding on its
+      * own rather than alongside a discriminator fix.
+      */
+    "label an enumeration value by its name, not by its toString" ignore {
+      EnumerationFormat.of[Mood] match {
+        case Right(format) => format.writes(Mood.Cheerful) shouldEqual JsString("Cheerful")
+        case Left(error)   => fail(error)
+      }
+    }
+
     "report subtypes of the same name in different objects" in {
       given firstFormat: OFormat[Tree.First.Node] = Json.format[Tree.First.Node]
       given secondFormat: OFormat[Tree.Second.Node] = Json.format[Tree.Second.Node]

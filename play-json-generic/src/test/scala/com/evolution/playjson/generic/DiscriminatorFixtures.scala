@@ -96,6 +96,20 @@ object Command {
   }
 }
 
+/**
+  * An enumeration whose value overrides `toString`. Scala 2 labels it by its name, Scala 3 by its
+  * `toString`.
+  */
+sealed trait Mood
+
+object Mood {
+  case object Cheerful extends Mood {
+    override def toString: String = "in-a-good-mood"
+  }
+
+  case object Grumpy extends Mood
+}
+
 /** Two labels that a lossy naming strategy can collapse onto one another. */
 sealed trait Colour
 
