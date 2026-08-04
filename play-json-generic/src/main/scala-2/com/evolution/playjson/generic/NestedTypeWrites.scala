@@ -16,8 +16,9 @@ import scala.reflect.ClassTag
   * readable by the other wherever the two forms of nesting do not coincide, which they do whenever
   * subtypes sit directly under the sealed trait or under sealed sub-traits.
   *
-  * A subtype declared at the top level has no enclosing type to name it after, so deriving an
-  * instance for it fails rather than writing an empty discriminator.
+  * A subtype declared at the top level has no enclosing type to name it after, so it is written with
+  * an empty `type`. That is readable while it is the only subtype, and [[NestedTypeFormat.of]]
+  * reports it once there are two of them, since then neither can be told from the other.
   */
 trait NestedTypeWrites[A] extends Writes[A] {
   override def writes(o: A): JsObject

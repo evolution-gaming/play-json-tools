@@ -16,29 +16,29 @@ object NestedTypeFormat {
   /**
     * An `OFormat` writing each subtype of `A` with a `type` field naming it.
     *
-    * `Left` when a subtype has no name, or when one name covers several subtypes: either way the
-    * subtypes cannot be told apart when read back. Which subtypes those are differs between the
-    * Scala versions, see [[NestedTypeWrites]].
+    * `Left` only when one name covers several subtypes, which is the case that cannot be read back:
+    * whichever subtype is tried first wins and the others are unreachable. A single subtype with an
+    * empty name is left alone, unhelpful as that name is, because it round-trips and earlier
+    * versions wrote it. Which subtypes end up sharing a name differs between the Scala versions,
+    * see [[NestedTypeWrites]].
     */
   def of[A](implicit
     reads: NestedTypeReads[A],
     writes: NestedTypeWrites[A],
     discriminators: Discriminators[A]
   ): Either[String, OFormat[A]] = {
-    val unnamed = discriminators.all.filter(_.name.isEmpty).map(_.subtype)
-
     val shared = discriminators.all.groupBy(_.name).collect {
-      case (name, subtypes) if subtypes.size > 1 => s"$name for ${ subtypes.map(_.subtype).mkString(" and ") }"
+      case (name, subtypes) if subtypes.size > 1 =>
+        s"${ describe(name) } for ${ subtypes.map(_.subtype).mkString(" and ") }"
     }
 
-    if (unnamed.nonEmpty) {
+    if (shared.isEmpty) Right(OFormat(reads.reads(_), writes.writes(_)))
+    else {
       Left(
-        s"NestedTypeFormat has no name for ${ unnamed.mkString(" or ") }. Nest the subtype in an " +
-          "object, or use FlatTypeFormat, which names subtypes by their own class.")
-    } else if (shared.nonEmpty) {
-      Left(s"NestedTypeFormat gives one name to several subtypes: ${ shared.mkString("; ") }")
-    } else {
-      Right(OFormat(reads.reads(_), writes.writes(_)))
+        "NestedTypeFormat gives one name to several subtypes, so reading a document can only ever " +
+          s"find the first of them: ${ shared.mkString("; ") }")
     }
   }
+
+  private def describe(name: String): String = if (name.isEmpty) "an empty name" else name
 }

@@ -26,6 +26,15 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Signal](Ping(1), Json.obj("type" -> "Ping", "id" -> 1))
     }
 
+    "accept several subtypes declared at the top level" in {
+      given openFormat: OFormat[Open] = Json.format[Open]
+      given closeFormat: OFormat[Close] = Json.format[Close]
+      given OFormat[Relay] = formatOf(NestedTypeFormat.of[Relay])
+
+      check[Relay](Open(1), Json.obj("type" -> "Open", "id" -> 1))
+      check[Relay](Close(2), Json.obj("type" -> "Close", "id" -> 2))
+    }
+
     /**
       * The name of a package-level plain object still carries its package, which is what earlier
       * versions wrote. Pinned rather than corrected: documents holding the long form have to keep

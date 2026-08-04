@@ -5,7 +5,7 @@ import play.api.libs.json._
 /**
   * What [[NestedTypeFormat]] does on Scala 2 and cannot do the same way on Scala 3: the name comes
   * from lexical nesting, so an object between the sealed trait and its subtype becomes part of it,
-  * and a subtype with nothing above it has no name left to give.
+  * and a subtype with nothing above it is left with an empty name.
   */
 class Scala2DiscriminatorSpec extends JsonFormatSpec {
 
@@ -18,24 +18,34 @@ class Scala2DiscriminatorSpec extends JsonFormatSpec {
       check[Wrapper](Wrapper.Inner.Leaf(1), Json.obj("type" -> "Inner.Leaf", "value" -> 1))
     }
 
-    "report a subtype declared at the top level" in {
+    /**
+      * An empty name is unhelpful but unambiguous while it belongs to the only subtype, and it is
+      * what earlier versions wrote, so documents holding it have to keep being readable.
+      */
+    "write a lone subtype declared at the top level with an empty name" in {
       implicit val pingFormat: OFormat[Ping] = Json.format[Ping]
+      implicit val signalFormat: OFormat[Signal] = formatOf(NestedTypeFormat.of[Signal])
 
-      NestedTypeFormat.of[Signal] match {
-        case Left(error)   => error should include("Ping")
-        case Right(format) => fail(s"expected an unnamed subtype, got $format")
-      }
+      check[Signal](Ping(1), Json.obj("type" -> "", "id" -> 1))
     }
 
-    "report a plain object declared at package level" in {
+    "write a lone package-level object with an empty name" in {
       implicit val pulseFormat: OFormat[Pulse.type] = new OFormat[Pulse.type] {
         def writes(o: Pulse.type): JsObject = Json.obj()
         def reads(json: JsValue): JsResult[Pulse.type] = JsSuccess(Pulse)
       }
+      implicit val beaconFormat: OFormat[Beacon] = formatOf(NestedTypeFormat.of[Beacon])
 
-      NestedTypeFormat.of[Beacon] match {
-        case Left(error)   => error should include("Pulse")
-        case Right(format) => fail(s"expected an unnamed subtype, got $format")
+      check[Beacon](Pulse, Json.obj("type" -> ""))
+    }
+
+    "report several subtypes declared at the top level" in {
+      implicit val openFormat: OFormat[Open] = Json.format[Open]
+      implicit val closeFormat: OFormat[Close] = Json.format[Close]
+
+      NestedTypeFormat.of[Relay] match {
+        case Left(error)   => error should (include("Open") and include("Close") and include("empty name"))
+        case Right(format) => fail(s"expected subtypes sharing one name, got $format")
       }
     }
 
