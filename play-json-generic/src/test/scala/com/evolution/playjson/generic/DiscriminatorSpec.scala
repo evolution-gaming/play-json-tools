@@ -3,7 +3,7 @@ package com.evolution.playjson.generic
 import play.api.libs.json._
 
 /**
-  * Contract tests for the discriminators of [[NestedTypeFormat]] and the labels of [[Enumeration]],
+  * Contract tests for the discriminators of [[NestedTypeFormat]] and the labels of [[EnumerationFormat]],
   * covering what both Scala versions have to agree on. The parts where they differ are pinned in
   * `src/test/scala-2` and `src/test/scala-3`.
   */
@@ -16,23 +16,31 @@ class DiscriminatorSpec extends JsonFormatSpec {
         def writes(o: Command.Stop.type): JsObject = Json.obj()
         def reads(json: JsValue): JsResult[Command.Stop.type] = JsSuccess(Command.Stop)
       }
-      implicit val commandFormat: OFormat[Command] = NestedTypeFormat[Command]
+      implicit val commandFormat: OFormat[Command] = formatOf(NestedTypeFormat.of[Command])
 
       check[Command](Command.Stop, Json.obj("type" -> "Stop"))
     }
   }
 
-  "Enumeration" should {
+  "EnumerationFormat" should {
 
-    "refuse labels that collide once the naming strategy is applied" in {
+    "report labels that collide once the naming strategy is applied" in {
       // a strategy that loses information, which is all it takes for two labels to become one
       implicit val firstThreeLetters: NameCodingStrategy = new NameCodingStrategy {
         def apply(name: String): String = name.take(3)
       }
 
-      val failure = the[IllegalArgumentException] thrownBy Enumeration[Colour].format
+      EnumerationFormat.of[Colour] match {
+        case Left(error)   => error should include("Red")
+        case Right(format) => fail(s"expected colliding labels, got $format")
+      }
+    }
 
-      failure.getMessage should include("Red")
+    "give a format for labels that do not collide" in {
+      EnumerationFormat.of[Colour] match {
+        case Right(format) => format.writes(Colour.RedLight) shouldEqual JsString("RedLight")
+        case Left(error)   => fail(error)
+      }
     }
   }
 }

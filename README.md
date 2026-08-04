@@ -7,6 +7,12 @@
 
 1. `play-json-tools` — Set of implicit Play-JSON `Format` helper classes. Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolution/playjson/tools/FlatFormatSpec.scala)
 2. `play-json-generic` — provides Format derivation for enum like adt's (sealed trait/case objects'). Examples in [EnumerationDerivalSpec](play-json-generic/src/test/scala/com/evolution/playjson/generic/EnumerationDerivalSpec.scala)
+
+   `NestedTypeFormat` names a subtype differently on the two Scala versions. Scala 2 uses lexical
+   nesting, Scala 3 uses the sealed hierarchy, so a subtype nested in a plain object is written as
+   `Inner.Leaf` by one and `Leaf` by the other, and neither reads the other's documents. The two
+   agree whenever subtypes sit directly under the sealed trait or under sealed sub-traits, so keep
+   them there if documents cross between services built on different Scala versions.
 3. `play-json-jsoniter` — provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
 4. `play-json-circe` — provides conversions to/from `circe` codecs to ease transitions from one library to another. Examples in [CirceToPlayConversionsSpec](play-json-circe/src/test/scala/com/evolution/playjson/circe/CirceToPlayConversionsSpec.scala) and [PlayToCirceConversionsSpec](play-json-circe/src/test/scala/com/evolution/playjson/circe/PlayToCirceConversionsSpec.scala).
 

@@ -3,7 +3,6 @@ package com.evolution.playjson.generic
 import play.api.libs.json._
 import shapeless._
 import shapeless.labelled._
-import Util.ClassTagOps
 
 import scala.reflect.ClassTag
 
@@ -26,13 +25,15 @@ object NestedTypeReads {
   implicit def cconsReads[Key <: Symbol, Head, Tail <: Coproduct](implicit
       headReads: Reads[Head],
       tailReads: NestedTypeReads[Tail],
-      tag: ClassTag[Head]): NestedTypeReads[FieldType[Key, Head] :+: Tail] =
+      tag: ClassTag[Head]): NestedTypeReads[FieldType[Key, Head] :+: Tail] = {
+    val discriminator = Util.discriminatorOf(tag)
+
     create[FieldType[Key, Head] :+: Tail] { json =>
 
       for {
         o <- json.validate[JsObject]
         typ <- (o \ "type").validate[String]
-        res <- if (typ == tag.classFullName()) {
+        res <- if (typ == discriminator) {
           headReads reads (o - "type") map { z => Inl(field[Key](z)) }
         }
         else {
@@ -40,6 +41,7 @@ object NestedTypeReads {
         }
       } yield res
     }
+  }
 
   implicit def nestedTypeReads[A, Repr <: Coproduct](implicit
       gen: LabelledGeneric.Aux[A, Repr],

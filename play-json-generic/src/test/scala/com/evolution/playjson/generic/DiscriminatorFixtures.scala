@@ -19,15 +19,27 @@ sealed trait Signal
 final case class Ping(id: Int) extends Signal
 
 /**
-  * An object that overrides `toString`, which the discriminator must not be derived from. The
-  * override is written with parentheses because the Scala 3 derivation calls `toString()`, so the
-  * ordinary parameterless form does not even compile there today.
+  * Two subtypes of the same name in different plain objects. Scala 2 keeps them apart through
+  * lexical nesting, Scala 3 gives both the same name.
   */
+sealed trait Tree
+
+object Tree {
+  object First {
+    final case class Node(value: Int) extends Tree
+  }
+
+  object Second {
+    final case class Node(value: Int) extends Tree
+  }
+}
+
+/** An object that overrides `toString`, which the discriminator must not be derived from. */
 sealed trait Command
 
 object Command {
   object Stop extends Command {
-    override def toString(): String = "stop-now"
+    override def toString: String = "stop-now"
   }
 }
 
