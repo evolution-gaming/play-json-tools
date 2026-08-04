@@ -24,10 +24,13 @@ private[generic] inline def prefixName(prefix: String, name: String) =
 
 /**
   * Return the name of the given singleton type (object without `case` modifier). The class is named
-  * like `com.evolution.playjson.generic.Message$Out$Ack$`, so the last segment is the object itself.
-  * Taken from the class rather than from `toString`, which an object is free to override and which
-  * would then name the subtype after arbitrary text, or fail to compile where the override is
-  * declared without parentheses.
+  * like `com.evolution.playjson.generic.Message$Out$Ack$`, so the last `$` separated segment is the
+  * object itself. Taken from the class rather than from `toString`, which an object is free to
+  * override and which would then name the subtype after arbitrary text, or fail to compile where the
+  * override is declared without parentheses.
+  *
+  * An object declared at package level has no `$` before its name, so the segment still carries the
+  * package: `com.example.Ping` rather than `Ping`.
   */
 private[generic] inline def singletonName[A](using valueOf: ValueOf[A]): String =
-  valueOf.value.getClass.getName.split("[.$]").filter(_.nonEmpty).last
+  valueOf.value.getClass.getName.split("\\$").last

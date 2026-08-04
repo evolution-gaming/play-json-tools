@@ -2,6 +2,7 @@ package com.evolution.playjson.generic
 
 import scala.compiletime.*
 import scala.deriving.Mirror
+import scala.reflect.ClassTag
 
 /**
   * The names [[NestedTypeWrites]] writes the subtypes of `A` with, so that
@@ -19,21 +20,23 @@ object Discriminators:
   def create[A](values: List[Discriminator]): Discriminators[A] = new Discriminators[A]:
     def all: List[Discriminator] = values
 
-  inline def discriminatorsOf[A](prefix: String): List[Discriminator] =
+  // the subtype is named by its class rather than by its label, so that a message about two
+  // subtypes sharing one name says which classes they are
+  private[generic] inline def discriminatorsOf[A](prefix: String): List[Discriminator] =
     summonFrom {
       case m: Mirror.ProductOf[A] =>
         val label = constValue[m.MirroredLabel]
-        List(Discriminator(label, prefixName(prefix, label)))
+        List(Discriminator(summonInline[ClassTag[A]].runtimeClass.getName, prefixName(prefix, label)))
       case m: Mirror.SumOf[A] =>
         val sumName = constValue[m.MirroredLabel]
         discriminatorsOfAll[m.MirroredElemTypes](prefixName(prefix, sumName))
       case valueOf: ValueOf[A] =>
         // singleton type (object without `case` modifier)
         val name = singletonName[A]
-        List(Discriminator(name, prefixName(prefix, name)))
+        List(Discriminator(valueOf.value.getClass.getName, prefixName(prefix, name)))
     }
 
-  inline def discriminatorsOfAll[T <: Tuple](prefix: String): List[Discriminator] =
+  private[generic] inline def discriminatorsOfAll[T <: Tuple](prefix: String): List[Discriminator] =
     inline erasedValue[T] match
       case _: EmptyTuple     => Nil
       case _: (head *: tail) => discriminatorsOf[head](prefix) ++ discriminatorsOfAll[tail](prefix)

@@ -20,6 +20,16 @@ class DiscriminatorSpec extends JsonFormatSpec {
 
       check[Command](Command.Stop, Json.obj("type" -> "Stop"))
     }
+
+    /**
+      * The names validation sees come from their own traversal of the hierarchy, separate from the
+      * one the writer uses. This pins the two together: `NestedTypeFormatSpec` fixes the same four
+      * names as the wire format, so one traversal drifting from the other fails one of the two.
+      */
+    "name the subtypes it writes" in {
+      Discriminators[Message].all.map(_.name).toSet shouldEqual
+        Set("Noop", "In.Update", "Out.Updated", "Out.Ack")
+    }
   }
 
   "EnumerationFormat" should {

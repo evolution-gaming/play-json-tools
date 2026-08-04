@@ -34,6 +34,21 @@ object Tree {
   }
 }
 
+/**
+  * A plain object subtype declared at package level, where the two versions part ways again: Scala 3
+  * names it with the package still attached, Scala 2 has no name for it at all.
+  */
+sealed trait Beacon
+
+object Pulse extends Beacon
+
+/** A package-level object that also overrides `toString`, where the two shapes above meet. */
+sealed trait Alarm
+
+object Chime extends Alarm {
+  override def toString: String = "ring-ring"
+}
+
 /** An object that overrides `toString`, which the discriminator must not be derived from. */
 sealed trait Command
 

@@ -26,6 +26,35 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Signal](Ping(1), Json.obj("type" -> "Ping", "id" -> 1))
     }
 
+    /**
+      * The name of a package-level plain object still carries its package, which is what earlier
+      * versions wrote. Pinned rather than corrected: documents holding the long form have to keep
+      * being readable.
+      */
+    "keep the package in the name of a package-level object" in {
+      given OFormat[Pulse.type] = new OFormat[Pulse.type] {
+        def writes(o: Pulse.type): JsObject = Json.obj()
+        def reads(json: JsValue): JsResult[Pulse.type] = JsSuccess(Pulse)
+      }
+      given OFormat[Beacon] = formatOf(NestedTypeFormat.of[Beacon])
+
+      check[Beacon](Pulse, Json.obj("type" -> "com.evolution.playjson.generic.Pulse"))
+    }
+
+    /**
+      * Where the package-level shape and the `toString` override meet. This one used to fail
+      * outright: the override left nothing to drop, and the name was read off an empty array.
+      */
+    "name a package-level object that overrides toString" in {
+      given OFormat[Chime.type] = new OFormat[Chime.type] {
+        def writes(o: Chime.type): JsObject = Json.obj()
+        def reads(json: JsValue): JsResult[Chime.type] = JsSuccess(Chime)
+      }
+      given OFormat[Alarm] = formatOf(NestedTypeFormat.of[Alarm])
+
+      check[Alarm](Chime, Json.obj("type" -> "com.evolution.playjson.generic.Chime"))
+    }
+
     "report subtypes of the same name in different objects" in {
       given firstFormat: OFormat[Tree.First.Node] = Json.format[Tree.First.Node]
       given secondFormat: OFormat[Tree.Second.Node] = Json.format[Tree.Second.Node]

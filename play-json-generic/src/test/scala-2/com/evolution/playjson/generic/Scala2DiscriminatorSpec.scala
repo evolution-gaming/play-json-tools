@@ -27,6 +27,18 @@ class Scala2DiscriminatorSpec extends JsonFormatSpec {
       }
     }
 
+    "report a plain object declared at package level" in {
+      implicit val pulseFormat: OFormat[Pulse.type] = new OFormat[Pulse.type] {
+        def writes(o: Pulse.type): JsObject = Json.obj()
+        def reads(json: JsValue): JsResult[Pulse.type] = JsSuccess(Pulse)
+      }
+
+      NestedTypeFormat.of[Beacon] match {
+        case Left(error)   => error should include("Pulse")
+        case Right(format) => fail(s"expected an unnamed subtype, got $format")
+      }
+    }
+
     "keep subtypes of the same name apart by the object holding them" in {
       implicit val firstFormat: OFormat[Tree.First.Node] = Json.format[Tree.First.Node]
       implicit val secondFormat: OFormat[Tree.Second.Node] = Json.format[Tree.Second.Node]
