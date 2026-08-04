@@ -1,5 +1,6 @@
 package com.evolution.playjson.jsoniter
 
+import com.evolution.playjson.jsoniter.PlayJsonJsoniter._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{Format, JsError, JsNumber, JsString, JsSuccess}
@@ -12,8 +13,6 @@ import java.time._
   * type it was asked to read.
   */
 class JavaTimeFormatsSpec extends AnyFunSuite with Matchers {
-
-  import PlayJsonJsoniter._
 
   private def assertContract[A](name: String, value: A, written: String)(implicit format: Format[A]): Unit = {
     assertRoundTrip(value, written)(format)
