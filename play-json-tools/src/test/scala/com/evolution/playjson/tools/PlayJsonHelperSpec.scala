@@ -86,6 +86,10 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[FiniteDuration](JsString("Inf")) shouldBe a[JsError]
   }
 
+  test("finiteDurationFormat reports a fractional number") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal("1.5")))) should include("error.expected.long")
+  }
+
   test("instantFormat round-trips, truncating to milliseconds") {
     val value = Instant.parse("2026-08-03T10:15:30.123456Z")
     val json = Json.toJson(value)
@@ -110,6 +114,10 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     errorMessagesOf(Json.fromJson[Instant](JsString("garbage"))) should include("garbage")
   }
 
+  test("instantFormat reports a fractional number") {
+    errorMessagesOf(Json.fromJson[Instant](JsNumber(BigDecimal("1.5")))) should include("error.expected.long")
+  }
+
   test("localTimeFormat round-trips") {
     val value = LocalTime.of(10, 15, 30)
     val json = Json.toJson(value)
@@ -119,6 +127,10 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
 
   test("localTimeFormat reports a string it cannot parse") {
     Json.fromJson[LocalTime](JsString("garbage")) shouldBe a[JsError]
+  }
+
+  test("localTimeFormat reports input that is not a string") {
+    errorMessagesOf(Json.fromJson[LocalTime](JsNumber(1))) should include("error.expected.jsstring")
   }
 
   private def errorMessagesOf(result: JsResult[Any]): String = result match {

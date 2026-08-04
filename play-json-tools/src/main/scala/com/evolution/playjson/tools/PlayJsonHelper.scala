@@ -32,12 +32,12 @@ object PlayJsonHelper {
     // matching the shape first rather than `readStr orElse readNum`: `orElse` drops the errors of
     // the first branch, so a string that does not parse used to be reported as a missing number
     def reads(json: JsValue) = json match {
-      case JsString(x) => Try(Duration(x)) match {
-        case Success(x: FiniteDuration) => JsSuccess(x.toCoarsest)
-        case Success(x)                 => JsError(s"$x is not a finite duration")
-        case Failure(t)                 => JsError(t.toString)
+      case JsString(string) => Try(Duration(string)) match {
+        case Success(duration: FiniteDuration) => JsSuccess(duration.toCoarsest)
+        case Success(duration)                 => JsError(s"$duration is not a finite duration")
+        case Failure(error)                    => JsError(error.toString)
       }
-      case _           => for {x <- json.validate[Long]} yield x.millis
+      case _                => for {millis <- json.validate[Long]} yield millis.millis
     }
 
     def writes(o: FiniteDuration): JsString = JsString(o.toCoarsest.toString)
@@ -50,17 +50,17 @@ object PlayJsonHelper {
     private val IsoFormat = DateTimeFormatter.ISO_INSTANT
 
     def reads(json: JsValue): JsResult[Instant] = {
-      def parse(x: String) = Try { Format.parse(x) }
-        .recover { case _: DateTimeParseException => IsoFormat.parse(x) }
+      def parse(string: String) = Try { Format.parse(string) }
+        .recover { case _: DateTimeParseException => IsoFormat.parse(string) }
         .map(Instant.from)
 
       // see the note on FiniteDurationFormat.reads for why the shape is matched first
       json match {
-        case JsString(x) => parse(x) match {
-          case Success(x) => JsSuccess(x)
-          case Failure(t) => JsError(t.toString)
+        case JsString(string) => parse(string) match {
+          case Success(instant) => JsSuccess(instant)
+          case Failure(error)   => JsError(error.toString)
         }
-        case _           => for {x <- json.validate[Long]} yield Instant.ofEpochMilli(x)
+        case _                => for {millis <- json.validate[Long]} yield Instant.ofEpochMilli(millis)
       }
     }
 
@@ -77,8 +77,8 @@ object PlayJsonHelper {
       for {
         time <- json.validate[String]
         localTime <- Try(LocalTime.parse(time, Format)) match {
-          case Success(x) => JsSuccess(x)
-          case Failure(t) => JsError(t.toString)
+          case Success(parsed) => JsSuccess(parsed)
+          case Failure(error)  => JsError(error.toString)
         }
       } yield localTime
     }
