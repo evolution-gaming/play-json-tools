@@ -32,6 +32,14 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[Either[String, Int]](json) shouldEqual JsSuccess(value)
   }
 
+  test("eitherFormat turns a Right that writes a left field into a Left") {
+    val value: Either[String, Map[String, String]] = Right(Map("left" -> "1"))
+    val json = Json.toJson(value)
+    json shouldEqual Json.obj("left" -> "1")
+    Json.fromJson[Either[String, Map[String, String]]](json) shouldEqual
+      JsSuccess(Left("1"): Either[String, Map[String, String]])
+  }
+
   test("unitFormat") {
     val value = ()
     val json = Json.toJson(value)
@@ -70,6 +78,10 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[FiniteDuration](JsString("garbage")) shouldBe a[JsError]
   }
 
+  test("finiteDurationFormat reports a bad string as a string, not as a missing number") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsString("garbage"))) should include("garbage")
+  }
+
   test("finiteDurationFormat reports a duration that is not finite") {
     Json.fromJson[FiniteDuration](JsString("Inf")) shouldBe a[JsError]
   }
@@ -94,6 +106,10 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[Instant](JsString("garbage")) shouldBe a[JsError]
   }
 
+  test("instantFormat reports a bad string as a string, not as a missing number") {
+    errorMessagesOf(Json.fromJson[Instant](JsString("garbage"))) should include("garbage")
+  }
+
   test("localTimeFormat round-trips") {
     val value = LocalTime.of(10, 15, 30)
     val json = Json.toJson(value)
@@ -103,6 +119,11 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
 
   test("localTimeFormat reports a string it cannot parse") {
     Json.fromJson[LocalTime](JsString("garbage")) shouldBe a[JsError]
+  }
+
+  private def errorMessagesOf(result: JsResult[Any]): String = result match {
+    case JsError(errors) => errors.flatMap { case (_, invalid) => invalid.flatMap(_.messages) }.mkString(", ")
+    case JsSuccess(value, _) => s"read successfully as $value"
   }
 
   case object ConstObject

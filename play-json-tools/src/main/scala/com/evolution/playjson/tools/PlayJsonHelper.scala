@@ -29,12 +29,15 @@ object PlayJsonHelper {
 
   implicit val FiniteDurationFormat: Format[FiniteDuration] = new Format[FiniteDuration] {
 
-    def reads(json: JsValue) = {
-      def readStr = for {x <- json.validate[String]} yield Duration(x).toCoarsest.asInstanceOf[FiniteDuration]
-
-      def readNum = for {x <- json.validate[Long]} yield x.millis
-
-      readStr orElse readNum
+    // matching the shape first rather than `readStr orElse readNum`: `orElse` drops the errors of
+    // the first branch, so a string that does not parse used to be reported as a missing number
+    def reads(json: JsValue) = json match {
+      case JsString(x) => Try(Duration(x)) match {
+        case Success(x: FiniteDuration) => JsSuccess(x.toCoarsest)
+        case Success(x)                 => JsError(s"$x is not a finite duration")
+        case Failure(t)                 => JsError(t.toString)
+      }
+      case _           => for {x <- json.validate[Long]} yield x.millis
     }
 
     def writes(o: FiniteDuration): JsString = JsString(o.toCoarsest.toString)
@@ -47,16 +50,21 @@ object PlayJsonHelper {
     private val IsoFormat = DateTimeFormatter.ISO_INSTANT
 
     def reads(json: JsValue): JsResult[Instant] = {
-      def readStr = for {x <- json.validate[String]} yield {
-        val temporal = Try { Format.parse(x) } recover { case _: DateTimeParseException => IsoFormat.parse(x) }
-        Instant.from(temporal.get)
+      def parse(x: String) = Try { Format.parse(x) }
+        .recover { case _: DateTimeParseException => IsoFormat.parse(x) }
+        .map(Instant.from)
+
+      // see the note on FiniteDurationFormat.reads for why the shape is matched first
+      json match {
+        case JsString(x) => parse(x) match {
+          case Success(x) => JsSuccess(x)
+          case Failure(t) => JsError(t.toString)
+        }
+        case _           => for {x <- json.validate[Long]} yield Instant.ofEpochMilli(x)
       }
-
-      def readNum = for {x <- json.validate[Long]} yield Instant.ofEpochMilli(x)
-
-      readStr orElse readNum
     }
 
+    /** Writes milliseconds, so any finer precision the instant carries is dropped. */
     def writes(o: Instant): JsValue = JsString(Format.format(o))
   }
 
@@ -68,7 +76,11 @@ object PlayJsonHelper {
     def reads(json: JsValue): JsResult[LocalTime] = {
       for {
         time <- json.validate[String]
-      } yield LocalTime.parse(time, Format)
+        localTime <- Try(LocalTime.parse(time, Format)) match {
+          case Success(x) => JsSuccess(x)
+          case Failure(t) => JsError(t.toString)
+        }
+      } yield localTime
     }
 
     def writes(o: LocalTime): JsValue = JsString(Format.format(o))
@@ -372,6 +384,14 @@ object PlayJsonHelper {
   }
 
 
+  /**
+    * Writes a `Left` as `{"left": ...}` and a `Right` as the bare value, and reads try `left` first.
+    * The two sides therefore collide whenever a `Right` writes an object carrying a readable `left`
+    * field, and the `Right` is the one that loses: for an `Either[String, Map[String, String]]`,
+    * `Right(Map("left" -> "1"))` writes `{"left":"1"}`, exactly what `Left("1")` writes, and reads
+    * back as `Left("1")` with no error. Use [[DiscriminatedEitherFormat.eitherFormat]], which labels
+    * both sides, wherever `R` can produce such an object.
+    */
   implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] = new Format[Either[L, R]] {
     def writes(x: Either[L, R]): JsValue = x match {
       case Left(x)  => Json.obj("left" -> lf.writes(x))
