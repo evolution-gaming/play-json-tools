@@ -18,6 +18,13 @@ import scala.annotation.tailrec
   */
 object JsonValueCodecJsValue {
 
+  // A value of at most this many significant digits, written plainly, spans magnitudes from
+  // 1e-6 up to (but not including) 1e18, and takes at most 24 digits to write.
+  private val FastPathMostSignificantDigits = 18
+  private val FastPathMostDigits = 24
+  private val FastPathSmallestValue = BigDecimal("1e-6")
+  private val FastPathLargestValue = BigDecimal("1e18")
+
   @deprecated(
     "Reading settings are given here, writing settings are taken from the global " +
       "JsonConfig.settings. Pass both explicitly instead.",
@@ -103,17 +110,60 @@ object JsonValueCodecJsValue {
             out.writeNull()
         }
 
+      /**
+        * Whether the configured settings are wide enough for [[needsNoNormalization]] to imply
+        * play-json parity. Computed once: the reasoning there is about magnitudes and digit counts,
+        * and only holds while the plain range and the parse limits contain them.
+        */
+      private val fastPathAgreesWithPlayJson: Boolean =
+        bigDecimalSerializerSettings.minPlain < FastPathSmallestValue &&
+          bigDecimalSerializerSettings.maxPlain >= FastPathLargestValue &&
+          bigDecimalParseSettings.digitsLimit > FastPathMostDigits &&
+          bigDecimalParseSettings.scaleLimit > FastPathMostDigits
+
       private def encodeBigDecimal(value: BigDecimal, out: JsonWriter): Unit = {
-        val stripped = stripTrailingZeros(value.bigDecimal)
-        val absolute = value.abs
+        val decimal = value.bigDecimal
+        if (fastPathAgreesWithPlayJson && isSmallWholeNumber(decimal)) out.writeVal(decimal.longValueExact)
+        else if (fastPathAgreesWithPlayJson && needsNoNormalization(decimal)) out.writeVal(value)
+        else encodeNormalizedBigDecimal(decimal, value.abs, out)
+      }
+
+      /**
+        * Whether the value is a whole number play-json would write as plain digits, which is what
+        * writing the unscaled value as a `Long` produces. Trailing zeros make no difference here:
+        * stripping them only turns the scale negative, and the plain range turns it straight back.
+        */
+      private def isSmallWholeNumber(decimal: JavaBigDecimal): Boolean =
+        decimal.scale == 0 && decimal.precision <= FastPathMostSignificantDigits
+
+      /**
+        * Whether jsoniter's own `BigDecimal` writer already produces what play-json would, which
+        * spares the value the normalization and limit checks below.
+        *
+        * Everything in this range renders plain — `scale <= precision + 5` is Java's rule for not
+        * switching to an exponent — and magnitudes between 1e-6 and 1e18 sit inside the plain range
+        * play-json writes plainly, so both write the same digits. Trailing zeros are the one thing
+        * that would make them differ, and the unscaled value ending in a zero is what betrays them.
+        */
+      private def needsNoNormalization(decimal: JavaBigDecimal): Boolean = {
+        val scale = decimal.scale
+        scale > 0 && decimal.precision <= FastPathMostSignificantDigits &&
+        scale <= decimal.precision + 5 &&
+        decimal.unscaledValue.longValue % 10 != 0
+      }
+
+      private def encodeNormalizedBigDecimal(
+        decimal: JavaBigDecimal,
+        absolute: BigDecimal,
+        out: JsonWriter
+      ): Unit = {
+        val stripped = stripTrailingZeros(decimal)
         val writePlain =
           absolute > bigDecimalSerializerSettings.minPlain && absolute < bigDecimalSerializerSettings.maxPlain
         // play-json renders the plain string back through Jackson, which writes any number as
         // `BigDecimal.toString`, so staying within the plain range only normalizes a negative scale
         val written = if (writePlain) stripped.setScale(Math.max(stripped.scale, 0)) else stripped
 
-        // a scale of zero renders as the digits of the unscaled value alone, which jsoniter can
-        // write straight into its buffer, and which is always within both parse limits
         if (written.scale == 0 && written.precision <= 18) out.writeVal(written.unscaledValue.longValue)
         else {
           val raw = written.toString

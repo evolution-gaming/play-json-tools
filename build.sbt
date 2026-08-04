@@ -105,6 +105,22 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
     })).map(excludeLog4j)
   )
 
+// not part of the aggregate, benchmarks are run manually
+lazy val benchmark = project
+  .dependsOn(
+    `play-json-jsoniterJVM` % "test->test;compile->compile",
+    `play-json-circe` % "test->test;compile->compile")
+  .disablePlugins(MimaPlugin)
+  .enablePlugins(JmhPlugin)
+  .settings(
+    commonSettings,
+    publish / skip := true,
+    crossScalaVersions := Seq(Scala213),
+    Jmh / sourceDirectory := (Test / sourceDirectory).value,
+    Jmh / classDirectory := (Test / classDirectory).value,
+    Jmh / dependencyClasspath := (Test / dependencyClasspath).value,
+  )
+
 lazy val `play-json-circe` = project
   .settings(
     commonSettings,
