@@ -25,16 +25,16 @@ object Discriminators {
     def all: List[Discriminator] = values
   }
 
-  implicit def cnilDiscriminators: Discriminators[CNil] = create(Nil)
+  implicit def emptyCoproduct: Discriminators[CNil] = create(Nil)
 
-  implicit def cconsDiscriminators[Key <: Symbol, Head, Tail <: Coproduct](implicit
+  implicit def coproductHeadAndTail[Key <: Symbol, Head, Tail <: Coproduct](implicit
     tail: Discriminators[Tail],
     tag: ClassTag[Head]
   ): Discriminators[FieldType[Key, Head] :+: Tail] =
     create(Discriminator(tag.runtimeClass.getName, tag.classFullName()) :: tail.all)
 
   @nowarn("cat=unused")
-  implicit def genericDiscriminators[A, Repr <: Coproduct](implicit
+  implicit def sealedHierarchy[A, Repr <: Coproduct](implicit
     gen: LabelledGeneric.Aux[A, Repr], // used to reach the coproduct the instances below are built from
     repr: Discriminators[Repr]
   ): Discriminators[A] = create(repr.all)
