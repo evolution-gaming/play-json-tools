@@ -87,6 +87,19 @@ object Chime extends Alarm {
   override def toString: String = "ring-ring"
 }
 
+/**
+  * An object whose `toString` override contains a `$`, written with parentheses because that is the
+  * only spelling the earlier Scala 3 derivation accepted. Such an object was named after the text
+  * before the `$`, so this one was written as `US`, and is now named after its class.
+  */
+sealed trait Price
+
+object Price {
+  object Retail extends Price {
+    override def toString(): String = "US$99"
+  }
+}
+
 /** An object that overrides `toString`, which the discriminator must not be derived from. */
 sealed trait Command
 

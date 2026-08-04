@@ -24,6 +24,12 @@
    | plain object at the top level | `` (empty) | `com.example.Pulse` |
 
    Keep to the agreeing shape if documents cross between services built on different Scala versions.
+
+   One name did change in 1.4.0, on Scala 3 only. A plain object whose `toString` was overridden
+   with parentheses and contained a `$` was named after the text before that `$`, so an object with
+   `override def toString() = "US$99"` was written as `US`; it is now named after its class. Such
+   documents no longer read. Overrides without a `$` failed while writing, so `$`-containing ones are
+   the only documents of this shape that can exist.
 3. `play-json-jsoniter` — provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
 4. `play-json-circe` — provides conversions to/from `circe` codecs to ease transitions from one library to another. Examples in [CirceToPlayConversionsSpec](play-json-circe/src/test/scala/com/evolution/playjson/circe/CirceToPlayConversionsSpec.scala) and [PlayToCirceConversionsSpec](play-json-circe/src/test/scala/com/evolution/playjson/circe/PlayToCirceConversionsSpec.scala).
 

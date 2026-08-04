@@ -72,6 +72,22 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
     }
 
     /**
+      * The one place this module stops reading what it used to write. A `$` in the override used to
+      * split the name, so this subtype was written as `US`, and documents holding that no longer
+      * read. Overrides without a `$` left nothing to split and failed while writing, so those are
+      * the only such documents that can exist.
+      */
+    "name an object whose toString contains a dollar sign after its class" in {
+      given OFormat[Price.Retail.type] = new OFormat[Price.Retail.type] {
+        def writes(o: Price.Retail.type): JsObject = Json.obj()
+        def reads(json: JsValue): JsResult[Price.Retail.type] = JsSuccess(Price.Retail)
+      }
+      given OFormat[Price] = formatOf(NestedTypeFormat.of[Price])
+
+      check[Price](Price.Retail, Json.obj("type" -> "Retail"))
+    }
+
+    /**
       * IGNORED, fails today. `EnumMappings` on Scala 3 labels a value by `e.toString`, so this one
       * is written as `in-a-good-mood` rather than `Cheerful`. Scala 2 labels it `Cheerful`, so the
       * two versions also disagree on the wire for any enumeration that overrides `toString`.
