@@ -86,6 +86,42 @@ class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
     }
   }
 
+  // The reader rejects at `digits >= digitsLimit` and `abs(scale) >= scaleLimit`, and the writer
+  // mirrors it. These four tests stand on either side of those two boundaries, so a jsoniter
+  // upgrade that moves one by a single digit fails the build instead of going unnoticed.
+
+  test("writes a value with one digit fewer than the read digits limit") {
+    val digitsLimit = JsonConfig.settings.bigDecimalParseConfig.digitsLimit
+    val largest = BigDecimal("1" + "0" * (digitsLimit - 3) + "7")
+
+    largest.precision shouldEqual digitsLimit - 1
+    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(jsonOf(largest))) shouldBe a[Success[_]]
+  }
+
+  test("rejects a value with exactly as many digits as the read digits limit") {
+    val digitsLimit = JsonConfig.settings.bigDecimalParseConfig.digitsLimit
+    val tooLong = BigDecimal("1" + "0" * (digitsLimit - 2) + "7")
+
+    tooLong.precision shouldEqual digitsLimit
+    a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(jsonOf(tooLong))
+  }
+
+  test("writes a value with one scale fewer than the read scale limit") {
+    val scaleLimit = JsonConfig.settings.bigDecimalParseConfig.scaleLimit
+
+    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(jsonOf(BigDecimal(1, scaleLimit - 1)))) shouldBe
+      a[Success[_]]
+    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(jsonOf(BigDecimal(1, -(scaleLimit - 1))))) shouldBe
+      a[Success[_]]
+  }
+
+  test("rejects a value whose scale reaches the read scale limit") {
+    val scaleLimit = JsonConfig.settings.bigDecimalParseConfig.scaleLimit
+
+    a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(jsonOf(BigDecimal(1, scaleLimit)))
+    a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(jsonOf(BigDecimal(1, -scaleLimit)))
+  }
+
   test("writes what play-json writes, even where play-json cannot read it back") {
     // play-json's serializer and its parser disagree about how to count the digits of a number
     // this long, so play-json rejects its own output here; byte parity means inheriting that

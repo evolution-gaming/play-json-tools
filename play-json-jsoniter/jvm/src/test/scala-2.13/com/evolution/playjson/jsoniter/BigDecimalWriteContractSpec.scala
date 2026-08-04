@@ -2,28 +2,25 @@ package com.evolution.playjson.jsoniter
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriterException
 import org.scalacheck.Prop.forAll
-import org.scalacheck.{Arbitrary, Gen, Test}
+import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsNumber, JsValue, Json}
 
 import java.util.Arrays
 import scala.util.{Failure, Success, Try}
 
 /**
- * States the BigDecimal write contract of [[PlayJsonJsoniter]] once, over the whole range of
- * scales and precisions the reader has limits for, instead of over hand-picked examples:
- * serialization either fails, or produces bytes that both this codec and play-json can read.
+ * States the BigDecimal write contract of [[PlayJsonJsoniter]] once, over a range of scales and
+ * precisions, instead of over hand-picked examples: serialization either produces bytes that both
+ * this codec and play-json read the same way, or it fails for a value that genuinely could not
+ * have been read back.
  *
- * The limits themselves live in jsoniter's reader, so these properties are what notices if a
- * jsoniter upgrade moves a boundary the writer mirrors.
+ * The limits themselves live in jsoniter's reader. Their exact boundaries are pinned by
+ * `JsoniterBigDecimalRoundTripSpec`, which is what notices a jsoniter upgrade that moves one;
+ * these properties cover the range in between. The number of samples is whatever the ScalaCheck
+ * runner is configured with, so raise it with `-minSuccessfulTests` when changing the writer.
  */
 object BigDecimalWriteContractSpec extends org.scalacheck.Properties("BigDecimalWriteContract") {
 
-  val Size = 5000
-
-  override def overrideParameters(p: Test.Parameters): Test.Parameters =
-    p.withMinSuccessfulTests(Size)
-
-  // covers both sides of digitsLimit (310) and scaleLimit (6178)
   private val genUnscaled: Gen[BigInt] =
     Gen.choose(1, 320).flatMap(digits => Gen.listOfN(digits, Gen.numChar).map(chars => BigInt(chars.mkString)))
 
@@ -37,19 +34,26 @@ object BigDecimalWriteContractSpec extends org.scalacheck.Properties("BigDecimal
 
   private def jsonOf(value: BigDecimal): JsValue = JsNumber(value)
 
-  property("serialization either fails or produces bytes this codec can read") = forAll {
+  /**
+   * play-json writes any BigDecimal, and by the parity property below its bytes are the ones this
+   * writer would have produced, so they are the evidence of what a rejected value would have been.
+   */
+  private def playJsonBytesAreUnreadable(value: BigDecimal): Boolean =
+    PlayJsonJsoniter.deserialize(Json.toBytes(jsonOf(value))).isFailure
+
+  property("serialization either fails for good reason or produces bytes this codec can read") = forAll {
     (value: BigDecimal) =>
       Try(PlayJsonJsoniter.serialize(jsonOf(value))) match {
-        case Failure(_: JsonWriterException) => true
+        case Failure(_: JsonWriterException) => playJsonBytesAreUnreadable(value)
         case Failure(_) => false
         case Success(bytes) => PlayJsonJsoniter.deserialize(bytes).isSuccess
       }
   }
 
-  property("serialization either fails or produces the bytes play-json produces") = forAll {
+  property("serialization either fails for good reason or produces the bytes play-json produces") = forAll {
     (value: BigDecimal) =>
       Try(PlayJsonJsoniter.serialize(jsonOf(value))) match {
-        case Failure(_: JsonWriterException) => true
+        case Failure(_: JsonWriterException) => playJsonBytesAreUnreadable(value)
         case Failure(_) => false
         case Success(bytes) => Arrays.equals(bytes, Json.toBytes(jsonOf(value)))
       }
