@@ -50,7 +50,7 @@ object PlayJsonHelper {
     private val IsoFormat = DateTimeFormatter.ISO_INSTANT
 
     def reads(json: JsValue): JsResult[Instant] = {
-      def parse(string: String) = Try { Format.parse(string) }
+      def parse(string: String) = Try(Format.parse(string))
         .recover { case _: DateTimeParseException => IsoFormat.parse(string) }
         .map(Instant.from)
 
@@ -99,7 +99,7 @@ object PlayJsonHelper {
 
         def reads(json: JsValue) = for {
           a <- json.validate[String]
-          a <- from(a) map { x => JsSuccess(x) } getOrElse JsError(s"No ${ tag.runtimeClass.getName } found for $a")
+          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${ tag.runtimeClass.getName } found for $a"))
         } yield a
 
         def writes(a: A): JsString = JsString(to(a))
@@ -116,7 +116,7 @@ object PlayJsonHelper {
 
         def reads(json: JsValue) = for {
           a <- json.validate[BigDecimal]
-          a <- from(a) map { x => JsSuccess(x) } getOrElse JsError(s"No ${ tag.runtimeClass.getName } found for $a")
+          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${ tag.runtimeClass.getName } found for $a"))
         } yield a
 
         def writes(x: A): JsNumber = JsNumber(to(x))
@@ -200,7 +200,7 @@ object PlayJsonHelper {
 
     def apply[K, V](toStr: K => String, fromStr: String => K)(implicit vf: Format[V]): OFormat[Map[K, V]] = {
 
-      val format = StringKeyMapFormat[K, V](k => Try { fromStr(k) }.toOption, toStr)
+      val format = StringKeyMapFormat[K, V](k => Try(fromStr(k)).toOption, toStr)
 
       new OFormat[Map[K, V]] {
 
@@ -403,7 +403,7 @@ object PlayJsonHelper {
 
       def right = for {right <- json.validate[R]} yield Right(right)
 
-      left orElse right
+      left.orElse(right)
     }
   }
 
