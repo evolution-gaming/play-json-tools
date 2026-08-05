@@ -32,9 +32,14 @@ val commonSettings = Seq(
   },
 )
 
+// releases of this build are expected to keep binary compatibility; set this to
+// `Compatibility.None` in the commit that intends to break it, which is what lets `check` tell a
+// deliberate break from an accidental one
+ThisBuild / versionPolicyIntention := Compatibility.BinaryCompatible
+
 val alias: Seq[sbt.Def.Setting[?]] =
-  //  addCommandAlias("check", "all versionPolicyCheck Compile/doc") ++
-  addCommandAlias("check", "show version") ++
+  // the Scala version is left to the caller, since CI runs `check` once per version in its matrix
+  addCommandAlias("check", "all versionPolicyCheck Compile/doc") ++
     addCommandAlias("build", "+all compile test")
 
 lazy val root = project

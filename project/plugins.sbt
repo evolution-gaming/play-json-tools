@@ -18,3 +18,5 @@ addSbtPlugin("com.evolution" % "sbt-artifactory-plugin" % "0.0.2")
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.1")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.4")
+
+addSbtPlugin("ch.epfl.scala" % "sbt-version-policy" % "3.3.0")
