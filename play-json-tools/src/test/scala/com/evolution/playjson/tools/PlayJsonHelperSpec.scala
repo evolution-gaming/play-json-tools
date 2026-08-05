@@ -90,6 +90,27 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[FiniteDuration](JsString("Inf")) shouldBe a[JsError]
   }
 
+  // `-1 minute` is written in the plural where `1 minute` is not, which is what Duration.toString does
+  test("finiteDurationFormat round-trips a negative duration") {
+    val value = -1.minute
+    val json = Json.toJson(value)
+    json shouldEqual JsString("-1 minutes")
+    Json.fromJson[FiniteDuration](json) shouldEqual JsSuccess(value)
+  }
+
+  test("finiteDurationFormat reads a negative number as milliseconds") {
+    Json.fromJson[FiniteDuration](JsNumber(-1500)) shouldEqual JsSuccess(-1500.millis)
+  }
+
+  test("finiteDurationFormat reports a duration that is negative infinity") {
+    Json.fromJson[FiniteDuration](JsString("MinusInf")) shouldBe a[JsError]
+  }
+
+  test("finiteDurationFormat reports a negative number of milliseconds it cannot hold") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal(Long.MinValue)))) should
+      include("Duration is limited")
+  }
+
   test("finiteDurationFormat reports a number larger than a Long") {
     errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal(Long.MaxValue) + 1))) should
       include("error.expected.long")
@@ -118,6 +139,41 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
 
   test("instantFormat reads a number as epoch milliseconds") {
     Json.fromJson[Instant](JsNumber(1785492930123L)) shouldEqual JsSuccess(Instant.ofEpochMilli(1785492930123L))
+  }
+
+  test("instantFormat round-trips a moment before 1970") {
+    val value = Instant.ofEpochMilli(-1)
+    val json = Json.toJson(value)
+    json shouldEqual JsString("1969-12-31T23:59:59.999Z")
+    Json.fromJson[Instant](json) shouldEqual JsSuccess(value)
+  }
+
+  test("instantFormat writes years from 1 onwards") {
+    val written = Seq(
+      "0001-01-01T00:00:00.000Z",
+      "0500-06-15T12:00:00.000Z",
+      "1969-12-31T23:59:59.999Z",
+      "1970-01-01T00:00:00.000Z",
+      "2026-08-03T10:15:30.123Z",
+      "+292278994-08-17T07:12:55.807Z",
+    )
+
+    written.foreach { text =>
+      val instant = Json.fromJson[Instant](JsString(text)).getOrElse(fail(s"could not read $text"))
+      withClue(s"$text: ") { Json.toJson(instant) shouldEqual JsString(text) }
+    }
+  }
+
+  test("instantFormat round-trips a moment before year 1") {
+    val value = Instant.parse("-0100-01-01T00:00:00Z")
+    val json = Json.toJson(value)
+    json shouldEqual JsString("-0100-01-01T00:00:00.000Z")
+    Json.fromJson[Instant](json) shouldEqual JsSuccess(value)
+  }
+
+  test("instantFormat reads a year written without an era as that year") {
+    Json.fromJson[Instant](JsString("0101-01-01T00:00:00.000Z")) shouldEqual
+      JsSuccess(Instant.parse("0101-01-01T00:00:00Z"))
   }
 
   test("instantFormat reports a number larger than a Long") {

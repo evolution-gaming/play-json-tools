@@ -51,7 +51,10 @@ object PlayJsonHelper {
 
   implicit val InstantFormat: Format[Instant] = new Format[Instant] {
 
-    private val Format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
+    // `uuuu` is the year itself, where `yyyy` is the year within the era: with no era in the pattern,
+    // `yyyy` wrote an instant before year 1 as the matching year AD, so 100 BC came back as 101 AD.
+    // The two agree for every instant from year 1 onwards, so only those are written differently
+    private val Format = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
     private val IsoFormat = DateTimeFormatter.ISO_INSTANT
 
     def reads(json: JsValue): JsResult[Instant] = {
