@@ -54,12 +54,12 @@ object PlayJsonHelper {
     // `uuuu` is the year itself, where `yyyy` is the year within the era: with no era in the pattern,
     // `yyyy` wrote an instant before year 1 as the matching year AD, so 100 BC came back as 101 AD.
     // The two agree for every instant from year 1 onwards, so only those are written differently
-    private val Format = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
-    private val IsoFormat = DateTimeFormatter.ISO_INSTANT
+    private val millisFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
+    private val isoFormatter = DateTimeFormatter.ISO_INSTANT
 
     def reads(json: JsValue): JsResult[Instant] = {
-      def parse(string: String) = Try(Format.parse(string))
-        .recover { case _: DateTimeParseException => IsoFormat.parse(string) }
+      def parse(string: String) = Try(millisFormatter.parse(string))
+        .recover { case _: DateTimeParseException => isoFormatter.parse(string) }
         .map(Instant.from)
 
       // see the note on FiniteDurationFormat.reads for why the shape is matched first
@@ -73,25 +73,25 @@ object PlayJsonHelper {
     }
 
     /** Writes milliseconds, so any finer precision the instant carries is dropped. */
-    def writes(o: Instant): JsValue = JsString(Format.format(o))
+    def writes(o: Instant): JsValue = JsString(millisFormatter.format(o))
   }
 
 
   implicit val LocalTimeFormat: Format[LocalTime] = new Format[LocalTime] {
 
-    private val Format = DateTimeFormatter.ofPattern("HH:mm:ss")
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
     def reads(json: JsValue): JsResult[LocalTime] = {
       for {
         time <- json.validate[String]
-        localTime <- Try(LocalTime.parse(time, Format)) match {
+        localTime <- Try(LocalTime.parse(time, timeFormatter)) match {
           case Success(parsed) => JsSuccess(parsed)
           case Failure(error)  => JsError(error.toString)
         }
       } yield localTime
     }
 
-    def writes(o: LocalTime): JsValue = JsString(Format.format(o))
+    def writes(o: LocalTime): JsValue = JsString(timeFormatter.format(o))
   }
 
 
