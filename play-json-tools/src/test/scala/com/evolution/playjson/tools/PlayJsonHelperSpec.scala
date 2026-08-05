@@ -18,26 +18,30 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[Nel[Int]](json) shouldEqual JsSuccess(value)
   }
 
+  // the format is opted into rather than taken from the wildcard import above, which is how callers
+  // reach it now that the implicit in `PlayJsonHelper` is deprecated
+  private val stringOrInt: Format[Either[String, Int]] = EitherFormatUnsafe.eitherFormat
+  private val stringOrMap: Format[Either[String, Map[String, String]]] = EitherFormatUnsafe.eitherFormat
+
   test("eitherFormat left") {
     val value: Either[String, Int] = Left("1")
-    val json = Json.toJson(value)
+    val json = stringOrInt.writes(value)
     json shouldEqual Json.obj("left" -> "1")
-    Json.fromJson[Either[String, Int]](json) shouldEqual JsSuccess(value)
+    stringOrInt.reads(json) shouldEqual JsSuccess(value)
   }
 
   test("eitherFormat right") {
     val value: Either[String, Int] = Right(2)
-    val json = Json.toJson(value)
+    val json = stringOrInt.writes(value)
     json shouldEqual JsNumber(2)
-    Json.fromJson[Either[String, Int]](json) shouldEqual JsSuccess(value)
+    stringOrInt.reads(json) shouldEqual JsSuccess(value)
   }
 
   test("eitherFormat turns a Right that writes a left field into a Left") {
     val value: Either[String, Map[String, String]] = Right(Map("left" -> "1"))
-    val json = Json.toJson(value)
+    val json = stringOrMap.writes(value)
     json shouldEqual Json.obj("left" -> "1")
-    Json.fromJson[Either[String, Map[String, String]]](json) shouldEqual
-      JsSuccess(Left("1"): Either[String, Map[String, String]])
+    stringOrMap.reads(json) shouldEqual JsSuccess(Left("1"): Either[String, Map[String, String]])
   }
 
   test("unitFormat") {

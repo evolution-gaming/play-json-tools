@@ -385,27 +385,46 @@ object PlayJsonHelper {
 
 
   /**
-    * Writes a `Left` as `{"left": ...}` and a `Right` as the bare value, and reads try `left` first.
-    * The two sides therefore collide whenever a `Right` writes an object carrying a readable `left`
-    * field, and the `Right` is the one that loses: for an `Either[String, Map[String, String]]`,
+    * The `Either` format this object has always supplied, kept behind an explicit opt-in because a
+    * document it writes cannot always be read back as what it was.
+    *
+    * A `Left` is written as `{"left": ...}` and a `Right` as the bare value, and reads try `left`
+    * first. The two collide whenever a `Right` writes an object carrying a readable `left` field, and
+    * the `Right` is the one that loses: for an `Either[String, Map[String, String]]`,
     * `Right(Map("left" -> "1"))` writes `{"left":"1"}`, exactly what `Left("1")` writes, and reads
-    * back as `Left("1")` with no error. Use [[DiscriminatedEitherFormat.eitherFormat]], which labels
-    * both sides, wherever `R` can produce such an object.
+    * back as `Left("1")` with no error.
+    *
+    * [[DiscriminatedEitherFormat.eitherFormat]] labels both sides and has no such case, but it writes
+    * a different document, so moving to it means migrating what is already stored. This one is for
+    * code that has to keep reading the documents it wrote.
     */
-  implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] = new Format[Either[L, R]] {
-    def writes(x: Either[L, R]): JsValue = x match {
-      case Left(x)  => Json.obj("left" -> lf.writes(x))
-      case Right(x) => rf.writes(x)
-    }
+  object EitherFormatUnsafe {
 
-    def reads(json: JsValue): JsResult[Either[L, R]] = {
-      def left = for {left <- (json \ "left").validate[L]} yield Left(left)
+    implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] =
+      new Format[Either[L, R]] {
 
-      def right = for {right <- json.validate[R]} yield Right(right)
+        def writes(x: Either[L, R]): JsValue = x match {
+          case Left(x)  => Json.obj("left" -> lf.writes(x))
+          case Right(x) => rf.writes(x)
+        }
 
-      left.orElse(right)
-    }
+        def reads(json: JsValue): JsResult[Either[L, R]] = {
+          def left = for {left <- (json \ "left").validate[L]} yield Left(left)
+
+          def right = for {right <- json.validate[R]} yield Right(right)
+
+          left.orElse(right)
+        }
+      }
   }
+
+  @deprecated(
+    "A Right can read back as a Left, see EitherFormatUnsafe. Opt into it explicitly, excluding this " +
+      "one from a wildcard import as `PlayJsonHelper.{eitherFormat => _, _}`, or move to " +
+      "DiscriminatedEitherFormat.eitherFormat, which labels both sides but writes a different document",
+    "1.4.0")
+  implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] =
+    EitherFormatUnsafe.eitherFormat
 
   object DiscriminatedEitherFormat {
     def valueFromUnambiguousKey[A](key: String, otherKey: String)(implicit ra: Reads[A]): Reads[A] =
