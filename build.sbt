@@ -2,8 +2,7 @@ import Dependencies.*
 
 import scala.collection.Seq
 
-val Scala213       = "2.13.18"
-val Scala213Pinned = "2.13.16"
+val Scala213 = "2.13.16"
 val Scala3   = "3.3.8"
 
 val commonSettings = Seq(
@@ -64,6 +63,7 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= (Seq(
       playJson,
       scalaTest % Test
@@ -78,7 +78,6 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
 lazy val `play-json-tools` = project
   .settings(
     commonSettings,
-    scalaVersion := Scala213Pinned,
     libraryDependencies ++= Seq(
       playJson,
       nel,
@@ -94,6 +93,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= (Seq(
       playJson,
       jsoniter,
@@ -110,6 +110,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
 lazy val `play-json-circe` = project
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= Seq(
       playJson,
       circe.core,

@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         scala:
-          - 2.13.18
+          - 2.13.16
           - 3.3.8
 
     steps:
