@@ -2,7 +2,8 @@ import Dependencies.*
 
 import scala.collection.Seq
 
-val Scala213 = "2.13.18"
+val Scala213       = "2.13.18"
+val Scala213Pinned = "2.13.16"
 val Scala3   = "3.3.8"
 
 val commonSettings = Seq(
@@ -77,6 +78,7 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
 lazy val `play-json-tools` = project
   .settings(
     commonSettings,
+    scalaVersion := Scala213Pinned,
     libraryDependencies ++= Seq(
       playJson,
       nel,
