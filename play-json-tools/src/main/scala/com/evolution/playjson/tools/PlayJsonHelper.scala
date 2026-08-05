@@ -37,7 +37,12 @@ object PlayJsonHelper {
         case Success(duration)                 => JsError(s"$duration is not a finite duration")
         case Failure(error)                    => JsError(error.toString)
       }
-      case _                => for {millis <- json.validate[Long]} yield millis.millis
+      case _ => json.validate[Long].flatMap { millis =>
+        Try(millis.millis) match {
+          case Success(duration) => JsSuccess(duration)
+          case Failure(error)    => JsError(error.toString)
+        }
+      }
     }
 
     def writes(o: FiniteDuration): JsString = JsString(o.toCoarsest.toString)

@@ -90,6 +90,16 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[FiniteDuration](JsString("Inf")) shouldBe a[JsError]
   }
 
+  test("finiteDurationFormat reports a number larger than a Long") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal(Long.MaxValue) + 1))) should
+      include("error.expected.long")
+  }
+
+  test("finiteDurationFormat reports a number of milliseconds it cannot hold") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal(Long.MaxValue)))) should
+      include("Duration is limited")
+  }
+
   test("finiteDurationFormat reports a fractional number") {
     errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal("1.5")))) should include("error.expected.long")
   }
@@ -108,6 +118,16 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
 
   test("instantFormat reads a number as epoch milliseconds") {
     Json.fromJson[Instant](JsNumber(1785492930123L)) shouldEqual JsSuccess(Instant.ofEpochMilli(1785492930123L))
+  }
+
+  test("instantFormat reports a number larger than a Long") {
+    errorMessagesOf(Json.fromJson[Instant](JsNumber(BigDecimal(Long.MaxValue) + 1))) should
+      include("error.expected.long")
+  }
+
+  test("instantFormat reads the largest number of milliseconds a Long holds") {
+    Json.fromJson[Instant](JsNumber(BigDecimal(Long.MaxValue))) shouldEqual
+      JsSuccess(Instant.ofEpochMilli(Long.MaxValue))
   }
 
   test("instantFormat reports a string it cannot parse") {
