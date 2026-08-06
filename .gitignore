@@ -12,6 +12,9 @@ src_managed/
 project/boot/
 project/plugins/project/
 
+# JMH
+jmh-result.*
+
 # Bloop
 .bsp
 

@@ -11,12 +11,12 @@ import scala.util.Try
 object PlayJsonJsoniter {
   implicit val jsValueCodec: JsonValueCodec[JsValue] = {
     val settings = JsonConfig.settings
-    JsonValueCodecJsValue(settings.bigDecimalParseConfig)
+    JsonValueCodecJsValue(settings.bigDecimalParseConfig, settings.bigDecimalSerializerConfig)
   }
   implicit val durationFormat: Format[Duration] =
-    Formats.smallAsciiStringFormat[Duration]("Period", _.readDuration(_), _.writeVal(_))
+    Formats.smallAsciiStringFormat[Duration]("Duration", _.readDuration(_), _.writeVal(_))
   implicit val instantFormat: Format[Instant] =
-    Formats.smallAsciiStringFormat[Instant]("Period", _.readInstant(_), _.writeVal(_))
+    Formats.smallAsciiStringFormat[Instant]("Instant", _.readInstant(_), _.writeVal(_))
   implicit val localDateFormat: Format[LocalDate] =
     Formats.smallAsciiStringFormat[LocalDate]("LocalDate", _.readLocalDate(_), _.writeVal(_))
   implicit val localDateTimeFormat: Format[LocalDateTime] =
@@ -31,22 +31,43 @@ object PlayJsonJsoniter {
     Formats.smallAsciiStringFormat[OffsetTime]("OffsetTime", _.readOffsetTime(_), _.writeVal(_))
   implicit val periodFormat: Format[Period] =
     Formats.smallAsciiStringFormat[Period]("Period", _.readPeriod(_), _.writeVal(_))
-  implicit val yearFormat: Reads[Year] =
+  implicit val yearJsonFormat: Format[Year] =
     Formats.smallAsciiStringFormat[Year]("Year", _.readYear(_), _.writeVal(_))
+  // `Year` was the only type here exposed as a `Reads`, so the implicit had to move to a new name:
+  // widening this one to `Format` would change its erased result type and break linkage for code
+  // compiled against 1.3.x. It is no longer implicit, which costs no binary compatibility, and can
+  // be dropped at the next major bump.
+  @deprecated("Use yearJsonFormat, which can write as well as read", "1.4.0")
+  val yearFormat: Reads[Year] = yearJsonFormat
   implicit val yearMonthFormat: Format[YearMonth] =
     Formats.smallAsciiStringFormat[YearMonth]("YearMonth", _.readYearMonth(_), _.writeVal(_))
   implicit val zonedDateTimeFormat: Format[ZonedDateTime] =
     Formats.smallAsciiStringFormat[ZonedDateTime]("ZonedDateTime", _.readZonedDateTime(_), _.writeVal(_))
 
+  /**
+    * Throws `JsonWriterException` for a number that could not be read back, see
+    * [[play.api.libs.json.JsonValueCodecJsValue]].
+    */
   def serialize(payload: JsValue): Array[Byte] =
     writeToArray(payload)
 
+  /** Throws `JsonWriterException` for a number that could not be read back, see [[serialize]]. */
   def serializeToStr(payload: JsValue): String =
     writeToString(payload)
 
+  /**
+    * Throws `JsonWriterException` for a number that could not be read back, see [[serialize]].
+    * The failure is raised where the number is reached, so `bbuf` is left holding the part of the
+    * document written up to that point.
+    */
   def serializeToBuffer(payload: JsValue, bbuf: ByteBuffer): Unit =
      writeToByteBuffer(payload, bbuf)
 
+  /**
+    * Throws `JsonWriterException` for a number that could not be read back, see [[serialize]].
+    * The failure is raised where the number is reached, and the writer flushes as its buffer
+    * fills, so `out` may already have received an incomplete document.
+    */
   def serializeToOutput(payload: JsValue, out: OutputStream): Unit =
     writeToStream(payload, out)
 

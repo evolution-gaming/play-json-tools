@@ -2,7 +2,7 @@ import Dependencies.*
 
 import scala.collection.Seq
 
-val Scala213 = "2.13.18"
+val Scala213 = "2.13.16"
 val Scala3   = "3.3.8"
 
 val commonSettings = Seq(
@@ -68,6 +68,7 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= (Seq(
       playJson,
       scalaTest % Test
@@ -97,6 +98,7 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= (Seq(
       playJson,
       jsoniter,
@@ -110,9 +112,26 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
     })).map(excludeLog4j)
   )
 
+// not part of the aggregate, benchmarks are run manually
+lazy val benchmark = project
+  .dependsOn(
+    `play-json-jsoniterJVM` % "test->test;compile->compile",
+    `play-json-circe` % "test->test;compile->compile")
+  .disablePlugins(MimaPlugin)
+  .enablePlugins(JmhPlugin)
+  .settings(
+    commonSettings,
+    publish / skip := true,
+    crossScalaVersions := Seq(Scala213),
+    Jmh / sourceDirectory := (Test / sourceDirectory).value,
+    Jmh / classDirectory := (Test / classDirectory).value,
+    Jmh / dependencyClasspath := (Test / dependencyClasspath).value,
+  )
+
 lazy val `play-json-circe` = project
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= Seq(
       playJson,
       circe.core,

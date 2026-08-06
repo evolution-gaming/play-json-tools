@@ -34,6 +34,11 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
     !bools.contains(false)
   }
 
+  property("Write using Jsoniter -> Read using PlayJson") = forAll { (user: User) =>
+    val bts = PlayJsonJsoniter.serialize(Json.toJson(user))
+    JsSuccess(user) == Json.fromJson[User](Json.parse(bts))
+  }
+
   property("Write using Jsoniter -> Read using Jsoniter. Batch") = forAll(
     Gen.containerOfN[Vector, User](Size, genUser),
   ) { (batch: Vector[User]) =>

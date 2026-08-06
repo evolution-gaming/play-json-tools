@@ -29,12 +29,20 @@ object PlayJsonHelper {
 
   implicit val FiniteDurationFormat: Format[FiniteDuration] = new Format[FiniteDuration] {
 
-    def reads(json: JsValue) = {
-      def readStr = for {x <- json.validate[String]} yield Duration(x).toCoarsest.asInstanceOf[FiniteDuration]
-
-      def readNum = for {x <- json.validate[Long]} yield x.millis
-
-      readStr orElse readNum
+    // matching the shape first rather than `readStr orElse readNum`: `orElse` drops the errors of
+    // the first branch, so a string that does not parse used to be reported as a missing number
+    def reads(json: JsValue) = json match {
+      case JsString(string) => Try(Duration(string)) match {
+        case Success(duration: FiniteDuration) => JsSuccess(duration.toCoarsest)
+        case Success(duration)                 => JsError(s"$duration is not a finite duration")
+        case Failure(error)                    => JsError(error.toString)
+      }
+      case _ => json.validate[Long].flatMap { millis =>
+        Try(millis.millis) match {
+          case Success(duration) => JsSuccess(duration)
+          case Failure(error)    => JsError(error.toString)
+        }
+      }
     }
 
     def writes(o: FiniteDuration): JsString = JsString(o.toCoarsest.toString)
@@ -43,35 +51,47 @@ object PlayJsonHelper {
 
   implicit val InstantFormat: Format[Instant] = new Format[Instant] {
 
-    private val Format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
-    private val IsoFormat = DateTimeFormatter.ISO_INSTANT
+    // `uuuu` is the year itself, where `yyyy` is the year within the era: with no era in the pattern,
+    // `yyyy` wrote an instant before year 1 as the matching year AD, so 100 BC came back as 101 AD.
+    // The two agree for every instant from year 1 onwards, so only those are written differently
+    private val millisFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
+    private val isoFormatter = DateTimeFormatter.ISO_INSTANT
 
     def reads(json: JsValue): JsResult[Instant] = {
-      def readStr = for {x <- json.validate[String]} yield {
-        val temporal = Try { Format.parse(x) } recover { case _: DateTimeParseException => IsoFormat.parse(x) }
-        Instant.from(temporal.get)
+      def parse(string: String) = Try(millisFormatter.parse(string))
+        .recover { case _: DateTimeParseException => isoFormatter.parse(string) }
+        .map(Instant.from)
+
+      // see the note on FiniteDurationFormat.reads for why the shape is matched first
+      json match {
+        case JsString(string) => parse(string) match {
+          case Success(instant) => JsSuccess(instant)
+          case Failure(error)   => JsError(error.toString)
+        }
+        case _                => for {millis <- json.validate[Long]} yield Instant.ofEpochMilli(millis)
       }
-
-      def readNum = for {x <- json.validate[Long]} yield Instant.ofEpochMilli(x)
-
-      readStr orElse readNum
     }
 
-    def writes(o: Instant): JsValue = JsString(Format.format(o))
+    /** Writes milliseconds, so any finer precision the instant carries is dropped. */
+    def writes(o: Instant): JsValue = JsString(millisFormatter.format(o))
   }
 
 
   implicit val LocalTimeFormat: Format[LocalTime] = new Format[LocalTime] {
 
-    private val Format = DateTimeFormatter.ofPattern("HH:mm:ss")
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
     def reads(json: JsValue): JsResult[LocalTime] = {
       for {
         time <- json.validate[String]
-      } yield LocalTime.parse(time, Format)
+        localTime <- Try(LocalTime.parse(time, timeFormatter)) match {
+          case Success(parsed) => JsSuccess(parsed)
+          case Failure(error)  => JsError(error.toString)
+        }
+      } yield localTime
     }
 
-    def writes(o: LocalTime): JsValue = JsString(Format.format(o))
+    def writes(o: LocalTime): JsValue = JsString(timeFormatter.format(o))
   }
 
 
@@ -87,7 +107,7 @@ object PlayJsonHelper {
 
         def reads(json: JsValue) = for {
           a <- json.validate[String]
-          a <- from(a) map { x => JsSuccess(x) } getOrElse JsError(s"No ${ tag.runtimeClass.getName } found for $a")
+          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${ tag.runtimeClass.getName } found for $a"))
         } yield a
 
         def writes(a: A): JsString = JsString(to(a))
@@ -104,7 +124,7 @@ object PlayJsonHelper {
 
         def reads(json: JsValue) = for {
           a <- json.validate[BigDecimal]
-          a <- from(a) map { x => JsSuccess(x) } getOrElse JsError(s"No ${ tag.runtimeClass.getName } found for $a")
+          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${ tag.runtimeClass.getName } found for $a"))
         } yield a
 
         def writes(x: A): JsNumber = JsNumber(to(x))
@@ -188,7 +208,7 @@ object PlayJsonHelper {
 
     def apply[K, V](toStr: K => String, fromStr: String => K)(implicit vf: Format[V]): OFormat[Map[K, V]] = {
 
-      val format = StringKeyMapFormat[K, V](k => Try { fromStr(k) }.toOption, toStr)
+      val format = StringKeyMapFormat[K, V](k => Try(fromStr(k)).toOption, toStr)
 
       new OFormat[Map[K, V]] {
 
@@ -372,20 +392,47 @@ object PlayJsonHelper {
   }
 
 
-  implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] = new Format[Either[L, R]] {
-    def writes(x: Either[L, R]): JsValue = x match {
-      case Left(x)  => Json.obj("left" -> lf.writes(x))
-      case Right(x) => rf.writes(x)
-    }
+  /**
+    * The `Either` format this object has always supplied, kept behind an explicit opt-in because a
+    * document it writes cannot always be read back as what it was.
+    *
+    * A `Left` is written as `{"left": ...}` and a `Right` as the bare value, and reads try `left`
+    * first. The two collide whenever a `Right` writes an object carrying a readable `left` field, and
+    * the `Right` is the one that loses: for an `Either[String, Map[String, String]]`,
+    * `Right(Map("left" -> "1"))` writes `{"left":"1"}`, exactly what `Left("1")` writes, and reads
+    * back as `Left("1")` with no error.
+    *
+    * [[DiscriminatedEitherFormat.eitherFormat]] labels both sides and has no such case, but it writes
+    * a different document, so moving to it means migrating what is already stored. This one is for
+    * code that has to keep reading the documents it wrote.
+    */
+  object EitherFormatUnsafe {
 
-    def reads(json: JsValue): JsResult[Either[L, R]] = {
-      def left = for {left <- (json \ "left").validate[L]} yield Left(left)
+    implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] =
+      new Format[Either[L, R]] {
 
-      def right = for {right <- json.validate[R]} yield Right(right)
+        def writes(x: Either[L, R]): JsValue = x match {
+          case Left(x)  => Json.obj("left" -> lf.writes(x))
+          case Right(x) => rf.writes(x)
+        }
 
-      left orElse right
-    }
+        def reads(json: JsValue): JsResult[Either[L, R]] = {
+          def left = for {left <- (json \ "left").validate[L]} yield Left(left)
+
+          def right = for {right <- json.validate[R]} yield Right(right)
+
+          left.orElse(right)
+        }
+      }
   }
+
+  @deprecated(
+    "A Right can read back as a Left, see EitherFormatUnsafe. Opt into it explicitly, excluding this " +
+      "one from a wildcard import as `PlayJsonHelper.{eitherFormat => _, _}`, or move to " +
+      "DiscriminatedEitherFormat.eitherFormat, which labels both sides but writes a different document",
+    "1.4.0")
+  implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] =
+    EitherFormatUnsafe.eitherFormat
 
   object DiscriminatedEitherFormat {
     def valueFromUnambiguousKey[A](key: String, otherKey: String)(implicit ra: Reads[A]): Reads[A] =

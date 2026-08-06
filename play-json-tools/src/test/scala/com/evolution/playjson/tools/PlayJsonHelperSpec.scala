@@ -6,6 +6,9 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
 
+import java.time.{Instant, LocalTime}
+import scala.concurrent.duration._
+
 class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
 
   test("nelFormat") {
@@ -15,18 +18,30 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     Json.fromJson[Nel[Int]](json) shouldEqual JsSuccess(value)
   }
 
+  // the format is opted into rather than taken from the wildcard import above, which is how callers
+  // reach it now that the implicit in `PlayJsonHelper` is deprecated
+  private val stringOrInt: Format[Either[String, Int]] = EitherFormatUnsafe.eitherFormat
+  private val stringOrMap: Format[Either[String, Map[String, String]]] = EitherFormatUnsafe.eitherFormat
+
   test("eitherFormat left") {
     val value: Either[String, Int] = Left("1")
-    val json = Json.toJson(value)
+    val json = stringOrInt.writes(value)
     json shouldEqual Json.obj("left" -> "1")
-    Json.fromJson[Either[String, Int]](json) shouldEqual JsSuccess(value)
+    stringOrInt.reads(json) shouldEqual JsSuccess(value)
   }
 
   test("eitherFormat right") {
     val value: Either[String, Int] = Right(2)
-    val json = Json.toJson(value)
+    val json = stringOrInt.writes(value)
     json shouldEqual JsNumber(2)
-    Json.fromJson[Either[String, Int]](json) shouldEqual JsSuccess(value)
+    stringOrInt.reads(json) shouldEqual JsSuccess(value)
+  }
+
+  test("eitherFormat turns a Right that writes a left field into a Left") {
+    val value: Either[String, Map[String, String]] = Right(Map("left" -> "1"))
+    val json = stringOrMap.writes(value)
+    json shouldEqual Json.obj("left" -> "1")
+    stringOrMap.reads(json) shouldEqual JsSuccess(Left("1"): Either[String, Map[String, String]])
   }
 
   test("unitFormat") {
@@ -50,6 +65,157 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
     val json = Json.obj("nestedData" -> Json.obj("value" -> 123))
     format.writes(data) shouldEqual json
     format.reads(json) shouldEqual JsSuccess(data)
+  }
+
+  test("finiteDurationFormat round-trips a duration") {
+    val value = 1.minute
+    val json = Json.toJson(value)
+    json shouldEqual JsString("1 minute")
+    Json.fromJson[FiniteDuration](json) shouldEqual JsSuccess(value)
+  }
+
+  test("finiteDurationFormat reads a number as milliseconds") {
+    Json.fromJson[FiniteDuration](JsNumber(1500)) shouldEqual JsSuccess(1500.millis)
+  }
+
+  test("finiteDurationFormat reports a string it cannot parse") {
+    Json.fromJson[FiniteDuration](JsString("garbage")) shouldBe a[JsError]
+  }
+
+  test("finiteDurationFormat reports a bad string as a string, not as a missing number") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsString("garbage"))) should include("garbage")
+  }
+
+  test("finiteDurationFormat reports a duration that is not finite") {
+    Json.fromJson[FiniteDuration](JsString("Inf")) shouldBe a[JsError]
+  }
+
+  // `-1 minute` is written in the plural where `1 minute` is not, which is what Duration.toString does
+  test("finiteDurationFormat round-trips a negative duration") {
+    val value = -1.minute
+    val json = Json.toJson(value)
+    json shouldEqual JsString("-1 minutes")
+    Json.fromJson[FiniteDuration](json) shouldEqual JsSuccess(value)
+  }
+
+  test("finiteDurationFormat reads a negative number as milliseconds") {
+    Json.fromJson[FiniteDuration](JsNumber(-1500)) shouldEqual JsSuccess(-1500.millis)
+  }
+
+  test("finiteDurationFormat reports a duration that is negative infinity") {
+    Json.fromJson[FiniteDuration](JsString("MinusInf")) shouldBe a[JsError]
+  }
+
+  test("finiteDurationFormat reports a negative number of milliseconds it cannot hold") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal(Long.MinValue)))) should
+      include("Duration is limited")
+  }
+
+  test("finiteDurationFormat reports a number larger than a Long") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal(Long.MaxValue) + 1))) should
+      include("error.expected.long")
+  }
+
+  test("finiteDurationFormat reports a number of milliseconds it cannot hold") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal(Long.MaxValue)))) should
+      include("Duration is limited")
+  }
+
+  test("finiteDurationFormat reports a fractional number") {
+    errorMessagesOf(Json.fromJson[FiniteDuration](JsNumber(BigDecimal("1.5")))) should include("error.expected.long")
+  }
+
+  test("instantFormat round-trips, truncating to milliseconds") {
+    val value = Instant.parse("2026-08-03T10:15:30.123456Z")
+    val json = Json.toJson(value)
+    json shouldEqual JsString("2026-08-03T10:15:30.123Z")
+    Json.fromJson[Instant](json) shouldEqual JsSuccess(Instant.parse("2026-08-03T10:15:30.123Z"))
+  }
+
+  test("instantFormat reads an ISO-8601 instant") {
+    Json.fromJson[Instant](JsString("2026-08-03T10:15:30Z")) shouldEqual
+      JsSuccess(Instant.parse("2026-08-03T10:15:30Z"))
+  }
+
+  test("instantFormat reads a number as epoch milliseconds") {
+    Json.fromJson[Instant](JsNumber(1785492930123L)) shouldEqual JsSuccess(Instant.ofEpochMilli(1785492930123L))
+  }
+
+  test("instantFormat round-trips a moment before 1970") {
+    val value = Instant.ofEpochMilli(-1)
+    val json = Json.toJson(value)
+    json shouldEqual JsString("1969-12-31T23:59:59.999Z")
+    Json.fromJson[Instant](json) shouldEqual JsSuccess(value)
+  }
+
+  test("instantFormat writes years from 1 onwards") {
+    val written = Seq(
+      "0001-01-01T00:00:00.000Z",
+      "0500-06-15T12:00:00.000Z",
+      "1969-12-31T23:59:59.999Z",
+      "1970-01-01T00:00:00.000Z",
+      "2026-08-03T10:15:30.123Z",
+      "+292278994-08-17T07:12:55.807Z",
+    )
+
+    written.foreach { text =>
+      val instant = Json.fromJson[Instant](JsString(text)).getOrElse(fail(s"could not read $text"))
+      withClue(s"$text: ") { Json.toJson(instant) shouldEqual JsString(text) }
+    }
+  }
+
+  test("instantFormat round-trips a moment before year 1") {
+    val value = Instant.parse("-0100-01-01T00:00:00Z")
+    val json = Json.toJson(value)
+    json shouldEqual JsString("-0100-01-01T00:00:00.000Z")
+    Json.fromJson[Instant](json) shouldEqual JsSuccess(value)
+  }
+
+  test("instantFormat reads a year written without an era as that year") {
+    Json.fromJson[Instant](JsString("0101-01-01T00:00:00.000Z")) shouldEqual
+      JsSuccess(Instant.parse("0101-01-01T00:00:00Z"))
+  }
+
+  test("instantFormat reports a number larger than a Long") {
+    errorMessagesOf(Json.fromJson[Instant](JsNumber(BigDecimal(Long.MaxValue) + 1))) should
+      include("error.expected.long")
+  }
+
+  test("instantFormat reads the largest number of milliseconds a Long holds") {
+    Json.fromJson[Instant](JsNumber(BigDecimal(Long.MaxValue))) shouldEqual
+      JsSuccess(Instant.ofEpochMilli(Long.MaxValue))
+  }
+
+  test("instantFormat reports a string it cannot parse") {
+    Json.fromJson[Instant](JsString("garbage")) shouldBe a[JsError]
+  }
+
+  test("instantFormat reports a bad string as a string, not as a missing number") {
+    errorMessagesOf(Json.fromJson[Instant](JsString("garbage"))) should include("garbage")
+  }
+
+  test("instantFormat reports a fractional number") {
+    errorMessagesOf(Json.fromJson[Instant](JsNumber(BigDecimal("1.5")))) should include("error.expected.long")
+  }
+
+  test("localTimeFormat round-trips") {
+    val value = LocalTime.of(10, 15, 30)
+    val json = Json.toJson(value)
+    json shouldEqual JsString("10:15:30")
+    Json.fromJson[LocalTime](json) shouldEqual JsSuccess(value)
+  }
+
+  test("localTimeFormat reports a string it cannot parse") {
+    Json.fromJson[LocalTime](JsString("garbage")) shouldBe a[JsError]
+  }
+
+  test("localTimeFormat reports input that is not a string") {
+    errorMessagesOf(Json.fromJson[LocalTime](JsNumber(1))) should include("error.expected.jsstring")
+  }
+
+  private def errorMessagesOf(result: JsResult[Any]): String = result match {
+    case JsError(errors) => errors.flatMap { case (_, invalid) => invalid.flatMap(_.messages) }.mkString(", ")
+    case JsSuccess(value, _) => s"read successfully as $value"
   }
 
   case object ConstObject
