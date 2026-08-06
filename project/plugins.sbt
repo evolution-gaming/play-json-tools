@@ -19,4 +19,6 @@ addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.1")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.4")
 
+addSbtPlugin("ch.epfl.scala" % "sbt-version-policy" % "3.3.0")
+
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.8")
