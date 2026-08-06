@@ -18,7 +18,7 @@ object Formats {
   }
 
   def smallAsciiStringFormat[A](name: String, f: (JsonReader, A) => A, g: (JsonWriter, A) => Unit): Format[A] =
-     new JsonValueCodec[A] with Format[A] {
+    new JsonValueCodec[A] with Format[A] {
       override def reads(json: JsValue): JsResult[A] =
         try {
           val (buf, reader, _) = pool.get

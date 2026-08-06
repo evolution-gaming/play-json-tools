@@ -10,7 +10,8 @@ object TestDataGenerators extends PlayJsonImplicits {
 
   val ALPHABET: Vector[String] = "abcdefghijklmnopqrstuvwzyz".split("").toVector
 
-  def str(len: Int): Gen[String] = Gen.listOfN(len, Gen.choose(0, ALPHABET.size - 1).map(ALPHABET(_))).map(_.mkString(""))
+  def str(len: Int): Gen[String] =
+    Gen.listOfN(len, Gen.choose(0, ALPHABET.size - 1).map(ALPHABET(_))).map(_.mkString(""))
 
   def flagGen: Gen[Boolean] = Arbitrary.arbitrary[Boolean]
 
@@ -55,6 +56,13 @@ object TestDataGenerators extends PlayJsonImplicits {
 
   case class Address(country: String, doubles: List[Double])
 
-  case class User(name: String, email: String, flag: Boolean, from: Address, l: Long, metrics: List[Int],
-    friends: List[User])
+  case class User(
+      name: String,
+      email: String,
+      flag: Boolean,
+      from: Address,
+      l: Long,
+      metrics: List[Int],
+      friends: List[User]
+  )
 }

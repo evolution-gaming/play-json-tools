@@ -10,7 +10,7 @@ object CirceToPlayConversions {
     Reads { playAst =>
       decoder.decodeJson(playToCirce(playAst)) match {
         case Right(success) => JsSuccess(success)
-        case Left(err) => JsError(err.message)
+        case Left(err)      => JsError(err.message)
       }
     }
 
@@ -19,4 +19,3 @@ object CirceToPlayConversions {
       circeToPlay(encoder(value))
     }
 }
-

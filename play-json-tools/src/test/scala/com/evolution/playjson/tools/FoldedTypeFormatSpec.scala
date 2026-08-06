@@ -81,7 +81,8 @@ class FoldedTypeFormatSpec extends AnyWordSpec with Matchers {
       case GenericObj      => ("GenericObj", genericObjFormat.writes(GenericObj))
       case x: GenericClass => ("GenericClass", genericClassFormat.writes(x))
       case x: Specific     => ("Specific", SpecificFormat.writes(x))
-    })
+    }
+  )
 }
 
 object FoldedTypeFormatSpec {

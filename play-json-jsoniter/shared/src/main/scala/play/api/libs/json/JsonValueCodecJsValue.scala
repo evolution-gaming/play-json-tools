@@ -6,8 +6,7 @@ import java.math.{BigDecimal => JavaBigDecimal}
 import java.nio.charset.StandardCharsets
 import scala.annotation.tailrec
 
-/**
-  * INTERNAL API: It is an internal implementation for [[com.evolution.playjson.jsoniter.PlayJsonJsoniter]]`.
+/** INTERNAL API: It is an internal implementation for [[com.evolution.playjson.jsoniter.PlayJsonJsoniter]]`.
   *
   * Numbers are written as play-json's own JVM serializer writes them: trailing zeros stripped, and
   * scientific notation outside `[minPlain, maxPlain]` of the `BigDecimalSerializerConfig`. A number
@@ -28,13 +27,14 @@ object JsonValueCodecJsValue {
   @deprecated(
     "Reading settings are given here, writing settings are taken from the global " +
       "JsonConfig.settings. Pass both explicitly instead.",
-    "1.4.0")
+    "1.4.0"
+  )
   def apply(bigDecimalParseSettings: BigDecimalParseConfig): JsonValueCodec[JsValue] =
     apply(bigDecimalParseSettings, JsonConfig.settings.bigDecimalSerializerConfig)
 
   def apply(
-    bigDecimalParseSettings: BigDecimalParseConfig,
-    bigDecimalSerializerSettings: BigDecimalSerializerConfig
+      bigDecimalParseSettings: BigDecimalParseConfig,
+      bigDecimalSerializerSettings: BigDecimalSerializerConfig
   ): JsonValueCodec[JsValue] =
     new JsonValueCodec[JsValue] {
       def decodeValue(in: JsonReader, default: JsValue): JsValue = {
@@ -52,7 +52,8 @@ object JsonValueCodecJsValue {
             null,
             bigDecimalParseSettings.mathContext,
             bigDecimalParseSettings.scaleLimit,
-            bigDecimalParseSettings.digitsLimit))
+            bigDecimalParseSettings.digitsLimit
+          ))
         } else if (b == '[') {
           if (in.isNextToken(']')) JsArray.empty
           else {
@@ -68,7 +69,8 @@ object JsonValueCodecJsValue {
             if (in.isCurrentToken(']')) new JsArray({
               if (i == vs.length) vs
               else java.util.Arrays.copyOf(vs, i)
-            }) else in.arrayEndOrCommaError()
+            })
+            else in.arrayEndOrCommaError()
           }
         } else if (b == '{') {
           if (in.isNextToken('}')) JsObject.empty
@@ -82,7 +84,8 @@ object JsonValueCodecJsValue {
             if (in.isCurrentToken('}')) new JsObject({
               import scala.jdk.CollectionConverters._
               kvs.asScala
-            }) else in.objectEndOrCommaError()
+            })
+            else in.objectEndOrCommaError()
           }
         } else in.readNullOrError(default, "expected JSON value")
       }
@@ -110,8 +113,7 @@ object JsonValueCodecJsValue {
             out.writeNull()
         }
 
-      /**
-        * Whether the configured settings are wide enough for [[needsNoNormalization]] to imply
+      /** Whether the configured settings are wide enough for [[needsNoNormalization]] to imply
         * play-json parity. Computed once: the reasoning there is about magnitudes and digit counts,
         * and only holds while the plain range and the parse limits contain them.
         */
@@ -128,16 +130,14 @@ object JsonValueCodecJsValue {
         else encodeNormalizedBigDecimal(decimal, value.abs, out)
       }
 
-      /**
-        * Whether the value is a whole number play-json would write as plain digits, which is what
+      /** Whether the value is a whole number play-json would write as plain digits, which is what
         * writing the unscaled value as a `Long` produces. Trailing zeros make no difference here:
         * stripping them only turns the scale negative, and the plain range turns it straight back.
         */
       private def isSmallWholeNumber(decimal: JavaBigDecimal): Boolean =
         decimal.scale == 0 && decimal.precision <= FastPathMostSignificantDigits
 
-      /**
-        * Whether jsoniter's own `BigDecimal` writer already produces what play-json would, which
+      /** Whether jsoniter's own `BigDecimal` writer already produces what play-json would, which
         * spares the value the normalization and limit checks below.
         *
         * Everything in this range renders plain — `scale <= precision + 5` is Java's rule for not
@@ -153,9 +153,9 @@ object JsonValueCodecJsValue {
       }
 
       private def encodeNormalizedBigDecimal(
-        decimal: JavaBigDecimal,
-        absolute: BigDecimal,
-        out: JsonWriter
+          decimal: JavaBigDecimal,
+          absolute: BigDecimal,
+          out: JsonWriter
       ): Unit = {
         val stripped = stripTrailingZeros(decimal)
         val writePlain =
@@ -171,14 +171,16 @@ object JsonValueCodecJsValue {
           val digits = countDigits(raw)
           if (digits >= bigDecimalParseSettings.digitsLimit) {
             out.encodeError(
-              s"number of digits $digits exceeds the parse limit of ${bigDecimalParseSettings.digitsLimit}")
+              s"number of digits $digits exceeds the parse limit of ${bigDecimalParseSettings.digitsLimit}"
+            )
           }
 
           val mathContext = bigDecimalParseSettings.mathContext
           val readBack = if (mathContext.getPrecision < digits) written.plus(mathContext) else written
           if (Math.abs(readBack.scale) >= bigDecimalParseSettings.scaleLimit) {
             out.encodeError(
-              s"scale ${readBack.scale} exceeds the parse limit of ${bigDecimalParseSettings.scaleLimit}")
+              s"scale ${readBack.scale} exceeds the parse limit of ${bigDecimalParseSettings.scaleLimit}"
+            )
           }
 
           out.writeRawVal(raw.getBytes(StandardCharsets.US_ASCII))
@@ -192,8 +194,7 @@ object JsonValueCodecJsValue {
         } else stripped
       }
 
-      /**
-        * Counts digits the way `JsonReader` counts them while parsing, which is every digit of the
+      /** Counts digits the way `JsonReader` counts them while parsing, which is every digit of the
         * integer and fraction parts and none of the exponent. Leading and trailing zeros count too,
         * so `0.00000000015` is twelve digits rather than two — that is what makes the count
         * comparable to `digitsLimit`. `raw` comes from `BigDecimal.toString`, which separates the

@@ -155,7 +155,7 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
       "1969-12-31T23:59:59.999Z",
       "1970-01-01T00:00:00.000Z",
       "2026-08-03T10:15:30.123Z",
-      "+292278994-08-17T07:12:55.807Z",
+      "+292278994-08-17T07:12:55.807Z"
     )
 
     written.foreach { text =>
@@ -214,7 +214,7 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
   }
 
   private def errorMessagesOf(result: JsResult[Any]): String = result match {
-    case JsError(errors) => errors.flatMap { case (_, invalid) => invalid.flatMap(_.messages) }.mkString(", ")
+    case JsError(errors)     => errors.flatMap { case (_, invalid) => invalid.flatMap(_.messages) }.mkString(", ")
     case JsSuccess(value, _) => s"read successfully as $value"
   }
 

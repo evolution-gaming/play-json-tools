@@ -18,12 +18,15 @@ All modules are available for 2.13 and 3.
 
 ## Setup
 
+Replace `<version>` with the latest release, which the version badge above links to.
+
 ```scala
 addSbtPlugin("com.evolution" % "sbt-artifactory-plugin" % "0.0.2")
 
-libraryDependencies += "com.evolution" %% "play-json-tools"   % "1.0.0"
-libraryDependencies += "com.evolution" %% "play-json-generic" % "1.0.0"
-libraryDependencies += "com.evolution" %% "play-json-jsoniter" % "1.0.0"
+libraryDependencies += "com.evolution" %% "play-json-tools"    % "<version>"
+libraryDependencies += "com.evolution" %% "play-json-generic"  % "<version>"
+libraryDependencies += "com.evolution" %% "play-json-jsoniter" % "<version>"
+libraryDependencies += "com.evolution" %% "play-json-circe"    % "<version>"
 ```
 
 ## Release process

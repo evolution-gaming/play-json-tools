@@ -13,17 +13,21 @@ class MapValuesFormatSpec extends AnyWordSpec with Matchers {
 
     val values = List(
       Entry("k1", 1),
-      Entry("k2", 2))
+      Entry("k2", 2)
+    )
 
     val map = values.map { x => (x.id, x) }.toMap
 
     val json = Json.arr(
       Json.obj(
         "id" -> "k1",
-        "value" -> 1),
+        "value" -> 1
+      ),
       Json.obj(
         "id" -> "k2",
-        "value" -> 2))
+        "value" -> 2
+      )
+    )
 
     "convert to json" in {
       mapFormat.writes(map) shouldEqual json

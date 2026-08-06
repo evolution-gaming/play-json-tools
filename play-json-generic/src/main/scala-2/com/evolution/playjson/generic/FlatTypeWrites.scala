@@ -22,10 +22,11 @@ object FlatTypeWrites {
       key: Witness.Aux[Key],
       headWrites: OWrites[Head],
       tailWrites: FlatTypeWrites[Tail],
-      nameCodingStrategy: NameCodingStrategy): FlatTypeWrites[FieldType[Key, Head] :+: Tail] =
+      nameCodingStrategy: NameCodingStrategy
+  ): FlatTypeWrites[FieldType[Key, Head] :+: Tail] =
     create[FieldType[Key, Head] :+: Tail] {
       _.eliminate(
-        head => Json.obj("type" -> s"${ nameCodingStrategy(key.value.name) }") ++ (headWrites writes head),
+        head => Json.obj("type" -> s"${nameCodingStrategy(key.value.name)}") ++ (headWrites writes head),
         tail => tailWrites writes tail
       )
     }

@@ -22,7 +22,7 @@ class TypeFormatSpec extends AnyFunSuite with Matchers {
 
     def writes(o: Animal): JsObject = o match {
       case x: Mammal => writes("Mammal", mammalFormat.writes(x))
-      case Sloth => writes("Sloth", slothFormat.writes(Sloth))
+      case Sloth     => writes("Sloth", slothFormat.writes(Sloth))
     }
   }
 

@@ -14,7 +14,7 @@ class StringKeyMapFormatSpec extends AnyWordSpec with Matchers {
     implicit val entryFormat = Json.format[Value]
 
     val mapFormat = OFormat(
-      reads(k => Try{ Key(k) }.toOption),
+      reads(k => Try { Key(k) }.toOption),
       writes[Key, Value](_.id.toString)
     )
 
@@ -22,7 +22,8 @@ class StringKeyMapFormatSpec extends AnyWordSpec with Matchers {
 
     val json = Json.obj(
       "42" -> Json.obj("value" -> 1),
-      "1" -> Json.obj("value" -> 42))
+      "1" -> Json.obj("value" -> 42)
+    )
 
     "convert to json" in {
       mapFormat.writes(map) shouldEqual json

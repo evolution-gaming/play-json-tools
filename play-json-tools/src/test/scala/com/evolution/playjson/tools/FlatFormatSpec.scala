@@ -8,11 +8,11 @@ import play.api.libs.json.{Format, Json}
 
 import scala.reflect.ClassTag
 
-
 class FlatFormatSpec extends AnyFunSuite with Matchers {
   private val json = Json.obj(
     "outer" -> "outer",
-    "inner" -> "inner")
+    "inner" -> "inner"
+  )
   private val outer = Outer("outer", Inner("inner"))
 
   test("read flat json") {

@@ -9,21 +9,20 @@ import java.math.MathContext
 import java.nio.charset.StandardCharsets
 import scala.util.Success
 
-/**
- * Contract tests for the BigDecimal handling of [[PlayJsonJsoniter]].
- *
- * The contract is behavior parity with play-json plus round-trip consistency:
- *
- *   - serialization produces the same bytes as play-json's own JVM serializer: trailing zeros are
- *     stripped and values outside `[minPlain, maxPlain]` of
- *     `JsonConfig.settings.bigDecimalSerializerConfig` are written in scientific notation.
- *   - every value the codec serializes it can also deserialize under the limits of
- *     `JsonConfig.settings.bigDecimalParseConfig` (digitsLimit, scaleLimit), when no
- *     representation of a value fits those limits, serialization fails fast instead of
- *     producing bytes that cannot be read back.
- *   - reading applies `MathContext.DECIMAL128` exactly like play-json, so values with more
- *     than 34 significant digits deserialize to their rounded form.
- */
+/** Contract tests for the BigDecimal handling of [[PlayJsonJsoniter]].
+  *
+  * The contract is behavior parity with play-json plus round-trip consistency:
+  *
+  *   - serialization produces the same bytes as play-json's own JVM serializer: trailing zeros are
+  *     stripped and values outside `[minPlain, maxPlain]` of
+  *     `JsonConfig.settings.bigDecimalSerializerConfig` are written in scientific notation.
+  *   - every value the codec serializes it can also deserialize under the limits of
+  *     `JsonConfig.settings.bigDecimalParseConfig` (digitsLimit, scaleLimit), when no
+  *     representation of a value fits those limits, serialization fails fast instead of
+  *     producing bytes that cannot be read back.
+  *   - reading applies `MathContext.DECIMAL128` exactly like play-json, so values with more
+  *     than 34 significant digits deserialize to their rounded form.
+  */
 class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
 
   // one significant digit, but 313 plain characters once scale is 2, must be written as "1E+309"
@@ -147,7 +146,8 @@ class JsoniterBigDecimalRoundTripSpec extends AnyFunSuite with Matchers {
     val settings = BigDecimalSerializerConfig(
       minPlain = JsonConfig.settings.bigDecimalSerializerConfig.minPlain,
       maxPlain = JsonConfig.settings.bigDecimalSerializerConfig.maxPlain,
-      preserveZeroDecimal = true)
+      preserveZeroDecimal = true
+    )
     implicit val codec: JsonValueCodec[JsValue] =
       JsonValueCodecJsValue(JsonConfig.settings.bigDecimalParseConfig, settings)
 

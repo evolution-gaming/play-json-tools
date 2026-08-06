@@ -26,10 +26,10 @@ object NestedTypeWrites {
   }
 
   implicit def cconsWrites[Key <: Symbol, Head, Tail <: Coproduct](implicit
-    headWrites: OWrites[Head],
-    tailWrites: NestedTypeWrites[Tail],
-    tag: ClassTag[Head])
-  : NestedTypeWrites[FieldType[Key, Head] :+: Tail] =
+      headWrites: OWrites[Head],
+      tailWrites: NestedTypeWrites[Tail],
+      tag: ClassTag[Head]
+  ): NestedTypeWrites[FieldType[Key, Head] :+: Tail] =
     NestedTypeWrites.create[FieldType[Key, Head] :+: Tail] {
       _.eliminate(
         head => Json.obj("type" -> tag.classFullName()) ++ (headWrites writes head),
@@ -38,7 +38,7 @@ object NestedTypeWrites {
     }
 
   implicit def nestedTypeWrites[A, Repr <: Coproduct](implicit
-    gen: LabelledGeneric.Aux[A, Repr],
-    writes: NestedTypeWrites[Repr]
+      gen: LabelledGeneric.Aux[A, Repr],
+      writes: NestedTypeWrites[Repr]
   ): NestedTypeWrites[A] = NestedTypeWrites.create[A] { a => writes writes gen.to(a) }
 }

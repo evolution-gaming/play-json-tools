@@ -2,7 +2,7 @@ package com.evolution.playjson.generic
 
 import play.api.libs.json._
 
-class Enumeration[A] private(enumMappings: EnumMappings[A]) {
+class Enumeration[A] private (enumMappings: EnumMappings[A]) {
 
   def format(implicit nameCodingStrategy: NameCodingStrategy): Format[A] = new Format[A] {
 
@@ -16,7 +16,7 @@ class Enumeration[A] private(enumMappings: EnumMappings[A]) {
         s <- json.validate[JsString]
         v <- valuesLookup.get(s.value) match {
           case Some(v) => JsSuccess(v)
-          case None    => JsError(s"Cannot parse ${ s.value }")
+          case None    => JsError(s"Cannot parse ${s.value}")
         }
       } yield v
     }

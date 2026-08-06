@@ -7,8 +7,7 @@ import play.api.libs.json.{Format, JsError, JsNumber, JsString, JsSuccess}
 
 import java.time._
 
-/**
-  * Contract tests for the java.time formats of [[PlayJsonJsoniter]]: every format writes a value in
+/** Contract tests for the java.time formats of [[PlayJsonJsoniter]]: every format writes a value in
   * a pinned form and reads it back, and a value it cannot read is reported against the name of the
   * type it was asked to read.
   */
@@ -19,8 +18,7 @@ class JavaTimeFormatsSpec extends AnyFunSuite with Matchers {
     assertReadErrorNames(name, written)(format)
   }
 
-  /**
-    * Pins the written form as well as the round trip: a change of codec that still round-tripped
+  /** Pins the written form as well as the round trip: a change of codec that still round-tripped
     * would go unnoticed otherwise, and the written form is what every other reader of the wire sees.
     */
   private def assertRoundTrip[A](value: A, written: String)(implicit format: Format[A]): Unit = {
@@ -36,8 +34,7 @@ class JavaTimeFormatsSpec extends AnyFunSuite with Matchers {
     ()
   }
 
-  /**
-    * The written form with every character moved out of ASCII, its low byte unchanged. The reader
+  /** The written form with every character moved out of ASCII, its low byte unchanged. The reader
     * narrows a character at a time into a byte buffer, so these would read back as the value they
     * were derived from if it did not check the high bits itself.
     */

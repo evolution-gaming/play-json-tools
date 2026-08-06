@@ -10,7 +10,6 @@ import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
-
 object PlayJsonHelper {
 
   implicit val UrlFormat: Format[URL] = new Format[URL] {
@@ -26,28 +25,26 @@ object PlayJsonHelper {
     def writes(o: URL): JsValue = JsString(o.toString)
   }
 
-
   implicit val FiniteDurationFormat: Format[FiniteDuration] = new Format[FiniteDuration] {
 
     // matching the shape first rather than `readStr orElse readNum`: `orElse` drops the errors of
     // the first branch, so a string that does not parse used to be reported as a missing number
     def reads(json: JsValue) = json match {
       case JsString(string) => Try(Duration(string)) match {
-        case Success(duration: FiniteDuration) => JsSuccess(duration.toCoarsest)
-        case Success(duration)                 => JsError(s"$duration is not a finite duration")
-        case Failure(error)                    => JsError(error.toString)
-      }
-      case _ => json.validate[Long].flatMap { millis =>
-        Try(millis.millis) match {
-          case Success(duration) => JsSuccess(duration)
-          case Failure(error)    => JsError(error.toString)
+          case Success(duration: FiniteDuration) => JsSuccess(duration.toCoarsest)
+          case Success(duration)                 => JsError(s"$duration is not a finite duration")
+          case Failure(error)                    => JsError(error.toString)
         }
-      }
+      case _ => json.validate[Long].flatMap { millis =>
+          Try(millis.millis) match {
+            case Success(duration) => JsSuccess(duration)
+            case Failure(error)    => JsError(error.toString)
+          }
+        }
     }
 
     def writes(o: FiniteDuration): JsString = JsString(o.toCoarsest.toString)
   }
-
 
   implicit val InstantFormat: Format[Instant] = new Format[Instant] {
 
@@ -65,17 +62,16 @@ object PlayJsonHelper {
       // see the note on FiniteDurationFormat.reads for why the shape is matched first
       json match {
         case JsString(string) => parse(string) match {
-          case Success(instant) => JsSuccess(instant)
-          case Failure(error)   => JsError(error.toString)
-        }
-        case _                => for {millis <- json.validate[Long]} yield Instant.ofEpochMilli(millis)
+            case Success(instant) => JsSuccess(instant)
+            case Failure(error)   => JsError(error.toString)
+          }
+        case _ => for { millis <- json.validate[Long] } yield Instant.ofEpochMilli(millis)
       }
     }
 
     /** Writes milliseconds, so any finer precision the instant carries is dropped. */
     def writes(o: Instant): JsValue = JsString(millisFormatter.format(o))
   }
-
 
   implicit val LocalTimeFormat: Format[LocalTime] = new Format[LocalTime] {
 
@@ -94,27 +90,26 @@ object PlayJsonHelper {
     def writes(o: LocalTime): JsValue = JsString(timeFormatter.format(o))
   }
 
-
   object ObjectFormat {
 
     def apply[A](
-      from: String => Option[A],
-      to: A => String = (x: A) => x.toString)(implicit
-      tag: ClassTag[A]
+        from: String => Option[A],
+        to: A => String = (x: A) => x.toString
+    )(implicit
+        tag: ClassTag[A]
     ): Format[A] = {
 
       new Format[A] {
 
         def reads(json: JsValue) = for {
           a <- json.validate[String]
-          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${ tag.runtimeClass.getName } found for $a"))
+          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${tag.runtimeClass.getName} found for $a"))
         } yield a
 
         def writes(a: A): JsString = JsString(to(a))
       }
     }
   }
-
 
   object ObjectNumericFormat {
 
@@ -124,14 +119,13 @@ object PlayJsonHelper {
 
         def reads(json: JsValue) = for {
           a <- json.validate[BigDecimal]
-          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${ tag.runtimeClass.getName } found for $a"))
+          a <- from(a).map(JsSuccess(_)).getOrElse(JsError(s"No ${tag.runtimeClass.getName} found for $a"))
         } yield a
 
         def writes(x: A): JsNumber = JsNumber(to(x))
       }
     }
   }
-
 
   object MapValuesFormat {
 
@@ -152,7 +146,6 @@ object PlayJsonHelper {
     }
   }
 
-
   object StringKeyMapFormat {
 
     def apply[K, V: Format](readKey: String => Option[K], writeKey: K => String): OFormat[Map[K, V]] = {
@@ -171,7 +164,6 @@ object PlayJsonHelper {
     def writes[K, V: Writes](writeKey: K => String): OWrites[Map[K, V]] = StringMapWrites[K, V](writeKey)
   }
 
-
   object StringMapFormat {
 
     def apply[K, V: Format](toStr: K => String, fromStr: String => JsResult[K]): OFormat[Map[K, V]] = {
@@ -180,7 +172,6 @@ object PlayJsonHelper {
       OFormat(reads, writes)
     }
   }
-
 
   object StringMapWrites {
 
@@ -197,12 +188,10 @@ object PlayJsonHelper {
     }
   }
 
-
   object StringMapReads {
 
     def apply[K, V: Reads](fromStr: String => JsResult[K]): Reads[Map[K, V]] = Reads.mapReads[K, V](fromStr)
   }
-
 
   object MapFormatUnsafe {
 
@@ -219,7 +208,6 @@ object PlayJsonHelper {
     }
   }
 
-
   object MapFormat {
 
     def apply[K: Format, V: Format](keyName: String)(implicit tag: ClassTag[V]): Format[Map[K, V]] = {
@@ -231,14 +219,13 @@ object PlayJsonHelper {
         case _: NoSuchFieldException => true
       }
 
-      require(fieldNotFound, s"Cannot use key $keyName because such field exists in ${ tag.runtimeClass }")
+      require(fieldNotFound, s"Cannot use key $keyName because such field exists in ${tag.runtimeClass}")
 
       val reads = MapReads[K, V](keyName)
       val writes = MapWrites[K, V](keyName)
       Format[Map[K, V]](reads, writes)
     }
   }
-
 
   object MapWrites {
 
@@ -263,7 +250,6 @@ object PlayJsonHelper {
       }
     }
   }
-
 
   object MapReads {
 
@@ -291,7 +277,6 @@ object PlayJsonHelper {
       }
     }
   }
-
 
   object FlatFormat {
 
@@ -322,7 +307,6 @@ object PlayJsonHelper {
     }
   }
 
-
   implicit class ReadsOpsPlayJsonHelper[A](val self: Reads[A]) extends AnyVal {
 
     def narrowReads[B <: A](implicit tag: ClassTag[B]): Reads[B] = {
@@ -331,24 +315,21 @@ object PlayJsonHelper {
           .reads(json)
           .flatMap {
             case tag(a) => JsSuccess(a)
-            case _      => JsError(JsonValidationError(s"${ tag.runtimeClass } expected"))
+            case _      => JsError(JsonValidationError(s"${tag.runtimeClass} expected"))
           }
       }
     }
   }
-
 
   implicit class WritesOpsPlayJsonHelper[A](val self: Writes[A]) extends AnyVal {
 
     def narrowWrites[B <: A]: Writes[B] = self.contramap[B](identity)
   }
 
-
   implicit class OWritesOpsPlayJsonHelper[A](val self: OWrites[A]) extends AnyVal {
 
     def narrowOWrites[B <: A]: OWrites[B] = self.contramap[B](identity)
   }
-
 
   implicit class FormatOpsPlayJsonHelper[A](val self: Format[A]) extends AnyVal {
 
@@ -356,7 +337,6 @@ object PlayJsonHelper {
       Format(self.narrowReads[B], self.narrowWrites[B])
     }
   }
-
 
   implicit class OFormatOpsPlayJsonHelper[A](val self: OFormat[A]) extends AnyVal {
 
@@ -382,7 +362,6 @@ object PlayJsonHelper {
     }
   }
 
-
   implicit class EitherOpsPlayJsonHelper[L, R](val self: Either[L, R]) extends AnyVal {
 
     def jsResult: JsResult[R] = self match {
@@ -391,9 +370,7 @@ object PlayJsonHelper {
     }
   }
 
-
-  /**
-    * The `Either` format this object has always supplied, kept behind an explicit opt-in because a
+  /** The `Either` format this object has always supplied, kept behind an explicit opt-in because a
     * document it writes cannot always be read back as what it was.
     *
     * A `Left` is written as `{"left": ...}` and a `Right` as the bare value, and reads try `left`
@@ -417,9 +394,9 @@ object PlayJsonHelper {
         }
 
         def reads(json: JsValue): JsResult[Either[L, R]] = {
-          def left = for {left <- (json \ "left").validate[L]} yield Left(left)
+          def left = for { left <- (json \ "left").validate[L] } yield Left(left)
 
-          def right = for {right <- json.validate[R]} yield Right(right)
+          def right = for { right <- json.validate[R] } yield Right(right)
 
           left.orElse(right)
         }
@@ -430,7 +407,8 @@ object PlayJsonHelper {
     "A Right can read back as a Left, see EitherFormatUnsafe. Opt into it explicitly, excluding this " +
       "one from a wildcard import as `PlayJsonHelper.{eitherFormat => _, _}`, or move to " +
       "DiscriminatedEitherFormat.eitherFormat, which labels both sides but writes a different document",
-    "1.4.0")
+    "1.4.0"
+  )
   implicit def eitherFormat[L, R](implicit lf: Format[L], rf: Format[R]): Format[Either[L, R]] =
     EitherFormatUnsafe.eitherFormat
 
@@ -450,11 +428,12 @@ object PlayJsonHelper {
       }
 
     def eitherReads[A, B](
-      keyLeft: String,
-      keyRight: String,
+        keyLeft: String,
+        keyRight: String
     )(
-      implicit ra: Reads[A],
-      rb: Reads[B],
+        implicit
+        ra: Reads[A],
+        rb: Reads[B]
     ): Reads[Either[A, B]] =
       Reads[Either[A, B]] { json =>
         valueFromUnambiguousKey[A](keyLeft, keyRight).reads(json).map(Left(_))
@@ -463,23 +442,25 @@ object PlayJsonHelper {
       }
 
     def eitherWrites[A, B](
-      keyLeft: String,
-      keyRight: String,
+        keyLeft: String,
+        keyRight: String
     )(
-      implicit wa: Writes[A],
-      wb: Writes[B],
+        implicit
+        wa: Writes[A],
+        wb: Writes[B]
     ): OWrites[Either[A, B]] =
       OWrites[Either[A, B]] {
-        case Left(a) => Json.obj(keyLeft -> wa.writes(a))
+        case Left(a)  => Json.obj(keyLeft -> wa.writes(a))
         case Right(b) => Json.obj(keyRight -> wb.writes(b))
       }
 
     def eitherFormat[A, B](
-      keyLeft: String,
-      keyRight: String,
+        keyLeft: String,
+        keyRight: String
     )(
-      implicit fa: Format[A],
-      fb: Format[B],
+        implicit
+        fa: Format[A],
+        fb: Format[B]
     ): OFormat[Either[A, B]] =
       OFormat.apply(eitherReads[A, B](keyLeft, keyRight), eitherWrites[A, B](keyLeft, keyRight))
   }
@@ -508,7 +489,6 @@ object PlayJsonHelper {
       Json.obj("type" -> t) ++ json
     }
   }
-
 
   object FoldedTypeFormat {
 
@@ -547,7 +527,6 @@ object PlayJsonHelper {
     }
   }
 
-
   implicit def nelFormat[A: Format]: Format[Nel[A]] = new Format[Nel[A]] {
 
     def reads(json: JsValue): JsResult[Nel[A]] = for {
@@ -560,7 +539,6 @@ object PlayJsonHelper {
 
     def writes(x: Nel[A]): JsValue = Json toJson x.toList
   }
-
 
   implicit val UnitFormat: Format[Unit] = new Format[Unit] {
 

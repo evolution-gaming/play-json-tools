@@ -7,14 +7,13 @@ import play.api.libs.json.{JsSuccess, Json}
 
 import java.nio.charset.StandardCharsets
 
-/**
- * Covers the direction [[JsoniterSpec]] does not: documents written by this codec and read by
- * play-json.
- *
- * JVM only on purpose. play-json's Scala.js backend writes numbers as `toString`, without the
- * trailing-zero stripping and plain-range handling of its JVM serializer, so byte parity is a
- * claim about the JVM alone.
- */
+/** Covers the direction [[JsoniterSpec]] does not: documents written by this codec and read by
+  * play-json.
+  *
+  * JVM only on purpose. play-json's Scala.js backend writes numbers as `toString`, without the
+  * trailing-zero stripping and plain-range handling of its JVM serializer, so byte parity is a
+  * claim about the JVM alone.
+  */
 class JsoniterPlayJsonParitySpec extends AnyFunSuite with Matchers {
 
   private def dataLine: DataLine =

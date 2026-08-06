@@ -6,7 +6,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.{json => play}
 
-
 class PlayCirceAstConversionsSmokeSpec extends AnyFreeSpec with TableDrivenPropertyChecks with Matchers {
 
   "Play to/from Circe AST conversions" in {
@@ -25,7 +24,7 @@ class PlayCirceAstConversionsSmokeSpec extends AnyFreeSpec with TableDrivenPrope
         (
           play.Json.obj("inner" -> play.Json.obj("null" -> play.JsNull)),
           circe.Json.obj("inner" -> circe.Json.obj("null" -> circe.Json.Null))
-        ),
+        )
       )
     } { (playAst, circeAst) =>
       assert(PlayCirceAstConversions.playToCirce(playAst) == circeAst, "[from play to circe]")
@@ -33,6 +32,5 @@ class PlayCirceAstConversionsSmokeSpec extends AnyFreeSpec with TableDrivenPrope
     }
 
   }
-
 
 }
