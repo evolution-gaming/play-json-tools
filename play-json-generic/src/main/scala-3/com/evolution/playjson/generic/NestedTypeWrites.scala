@@ -38,7 +38,7 @@ object NestedTypeWrites:
       prefix: String
   ): List[NestedTypeWrites[?]] =
     inline erasedValue[T] match
-      case _: EmptyTuple => Nil
+      case _: EmptyTuple     => Nil
       case _: (head *: tail) =>
         summonWrite[head](prefix) :: summonWrites[tail](prefix)
 

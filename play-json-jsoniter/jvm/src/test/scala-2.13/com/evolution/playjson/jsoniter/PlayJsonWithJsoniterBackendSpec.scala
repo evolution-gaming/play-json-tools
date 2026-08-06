@@ -22,7 +22,7 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
   }
 
   property("Write using PlayJson -> Read using Jsoniter. Batch") = forAll(
-    Gen.containerOfN[Vector, User](Size, genUser),
+    Gen.containerOfN[Vector, User](Size, genUser)
   ) { (batch: Vector[User]) =>
     val bools = batch.map { user =>
       val jsValue = Json.toJson(user)
@@ -40,7 +40,7 @@ object PlayJsonWithJsoniterBackendSpec extends org.scalacheck.Properties("PlayJs
   }
 
   property("Write using Jsoniter -> Read using Jsoniter. Batch") = forAll(
-    Gen.containerOfN[Vector, User](Size, genUser),
+    Gen.containerOfN[Vector, User](Size, genUser)
   ) { (batch: Vector[User]) =>
     val bools = batch.map { user =>
       val jsValue = Json.toJson(user)

@@ -9,27 +9,27 @@ object TestData {
   case class Friend(id: Int, name: String)
 
   case class DataLine(
-    id: String,
-    index: Int,
-    guid: String,
-    isActive: Boolean,
-    balance: String,
-    picture: String,
-    age: Int,
-    eyeColor: String,
-    name: String,
-    gender: String,
-    company: String,
-    phone: String,
-    address: String,
-    about: String,
-    registered: OffsetDateTime,
-    latitude: Double,
-    longitude: Double,
-    tags: List[String],
-    friends: List[Friend],
-    greeting: String,
-    favoriteFruit: String
+      id: String,
+      index: Int,
+      guid: String,
+      isActive: Boolean,
+      balance: String,
+      picture: String,
+      age: Int,
+      eyeColor: String,
+      name: String,
+      gender: String,
+      company: String,
+      phone: String,
+      address: String,
+      about: String,
+      registered: OffsetDateTime,
+      latitude: Double,
+      longitude: Double,
+      tags: List[String],
+      friends: List[Friend],
+      greeting: String,
+      favoriteFruit: String
   )
 
   val jsonBody =

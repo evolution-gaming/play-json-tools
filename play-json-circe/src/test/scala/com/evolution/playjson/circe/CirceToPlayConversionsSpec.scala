@@ -7,7 +7,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{JsSuccess, Json}
 
-
 class CirceToPlayConversionsSpec extends AnyFreeSpec with TableDrivenPropertyChecks with Matchers {
   case class Test(value: Int)
 
@@ -19,7 +18,7 @@ class CirceToPlayConversionsSpec extends AnyFreeSpec with TableDrivenPropertyChe
 
     "given circe Encoder can derive play-json Writes" in {
       implicit val encoder: Encoder[Test] = Encoder.forProduct1("value")(_.value)
-      assert(Json.toJson(Test(42)) === Json.obj("value"-> 42))
+      assert(Json.toJson(Test(42)) === Json.obj("value" -> 42))
     }
   }
 }

@@ -22,16 +22,15 @@ object FlatTypeReads {
       key: Witness.Aux[Key],
       headReads: Reads[Head],
       tailReads: FlatTypeReads[Tail],
-      nameCodingStrategy: NameCodingStrategy): FlatTypeReads[FieldType[Key, Head] :+: Tail] =
+      nameCodingStrategy: NameCodingStrategy
+  ): FlatTypeReads[FieldType[Key, Head] :+: Tail] =
     create[FieldType[Key, Head] :+: Tail] { json =>
-
       for {
         o <- json.validate[JsObject]
         typ <- (o \ "type").validate[String]
         res <- if (typ == nameCodingStrategy(key.value.name)) {
           headReads reads (o - "type") map { z => Inl(field[Key](z)) }
-        }
-        else {
+        } else {
           tailReads reads o map { Inr(_) }
         }
       } yield res
@@ -39,7 +38,7 @@ object FlatTypeReads {
 
   implicit def flatTypeReads[A, Repr <: Coproduct](implicit
       gen: LabelledGeneric.Aux[A, Repr],
-      reads: FlatTypeReads[Repr]): FlatTypeReads[A] =
-    create[A] { json => reads reads json map { gen.from }
-  }
+      reads: FlatTypeReads[Repr]
+  ): FlatTypeReads[A] =
+    create[A] { json => reads reads json map { gen.from } }
 }

@@ -5,13 +5,14 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json}
 
-  class MapFormatUnsafeSpec extends AnyWordSpec with Matchers {
+class MapFormatUnsafeSpec extends AnyWordSpec with Matchers {
 
   "StringMapFormat" should {
 
     val json = Json.obj(
       "42" -> Json.obj("value" -> 1),
-      "1" -> Json.obj("value" -> 42))
+      "1" -> Json.obj("value" -> 42)
+    )
 
     implicit val entryFormat = Json.format[Value]
     val mapFormat = MapFormatUnsafe[Key, Value](_.id.toString, Key(_))

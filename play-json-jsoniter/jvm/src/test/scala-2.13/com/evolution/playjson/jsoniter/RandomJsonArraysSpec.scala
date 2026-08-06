@@ -12,7 +12,7 @@ object RandomJsonArraysSpec extends org.scalacheck.Properties("RandomJsonSpec") 
 
   val Size = 5000
 
-  //produces any imaginable Json array
+  // produces any imaginable Json array
   def randomArrayGen: Gen[value.JsArray] = RandomJsArrayGen()
 
   implicit def generator: Arbitrary[value.JsArray] = Arbitrary(randomArrayGen)

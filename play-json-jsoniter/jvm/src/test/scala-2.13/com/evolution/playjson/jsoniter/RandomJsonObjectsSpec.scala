@@ -12,7 +12,7 @@ object RandomJsonObjectsSpec extends org.scalacheck.Properties("RandomJsonObject
 
   val Size = 5000
 
-  //produces any imaginable Json object
+  // produces any imaginable Json object
   def randomObjGen: Gen[value.JsObj] = RandomJsObjGen()
 
   implicit def generator: Arbitrary[value.JsObj] = Arbitrary(randomObjGen)

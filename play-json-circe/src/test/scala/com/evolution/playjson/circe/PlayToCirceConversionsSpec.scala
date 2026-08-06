@@ -8,7 +8,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.libs.json.{Json, Reads, Writes}
 
-
 class PlayToCirceConversionsSpec extends AnyFreeSpec with TableDrivenPropertyChecks with Matchers {
   case class Test(value: Option[Int])
 

@@ -26,16 +26,15 @@ object NestedTypeReads {
   implicit def cconsReads[Key <: Symbol, Head, Tail <: Coproduct](implicit
       headReads: Reads[Head],
       tailReads: NestedTypeReads[Tail],
-      tag: ClassTag[Head]): NestedTypeReads[FieldType[Key, Head] :+: Tail] =
+      tag: ClassTag[Head]
+  ): NestedTypeReads[FieldType[Key, Head] :+: Tail] =
     create[FieldType[Key, Head] :+: Tail] { json =>
-
       for {
         o <- json.validate[JsObject]
         typ <- (o \ "type").validate[String]
         res <- if (typ == tag.classFullName()) {
           headReads reads (o - "type") map { z => Inl(field[Key](z)) }
-        }
-        else {
+        } else {
           tailReads reads o map { Inr(_) }
         }
       } yield res
@@ -43,7 +42,8 @@ object NestedTypeReads {
 
   implicit def nestedTypeReads[A, Repr <: Coproduct](implicit
       gen: LabelledGeneric.Aux[A, Repr],
-      reads: NestedTypeReads[Repr]): NestedTypeReads[A] =
+      reads: NestedTypeReads[Repr]
+  ): NestedTypeReads[A] =
     create[A] {
       json => reads reads json map { gen.from }
     }
