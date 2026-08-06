@@ -11,7 +11,7 @@ import scala.util.Try
 object PlayJsonJsoniter {
   implicit val jsValueCodec: JsonValueCodec[JsValue] = {
     val settings = JsonConfig.settings
-    JsonValueCodecJsValue(settings.bigDecimalParseConfig)
+    JsonValueCodecJsValue(settings.bigDecimalParseConfig, settings.bigDecimalSerializerConfig)
   }
   implicit val durationFormat: Format[Duration] =
     Formats.smallAsciiStringFormat[Duration]("Duration", _.readDuration(_), _.writeVal(_))
@@ -44,15 +44,30 @@ object PlayJsonJsoniter {
   implicit val zonedDateTimeFormat: Format[ZonedDateTime] =
     Formats.smallAsciiStringFormat[ZonedDateTime]("ZonedDateTime", _.readZonedDateTime(_), _.writeVal(_))
 
+  /**
+    * Throws `JsonWriterException` for a number that could not be read back, see
+    * [[play.api.libs.json.JsonValueCodecJsValue]].
+    */
   def serialize(payload: JsValue): Array[Byte] =
     writeToArray(payload)
 
+  /** Throws `JsonWriterException` for a number that could not be read back, see [[serialize]]. */
   def serializeToStr(payload: JsValue): String =
     writeToString(payload)
 
+  /**
+    * Throws `JsonWriterException` for a number that could not be read back, see [[serialize]].
+    * The failure is raised where the number is reached, so `bbuf` is left holding the part of the
+    * document written up to that point.
+    */
   def serializeToBuffer(payload: JsValue, bbuf: ByteBuffer): Unit =
      writeToByteBuffer(payload, bbuf)
 
+  /**
+    * Throws `JsonWriterException` for a number that could not be read back, see [[serialize]].
+    * The failure is raised where the number is reached, and the writer flushes as its buffer
+    * fills, so `out` may already have received an incomplete document.
+    */
   def serializeToOutput(payload: JsValue, out: OutputStream): Unit =
     writeToStream(payload, out)
 

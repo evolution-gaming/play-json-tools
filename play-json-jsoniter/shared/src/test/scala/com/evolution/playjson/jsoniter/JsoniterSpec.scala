@@ -21,7 +21,7 @@ class JsoniterSpec extends AnyFunSuite with Matchers {
     val jsValue = Json.toJson(expected)
     val bts0 = PlayJsonJsoniter.serialize(jsValue)
     val bts1 = Json.toBytes(jsValue)
-    new String(bts0, "UTF-8") shouldEqual new String(bts1, "UTF-8")
+    new String(bts0, StandardCharsets.UTF_8) shouldEqual new String(bts1, StandardCharsets.UTF_8)
   }
 
   test("Write using PlayJson -> Read using Jsoniter: Compare objects") {
