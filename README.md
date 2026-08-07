@@ -31,18 +31,25 @@
    documents no longer read. Overrides without a `$` failed while writing, so `$`-containing ones are
    the only documents of this shape that can exist.
 3. `play-json-jsoniter` — provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
+   Numbers are written exactly as play-json's JVM serializer writes them, which means a `BigDecimal` keeps its value
+   but not necessarily its scale: `100.00` is written as `100`. A number that could not be read back
+   under the configured parse limits is rejected with a `JsonWriterException` instead of being
+   written.
 4. `play-json-circe` — provides conversions to/from `circe` codecs to ease transitions from one library to another. Examples in [CirceToPlayConversionsSpec](play-json-circe/src/test/scala/com/evolution/playjson/circe/CirceToPlayConversionsSpec.scala) and [PlayToCirceConversionsSpec](play-json-circe/src/test/scala/com/evolution/playjson/circe/PlayToCirceConversionsSpec.scala).
 
 All modules are available for 2.13 and 3.
 
 ## Setup
 
+Replace `<version>` with the latest release, which the version badge above links to.
+
 ```scala
 addSbtPlugin("com.evolution" % "sbt-artifactory-plugin" % "0.0.2")
 
-libraryDependencies += "com.evolution" %% "play-json-tools"   % "1.0.0"
-libraryDependencies += "com.evolution" %% "play-json-generic" % "1.0.0"
-libraryDependencies += "com.evolution" %% "play-json-jsoniter" % "1.0.0"
+libraryDependencies += "com.evolution" %% "play-json-tools"    % "<version>"
+libraryDependencies += "com.evolution" %% "play-json-generic"  % "<version>"
+libraryDependencies += "com.evolution" %% "play-json-jsoniter" % "<version>"
+libraryDependencies += "com.evolution" %% "play-json-circe"    % "<version>"
 ```
 
 ## Release process

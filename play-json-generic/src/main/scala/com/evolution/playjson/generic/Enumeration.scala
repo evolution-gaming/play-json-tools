@@ -5,8 +5,9 @@ import play.api.libs.json._
 @deprecated(
   "Use EnumerationFormat.of, which reports labels the naming strategy collapses onto one another. " +
     "This one gives them one label, leaving all but one value unreadable",
-  "1.4.0")
-class Enumeration[A] private(enumMappings: EnumMappings[A]) {
+  "1.4.0"
+)
+class Enumeration[A] private (enumMappings: EnumMappings[A]) {
 
   def format(implicit nameCodingStrategy: NameCodingStrategy): Format[A] = new Format[A] {
 
@@ -20,7 +21,7 @@ class Enumeration[A] private(enumMappings: EnumMappings[A]) {
         s <- json.validate[JsString]
         v <- valuesLookup.get(s.value) match {
           case Some(v) => JsSuccess(v)
-          case None    => JsError(s"Cannot parse ${ s.value }")
+          case None    => JsError(s"Cannot parse ${s.value}")
         }
       } yield v
     }

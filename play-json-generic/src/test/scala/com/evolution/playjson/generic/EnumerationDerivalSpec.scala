@@ -49,7 +49,7 @@ class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
   }
 
   private def formatOf[A](implicit
-    enumMappings: EnumMappings[A],
-    nameCodingStrategy: NameCodingStrategy
+      enumMappings: EnumMappings[A],
+      nameCodingStrategy: NameCodingStrategy
   ): Format[A] = EnumerationFormat.of[A].fold(error => fail(error), identity)
 }

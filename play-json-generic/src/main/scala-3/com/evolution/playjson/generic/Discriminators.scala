@@ -4,8 +4,7 @@ import scala.compiletime.*
 import scala.deriving.Mirror
 import scala.reflect.ClassTag
 
-/**
-  * The names [[NestedTypeWrites]] writes the subtypes of `A` with, so that
+/** The names [[NestedTypeWrites]] writes the subtypes of `A` with, so that
   * [[NestedTypeFormat.of]] can report the ones it cannot tell apart. Every subtype has a name here,
   * since Scala 3 takes it from the sealed hierarchy, but two subtypes can share one: a plain object
   * around them contributes nothing, so subtypes of the same name in different objects collide.

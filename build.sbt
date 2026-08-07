@@ -2,8 +2,8 @@ import Dependencies.*
 
 import scala.collection.Seq
 
-val Scala213 = "2.13.18"
-val Scala3   = "3.3.8"
+val Scala213 = "2.13.16"
+val Scala3 = "3.3.8"
 
 val commonSettings = Seq(
   homepage := Some(url("https://github.com/evolution-gaming/play-json-tools")),
@@ -20,21 +20,26 @@ val commonSettings = Seq(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, _)) =>
         List(
-          "-Xsource:3",
+          "-Xsource:3"
         )
       case _ =>
         List(
           // improve error messages:
           "-explain",
-          "-explain-types",
+          "-explain-types"
         )
     }
-  },
+  }
 )
 
+// releases of this build are expected to keep binary compatibility; set this to
+// `Compatibility.None` in the commit that intends to break it, which is what lets `check` tell a
+// deliberate break from an accidental one
+ThisBuild / versionPolicyIntention := Compatibility.BinaryCompatible
+
 val alias: Seq[sbt.Def.Setting[?]] =
-  //  addCommandAlias("check", "all versionPolicyCheck Compile/doc") ++
-  addCommandAlias("check", "show version") ++
+  // the Scala version is left to the caller, since CI runs `check` once per version in its matrix
+  addCommandAlias("check", "all scalafmtCheckAll scalafmtSbtCheck versionPolicyCheck Compile/doc") ++
     addCommandAlias("build", "+all compile test")
 
 lazy val root = project
@@ -44,7 +49,7 @@ lazy val root = project
   .settings(
     commonSettings,
     publish / skip := true,
-    name := "play-json-tools",
+    name := "play-json-tools"
   )
   .aggregate(
     `play-json-tools`,
@@ -63,15 +68,18 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .settings(
     commonSettings,
-    libraryDependencies ++= (Seq(
-      playJson,
-      scalaTest % Test
-    ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, _)) =>
-        Seq(shapeless)
-      case _ =>
-        Seq()
-    })).map(excludeLog4j)
+    allowUnsafeScalaLibUpgrade := true,
+    libraryDependencies ++=
+      (Seq(
+        playJson,
+        scalaTest % Test
+      ) ++
+        (CrossVersion.partialVersion(scalaVersion.value) match {
+          case Some((2, _)) =>
+            Seq(shapeless)
+          case _ =>
+            Seq()
+        })).map(excludeLog4j)
   )
 
 lazy val `play-json-tools` = project
@@ -92,22 +100,43 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Full)
   .settings(
     commonSettings,
-    libraryDependencies ++= (Seq(
-      playJson,
-      jsoniter,
-      collectionCompact,
-      scalaTest % Test
-    ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, _)) =>
-        Seq(jsonGenerator % Test)
-      case _ =>
-        Seq()
-    })).map(excludeLog4j)
+    allowUnsafeScalaLibUpgrade := true,
+    libraryDependencies ++=
+      (Seq(
+        playJson,
+        jsoniter,
+        collectionCompact,
+        scalaTest % Test
+      ) ++
+        (CrossVersion.partialVersion(scalaVersion.value) match {
+          case Some((2, _)) =>
+            Seq(jsonGenerator % Test)
+          case _ =>
+            Seq()
+        })).map(excludeLog4j)
+  )
+
+// not part of the aggregate, benchmarks are run manually
+lazy val benchmark = project
+  .dependsOn(
+    `play-json-jsoniterJVM` % "test->test;compile->compile",
+    `play-json-circe` % "test->test;compile->compile"
+  )
+  .disablePlugins(MimaPlugin)
+  .enablePlugins(JmhPlugin)
+  .settings(
+    commonSettings,
+    publish / skip := true,
+    crossScalaVersions := Seq(Scala213),
+    Jmh / sourceDirectory := (Test / sourceDirectory).value,
+    Jmh / classDirectory := (Test / classDirectory).value,
+    Jmh / dependencyClasspath := (Test / dependencyClasspath).value
   )
 
 lazy val `play-json-circe` = project
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= Seq(
       playJson,
       circe.core,

@@ -6,8 +6,7 @@ import scala.compiletime.*
 import scala.deriving.Mirror
 import scala.annotation.nowarn
 
-/**
-  * Writes a sealed hierarchy with a `type` field naming the subtype.
+/** Writes a sealed hierarchy with a `type` field naming the subtype.
   *
   * On Scala 3 the name comes from the sealed hierarchy, so every sealed sub-trait contributes to it
   * and nothing else does: `Wrapper.Inner.Leaf`, nested in a plain object, is written as `Leaf`, while
@@ -50,7 +49,7 @@ object NestedTypeWrites:
       prefix: String
   ): List[NestedTypeWrites[?]] =
     inline erasedValue[T] match
-      case _: EmptyTuple => Nil
+      case _: EmptyTuple     => Nil
       case _: (head *: tail) =>
         summonWrite[head](prefix) :: summonWrites[tail](prefix)
 

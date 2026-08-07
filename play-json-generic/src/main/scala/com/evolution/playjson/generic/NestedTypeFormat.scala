@@ -9,12 +9,12 @@ object NestedTypeFormat {
 
   @deprecated(
     "Use NestedTypeFormat.of, which reports subtypes it cannot tell apart on the wire",
-    "1.4.0")
+    "1.4.0"
+  )
   def apply[A](implicit reads: NestedTypeReads[A], writes: NestedTypeWrites[A]): OFormat[A] =
     OFormat(reads.reads(_), writes.writes(_))
 
-  /**
-    * An `OFormat` writing each subtype of `A` with a `type` field naming it.
+  /** An `OFormat` writing each subtype of `A` with a `type` field naming it.
     *
     * `Left` only when one name covers several subtypes, which is the case that cannot be read back:
     * whichever subtype is tried first wins and the others are unreachable. A single subtype with an
@@ -23,20 +23,21 @@ object NestedTypeFormat {
     * see [[NestedTypeWrites]].
     */
   def of[A](implicit
-    reads: NestedTypeReads[A],
-    writes: NestedTypeWrites[A],
-    discriminators: Discriminators[A]
+      reads: NestedTypeReads[A],
+      writes: NestedTypeWrites[A],
+      discriminators: Discriminators[A]
   ): Either[String, OFormat[A]] = {
     val shared = discriminators.all.groupBy(_.name).collect {
       case (name, subtypes) if subtypes.size > 1 =>
-        s"${ describe(name) } for ${ subtypes.map(_.subtype).mkString(" and ") }"
+        s"${describe(name)} for ${subtypes.map(_.subtype).mkString(" and ")}"
     }
 
     if (shared.isEmpty) Right(OFormat(reads.reads(_), writes.writes(_)))
     else {
       Left(
         "NestedTypeFormat gives one name to several subtypes, so reading a document can only ever " +
-          s"find the first of them: ${ shared.mkString("; ") }")
+          s"find the first of them: ${shared.mkString("; ")}"
+      )
     }
   }
 

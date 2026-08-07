@@ -12,7 +12,7 @@ class NestedTypeFormatSpec extends JsonFormatSpec {
     }
 
     implicit val ackFormat: OFormat[Out.Ack.type] = new OFormat[Out.Ack.type] {
-      def writes(o: Out.Ack.type): JsObject= Json.obj()
+      def writes(o: Out.Ack.type): JsObject = Json.obj()
       def reads(json: JsValue): JsResult[Out.Ack.type] = JsSuccess(Out.Ack)
     }
 

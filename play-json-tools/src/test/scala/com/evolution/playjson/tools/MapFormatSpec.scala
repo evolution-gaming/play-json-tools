@@ -15,18 +15,23 @@ class MapFormatSpec extends AnyWordSpec with Matchers {
     val map = Map(
       (Key("k1"), Value(1)),
       (Key("k2"), Value(2)),
-      (Key("k3"), Value(3)))
+      (Key("k3"), Value(3))
+    )
 
     val json = Json.arr(
       Json.obj(
         "id" -> Json.obj("value" -> "k1"),
-        "value" -> 1),
+        "value" -> 1
+      ),
       Json.obj(
         "id" -> Json.obj("value" -> "k2"),
-        "value" -> 2),
+        "value" -> 2
+      ),
       Json.obj(
         "id" -> Json.obj("value" -> "k3"),
-        "value" -> 3))
+        "value" -> 3
+      )
+    )
 
     "convert to json" in {
       mapFormat.writes(map) shouldEqual json
@@ -44,18 +49,23 @@ class MapFormatSpec extends AnyWordSpec with Matchers {
     val map = Map(
       ("k1", 1),
       ("k2", 2),
-      ("k3", 3))
+      ("k3", 3)
+    )
 
     val json = Json.arr(
       Json.obj(
         "id" -> "k1",
-        "value" -> 1),
+        "value" -> 1
+      ),
       Json.obj(
         "id" -> "k2",
-        "value" -> 2),
+        "value" -> 2
+      ),
       Json.obj(
         "id" -> "k3",
-        "value" -> 3))
+        "value" -> 3
+      )
+    )
 
     "convert to json" in {
       mapFormat.writes(map) shouldEqual json

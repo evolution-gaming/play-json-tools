@@ -8,8 +8,7 @@ import java.math.MathContext
 
 import scala.util.control.NonFatal
 
-/**
-  * Parse settings for BigDecimals. Defines limits that will be used when parsing the BigDecimals, like how many digits
+/** Parse settings for BigDecimals. Defines limits that will be used when parsing the BigDecimals, like how many digits
   * are accepted.
   *
   * @param mathContext the MathContext used when parsing.
@@ -17,20 +16,20 @@ import scala.util.control.NonFatal
   * @param digitsLimit how many digits are accepted, also related to the math context used.
   */
 final case class BigDecimalParseSettings(
-                                          mathContext: MathContext = MathContext.DECIMAL128,
-                                          scaleLimit: Int,
-                                          digitsLimit: Int
-                                        )
+    mathContext: MathContext = MathContext.DECIMAL128,
+    scaleLimit: Int,
+    digitsLimit: Int
+)
 
 final case class BigDecimalSerializerSettings(
-                                               minPlain: BigDecimal,
-                                               maxPlain: BigDecimal
-                                             )
+    minPlain: BigDecimal,
+    maxPlain: BigDecimal
+)
 
 final case class JsonParserSettings(
-                                     bigDecimalParseSettings: BigDecimalParseSettings,
-                                     bigDecimalSerializerSettings: BigDecimalSerializerSettings
-                                   )
+    bigDecimalParseSettings: BigDecimalParseSettings,
+    bigDecimalSerializerSettings: BigDecimalSerializerSettings
+)
 
 object JsonParserSettings {
   val defaultMathContext: MathContext = MathContext.DECIMAL128
@@ -55,13 +54,12 @@ object JsonParserSettings {
     BigDecimalSerializerSettings(minPlain = MinPlain, maxPlain = MaxPlain)
   )
 
-  /**
-    * Return the parse settings that are configured.
+  /** Return the parse settings that are configured.
     */
   val settings: JsonParserSettings = {
     // Initialize the parser settings from System properties. This way it is possible to users
     // to easily replace the default values.
-    val scaleLimit  = parseNum("play.json.parser.scaleLimit", defaultScaleLimit)(_.toInt)
+    val scaleLimit = parseNum("play.json.parser.scaleLimit", defaultScaleLimit)(_.toInt)
     val digitsLimit = parseNum("play.json.parser.digitsLimit", defaultDigitsLimit)(_.toInt)
     val mathContext = parseMathContext("play.json.parser.mathContext")
 

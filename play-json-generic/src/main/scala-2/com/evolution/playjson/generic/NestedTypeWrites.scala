@@ -6,8 +6,7 @@ import shapeless.labelled.FieldType
 
 import scala.reflect.ClassTag
 
-/**
-  * Writes a sealed hierarchy with a `type` field naming the subtype.
+/** Writes a sealed hierarchy with a `type` field naming the subtype.
   *
   * On Scala 2 the name comes from where the subtype is lexically nested, with the outermost class
   * dropped, so an object between the sealed trait and its subtype becomes part of it:
@@ -42,10 +41,11 @@ object NestedTypeWrites {
   }
 
   implicit def cconsWrites[Key <: Symbol, Head, Tail <: Coproduct](implicit
-    headWrites: OWrites[Head],
-    tailWrites: NestedTypeWrites[Tail],
-    tag: ClassTag[Head])
-  : NestedTypeWrites[FieldType[Key, Head] :+: Tail] = {
+      headWrites: OWrites[Head],
+      tailWrites: NestedTypeWrites[Tail],
+      tag: ClassTag[Head]
+  )
+      : NestedTypeWrites[FieldType[Key, Head] :+: Tail] = {
     val discriminator = Util.discriminatorOf(tag)
 
     NestedTypeWrites.create[FieldType[Key, Head] :+: Tail] {
@@ -57,7 +57,7 @@ object NestedTypeWrites {
   }
 
   implicit def nestedTypeWrites[A, Repr <: Coproduct](implicit
-    gen: LabelledGeneric.Aux[A, Repr],
-    writes: NestedTypeWrites[Repr]
+      gen: LabelledGeneric.Aux[A, Repr],
+      writes: NestedTypeWrites[Repr]
   ): NestedTypeWrites[A] = NestedTypeWrites.create[A] { a => writes writes gen.to(a) }
 }

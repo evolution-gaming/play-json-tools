@@ -2,8 +2,7 @@ package com.evolution.playjson.generic
 
 import play.api.libs.json._
 
-/**
-  * Contract tests for the discriminators of [[NestedTypeFormat]] and the labels of [[EnumerationFormat]],
+/** Contract tests for the discriminators of [[NestedTypeFormat]] and the labels of [[EnumerationFormat]],
   * covering what both Scala versions have to agree on. The parts where they differ are pinned in
   * `src/test/scala-2` and `src/test/scala-3`.
   */
@@ -21,8 +20,7 @@ class DiscriminatorSpec extends JsonFormatSpec {
       check[Command](Command.Stop, Json.obj("type" -> "Stop"))
     }
 
-    /**
-      * The names validation sees come from their own traversal of the hierarchy, separate from the
+    /** The names validation sees come from their own traversal of the hierarchy, separate from the
       * one the writer uses. This pins the two together: `NestedTypeFormatSpec` fixes the same four
       * names as the wire format, so one traversal drifting from the other fails one of the two.
       */
@@ -34,8 +32,7 @@ class DiscriminatorSpec extends JsonFormatSpec {
 
   "FlatTypeFormat" should {
 
-    /**
-      * IGNORED, fails today. Naming by the subtype alone collides on more hierarchies than
+    /** IGNORED, fails today. Naming by the subtype alone collides on more hierarchies than
       * [[NestedTypeFormat]] does, and nothing reports it: both subtypes write `{"type":"Update"}`,
       * and reading the second back gives `JsError(/a, error.path.missing)`, because it is read
       * against the fields of the first.

@@ -4,8 +4,7 @@ import scala.reflect.ClassTag
 
 object Util {
 
-  /**
-    * The `type` field naming a subtype. Empty for a subtype declared at the top level, whose name
+  /** The `type` field naming a subtype. Empty for a subtype declared at the top level, whose name
     * consists of the class alone and so has nothing left once the enclosing type is dropped.
     * [[NestedTypeFormat.of]] is where that is reported.
     */

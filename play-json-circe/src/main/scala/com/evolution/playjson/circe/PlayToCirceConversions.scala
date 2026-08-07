@@ -21,4 +21,3 @@ object PlayToCirceConversions {
       playToCirce(writes.writes(value))
     }
 }
-

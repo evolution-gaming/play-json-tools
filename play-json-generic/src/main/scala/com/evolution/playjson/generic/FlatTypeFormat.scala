@@ -2,8 +2,7 @@ package com.evolution.playjson.generic
 
 import play.api.libs.json._
 
-/**
-  * Reads and writes a sealed hierarchy with a `type` field naming the subtype by its own name, with
+/** Reads and writes a sealed hierarchy with a `type` field naming the subtype by its own name, with
   * no trace of where it is nested, and with the ambient [[NameCodingStrategy]] applied: `Ping` is
   * written as `Ping` by default and as `ping` with `NameCodingStrategies.kebabCase` in scope. Both
   * directions apply the same strategy, so a format reading documents has to be built under the

@@ -1,7 +1,6 @@
 package com.evolution.playjson.generic
 
-/**
-  * A subtype nested in a plain object rather than in a sealed sub-trait. Scala 2 derives the
+/** A subtype nested in a plain object rather than in a sealed sub-trait. Scala 2 derives the
   * discriminator from lexical nesting and Scala 3 from the sealed hierarchy, so this is where the
   * two disagree.
   */
@@ -18,8 +17,7 @@ sealed trait Signal
 
 final case class Ping(id: Int) extends Signal
 
-/**
-  * Two subtypes declared at the top level. On Scala 2 neither has a name, so they cannot be told
+/** Two subtypes declared at the top level. On Scala 2 neither has a name, so they cannot be told
   * apart, which one subtype on its own can be.
   */
 sealed trait Relay
@@ -28,8 +26,7 @@ final case class Open(id: Int) extends Relay
 
 final case class Close(id: Int) extends Relay
 
-/**
-  * A leaf under a sealed sub-trait that is itself declared at the top level. Scala 2 sees one level
+/** A leaf under a sealed sub-trait that is itself declared at the top level. Scala 2 sees one level
   * of nesting to strip and Scala 3 sees a sub-trait to prefix with, so the two disagree.
   */
 sealed trait Root
@@ -40,8 +37,7 @@ object Branch {
   final case class Leaf(value: Int) extends Branch
 }
 
-/**
-  * Two subtypes of the same simple name in different objects, which is all it takes for
+/** Two subtypes of the same simple name in different objects, which is all it takes for
   * [[FlatTypeFormat]] to give them one name, since it names by the subtype alone.
   */
 sealed trait Duct
@@ -56,8 +52,7 @@ object Duct {
   }
 }
 
-/**
-  * Two subtypes of the same name in different plain objects. Scala 2 keeps them apart through
+/** Two subtypes of the same name in different plain objects. Scala 2 keeps them apart through
   * lexical nesting, Scala 3 gives both the same name.
   */
 sealed trait Tree
@@ -72,8 +67,7 @@ object Tree {
   }
 }
 
-/**
-  * A plain object subtype declared at package level, where the two versions part ways again: Scala 3
+/** A plain object subtype declared at package level, where the two versions part ways again: Scala 3
   * names it with the package still attached, Scala 2 has no name for it at all.
   */
 sealed trait Beacon
@@ -87,8 +81,7 @@ object Chime extends Alarm {
   override def toString: String = "ring-ring"
 }
 
-/**
-  * An object whose `toString` override contains a `$`, written with parentheses because that is the
+/** An object whose `toString` override contains a `$`, written with parentheses because that is the
   * only spelling the earlier Scala 3 derivation accepted. Such an object was named after the text
   * before the `$`, so this one was written as `US`, and is now named after its class.
   */
@@ -109,8 +102,7 @@ object Command {
   }
 }
 
-/**
-  * An enumeration whose value overrides `toString`. Scala 2 labels it by its name, Scala 3 by its
+/** An enumeration whose value overrides `toString`. Scala 2 labels it by its name, Scala 3 by its
   * `toString`.
   */
 sealed trait Mood

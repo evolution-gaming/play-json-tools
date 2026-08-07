@@ -2,8 +2,7 @@ package com.evolution.playjson.generic
 
 import play.api.libs.json._
 
-/**
-  * What [[NestedTypeFormat]] does on Scala 3 and cannot do the same way on Scala 2: the name comes
+/** What [[NestedTypeFormat]] does on Scala 3 and cannot do the same way on Scala 2: the name comes
   * from the sealed hierarchy, so a plain object around a subtype contributes nothing to it. A
   * subtype declared at the top level is named like any other, and two subtypes of the same name in
   * different objects end up sharing one.
@@ -42,8 +41,7 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Relay](Close(2), Json.obj("type" -> "Close", "id" -> 2))
     }
 
-    /**
-      * The name of a package-level plain object still carries its package, which is what earlier
+    /** The name of a package-level plain object still carries its package, which is what earlier
       * versions wrote. Pinned rather than corrected: documents holding the long form have to keep
       * being readable.
       */
@@ -57,8 +55,7 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Beacon](Pulse, Json.obj("type" -> "com.evolution.playjson.generic.Pulse"))
     }
 
-    /**
-      * Where the package-level shape and the `toString` override meet. This one used to fail
+    /** Where the package-level shape and the `toString` override meet. This one used to fail
       * outright: the override left nothing to drop, and the name was read off an empty array.
       */
     "name a package-level object that overrides toString" in {
@@ -71,8 +68,7 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Alarm](Chime, Json.obj("type" -> "com.evolution.playjson.generic.Chime"))
     }
 
-    /**
-      * The one place this module stops reading what it used to write. A `$` in the override used to
+    /** The one place this module stops reading what it used to write. A `$` in the override used to
       * split the name, so this subtype was written as `US`, and documents holding that no longer
       * read. Overrides without a `$` left nothing to split and failed while writing, so those are
       * the only such documents that can exist.
@@ -87,8 +83,7 @@ class Scala3DiscriminatorSpec extends JsonFormatSpec {
       check[Price](Price.Retail, Json.obj("type" -> "Retail"))
     }
 
-    /**
-      * IGNORED, fails today. `EnumMappings` on Scala 3 labels a value by `e.toString`, so this one
+    /** IGNORED, fails today. `EnumMappings` on Scala 3 labels a value by `e.toString`, so this one
       * is written as `in-a-good-mood` rather than `Cheerful`. Scala 2 labels it `Cheerful`, so the
       * two versions also disagree on the wire for any enumeration that overrides `toString`.
       *

@@ -2,8 +2,7 @@ package com.evolution.playjson.generic
 
 import play.api.libs.json._
 
-/**
-  * What [[NestedTypeFormat]] does on Scala 2 and cannot do the same way on Scala 3: the name comes
+/** What [[NestedTypeFormat]] does on Scala 2 and cannot do the same way on Scala 3: the name comes
   * from lexical nesting, so an object between the sealed trait and its subtype becomes part of it,
   * and a subtype with nothing above it is left with an empty name.
   */
@@ -25,8 +24,7 @@ class Scala2DiscriminatorSpec extends JsonFormatSpec {
       check[Root](Branch.Leaf(1), Json.obj("type" -> "Leaf", "value" -> 1))
     }
 
-    /**
-      * An empty name is unhelpful but unambiguous while it belongs to the only subtype, and it is
+    /** An empty name is unhelpful but unambiguous while it belongs to the only subtype, and it is
       * what earlier versions wrote, so documents holding it have to keep being readable.
       */
     "write a lone subtype declared at the top level with an empty name" in {

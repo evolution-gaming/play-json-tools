@@ -7,8 +7,7 @@ import scala.annotation.nowarn
 import scala.reflect.ClassTag
 import Util.ClassTagOps
 
-/**
-  * The names [[NestedTypeWrites]] writes the subtypes of `A` with, so that
+/** The names [[NestedTypeWrites]] writes the subtypes of `A` with, so that
   * [[NestedTypeFormat.of]] can report the ones it cannot tell apart. A subtype declared at the top
   * level has no name, since Scala 2 takes the name from lexical nesting and there is nothing above
   * it to take.
@@ -28,14 +27,14 @@ object Discriminators {
   implicit def emptyCoproduct: Discriminators[CNil] = create(Nil)
 
   implicit def coproductHeadAndTail[Key <: Symbol, Head, Tail <: Coproduct](implicit
-    tail: Discriminators[Tail],
-    tag: ClassTag[Head]
+      tail: Discriminators[Tail],
+      tag: ClassTag[Head]
   ): Discriminators[FieldType[Key, Head] :+: Tail] =
     create(Discriminator(tag.runtimeClass.getName, tag.classFullName()) :: tail.all)
 
   @nowarn("cat=unused")
   implicit def sealedHierarchy[A, Repr <: Coproduct](implicit
-    gen: LabelledGeneric.Aux[A, Repr], // used to reach the coproduct the instances below are built from
-    repr: Discriminators[Repr]
+      gen: LabelledGeneric.Aux[A, Repr], // used to reach the coproduct the instances below are built from
+      repr: Discriminators[Repr]
   ): Discriminators[A] = create(repr.all)
 }
