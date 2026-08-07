@@ -1,0 +1,68 @@
+package com.evolution.playjson.jsoniter
+
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriterException
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import play.api.libs.json.{JsNumber, JsObject, JsValue, Json}
+
+import java.nio.charset.StandardCharsets
+import scala.util.{Success, Try}
+
+/** Nesting is bounded in both directions, at the depth play-json reads. Reading further diverges
+  * from play-json and eventually exhausts the stack. Writing further produces a document play-json
+  * cannot read, which is the one place this codec is deliberately stricter than play-json.
+  *
+  * JVM only on purpose: the limit play-json enforces is Jackson's, and Jackson is the JVM backend.
+  */
+class JsonDepthSpec extends AnyFunSuite with Matchers {
+
+  /** Jackson's default, and therefore what play-json reads. */
+  private val PlayJsonNestingLimit = 1000
+
+  private def nestedObjectBytes(depth: Int): Array[Byte] =
+    asBytes(("{\"n\":" * depth) + "1" + ("}" * depth))
+
+  private def nestedArrayBytes(depth: Int): Array[Byte] =
+    asBytes(("[" * depth) + "1" + ("]" * depth))
+
+  private def asBytes(text: String): Array[Byte] = text.getBytes(StandardCharsets.UTF_8)
+
+  private def nestedValue(depth: Int): JsValue = (1 to depth).foldLeft[JsValue](JsNumber(1)) { (inner, _) =>
+    JsObject(Seq("n" -> inner))
+  }
+
+  test("a shallowly nested document round-trips") {
+    val value = nestedValue(64)
+    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(value)) shouldEqual Success(value)
+  }
+
+  test("reading an object nested past the stack depth fails") {
+    PlayJsonJsoniter.deserialize(nestedObjectBytes(100000)).isFailure shouldBe true
+  }
+
+  test("reading an array nested past the stack depth fails") {
+    PlayJsonJsoniter.deserialize(nestedArrayBytes(100000)).isFailure shouldBe true
+  }
+
+  test("reading accepts the same nesting play-json accepts") {
+    PlayJsonJsoniter.deserialize(nestedObjectBytes(PlayJsonNestingLimit)).isSuccess shouldBe true
+  }
+
+  test("reading refuses the nesting play-json refuses") {
+    PlayJsonJsoniter.deserialize(nestedObjectBytes(PlayJsonNestingLimit + 1)).isFailure shouldBe true
+  }
+
+  test("reading agrees with play-json around the limit") {
+    val outcomes = (PlayJsonNestingLimit - 2 to PlayJsonNestingLimit + 2).map { depth =>
+      val json = nestedObjectBytes(depth)
+      val playJsonReads = Try(Json.parse(json)).isSuccess
+      depth -> (PlayJsonJsoniter.deserialize(json).isSuccess, playJsonReads)
+    }
+
+    outcomes.filter { case (_, (jsoniter, playJson)) => jsoniter != playJson } shouldBe empty
+  }
+
+  test("writing a value nested deeper than it could be read is refused") {
+    a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(nestedValue(PlayJsonNestingLimit + 1))
+  }
+}
