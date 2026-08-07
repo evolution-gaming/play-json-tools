@@ -19,7 +19,7 @@ class NestedTypeFormatSpec extends JsonFormatSpec {
     implicit val updateFormat: OFormat[In.Update] = Json.format[In.Update]
     implicit val updatedFormat: OFormat[Out.Updated] = Json.format[Out.Updated]
 
-    NestedTypeFormat[Message]
+    formatOf(NestedTypeFormat.of[Message])
   }
 
   "NestedTypeFormat" should {

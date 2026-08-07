@@ -7,7 +7,7 @@ import play.api.libs.json.{Format, Json}
 class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
 
   it should "be able to encode and decode case object enumerations using default low prio implicit" in {
-    implicit val format: Format[AnEvent] = Enumeration[AnEvent].format
+    implicit val format: Format[AnEvent] = formatOf[AnEvent]
 
     val typ: AnEvent = AnEvent.DoneSome
     val js = Json.toJson(typ)
@@ -17,7 +17,7 @@ class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
 
   it should "be able to encode and decode in kebab case" in {
     import NameCodingStrategies.kebabCase
-    implicit val format: Format[AnEvent] = Enumeration[AnEvent].format
+    implicit val format: Format[AnEvent] = formatOf[AnEvent]
 
     val typ: AnEvent = AnEvent.DoneSome
     val json = Json.toJson(typ)
@@ -28,7 +28,7 @@ class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "be able to derive formats" in {
-    implicit val fmt: Format[AnEvent] = Enumeration[AnEvent].format
+    implicit val fmt: Format[AnEvent] = formatOf[AnEvent]
 
     val typ: AnEvent = AnEvent.DoneSome
     val js = Json.toJson(typ)
@@ -38,7 +38,7 @@ class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
 
   it should "be able to encode and decode in no sep case" in {
     import NameCodingStrategies.noSepCase
-    implicit val format: Format[AnEvent] = Enumeration[AnEvent].format
+    implicit val format: Format[AnEvent] = formatOf[AnEvent]
 
     val typ: AnEvent = AnEvent.DoneSome
     val json = Json.toJson(typ)
@@ -48,4 +48,8 @@ class EnumerationDerivalSpec extends AnyFlatSpec with Matchers {
     succeed
   }
 
+  private def formatOf[A](implicit
+      enumMappings: EnumMappings[A],
+      nameCodingStrategy: NameCodingStrategy
+  ): Format[A] = EnumerationFormat.of[A].fold(error => fail(error), identity)
 }

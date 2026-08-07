@@ -20,9 +20,14 @@ private[generic] inline def summonEnrichedWrites[A](name: String): OWrites[A] =
 private[generic] inline def prefixName(prefix: String, name: String) =
   if prefix.isBlank() then name else s"$prefix.$name"
 
-/** Return the name of the given singleton type (object without `case` modifier). Originally,
-  * `valueOf.value.toString()` returns something like `com.evolution.playjson.generic.Message$Out$Ack$@307d9c1d`
-  * which is why we have to split it, drop the last element and take "len - 1" element
+/** Return the name of the given singleton type (object without `case` modifier). The class is named
+  * like `com.evolution.playjson.generic.Message$Out$Ack$`, so the last `$` separated segment is the
+  * object itself. Taken from the class rather than from `toString`, which an object is free to
+  * override and which would then name the subtype after arbitrary text, or fail to compile where the
+  * override is declared without parentheses.
+  *
+  * An object declared at package level has no `$` before its name, so the segment still carries the
+  * package: `com.example.Ping` rather than `Ping`.
   */
 private[generic] inline def singletonName[A](using valueOf: ValueOf[A]): String =
-  valueOf.value.toString().split("\\$").dropRight(1).last
+  valueOf.value.getClass.getName.split("\\$").last

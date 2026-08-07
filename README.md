@@ -7,6 +7,29 @@
 
 1. `play-json-tools` — Set of implicit Play-JSON `Format` helper classes. Example in [FlatFormatSpec](play-json-tools/src/test/scala/com/evolution/playjson/tools/FlatFormatSpec.scala)
 2. `play-json-generic` — provides Format derivation for enum like adt's (sealed trait/case objects'). Examples in [EnumerationDerivalSpec](play-json-generic/src/test/scala/com/evolution/playjson/generic/EnumerationDerivalSpec.scala)
+
+   `NestedTypeFormat` names a subtype differently on the two Scala versions. Scala 2 uses lexical
+   nesting, Scala 3 uses the sealed hierarchy, so the same subtype can be written as `Inner.Leaf` by
+   one and `Leaf` by the other, and neither reads the other's documents.
+
+   The two agree only when the sealed trait is declared at the top level and every subtype sits
+   inside that trait's companion object, either directly or inside the companion of a sealed
+   sub-trait that is itself declared there. Measured examples of shapes that do **not** agree:
+
+   | subtype | Scala 2 | Scala 3 |
+   | --- | --- | --- |
+   | declared at the top level | `` (empty) | `Ping` |
+   | inside a plain object | `Inner.Leaf` | `Leaf` |
+   | under a top-level sealed sub-trait | `Leaf` | `Branch.Leaf` |
+   | plain object at the top level | `` (empty) | `com.example.Pulse` |
+
+   Keep to the agreeing shape if documents cross between services built on different Scala versions.
+
+   One name did change in 1.4.0, on Scala 3 only. A plain object whose `toString` was overridden
+   with parentheses and contained a `$` was named after the text before that `$`, so an object with
+   `override def toString() = "US$99"` was written as `US`; it is now named after its class. Such
+   documents no longer read. Overrides without a `$` failed while writing, so `$`-containing ones are
+   the only documents of this shape that can exist.
 3. `play-json-jsoniter` — provides the fastest way to convert an instance of `play.api.libs.json.JsValue` to byte array and read it back.
    Numbers are written exactly as play-json's JVM serializer writes them, which means a `BigDecimal` keeps its value
    but not necessarily its scale: `100.00` is written as `100`. A number that could not be read back
