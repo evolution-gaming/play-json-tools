@@ -41,9 +41,20 @@ object JsonValueCodecJsValue {
       bigDecimalParseSettings: BigDecimalParseConfig,
       bigDecimalSerializerSettings: BigDecimalSerializerConfig
   ): JsonValueCodec[JsValue] =
-    apply(bigDecimalParseSettings, bigDecimalSerializerSettings, DefaultMaxNestingDepth)
+    unsafe(bigDecimalParseSettings, bigDecimalSerializerSettings, DefaultMaxNestingDepth)
 
-  def apply(
+  def of(
+      bigDecimalParseSettings: BigDecimalParseConfig,
+      bigDecimalSerializerSettings: BigDecimalSerializerConfig,
+      maxNestingDepth: Int
+  ): Either[String, JsonValueCodec[JsValue]] =
+    if (maxNestingDepth > 0) {
+      Right(unsafe(bigDecimalParseSettings, bigDecimalSerializerSettings, maxNestingDepth))
+    } else {
+      Left(s"maxNestingDepth must be positive, but was $maxNestingDepth")
+    }
+
+  private def unsafe(
       bigDecimalParseSettings: BigDecimalParseConfig,
       bigDecimalSerializerSettings: BigDecimalSerializerConfig,
       maxNestingDepth: Int
