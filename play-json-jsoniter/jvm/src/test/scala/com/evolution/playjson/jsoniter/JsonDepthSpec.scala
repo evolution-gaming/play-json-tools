@@ -9,7 +9,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{
 }
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsValue, Json, JsonConfig, JsonValueCodecJsValue}
+import play.api.libs.json._
 
 import java.nio.charset.StandardCharsets
 import scala.util.{Success, Try}
@@ -23,7 +23,7 @@ import scala.util.{Success, Try}
 class JsonDepthSpec extends AnyFunSuite with Matchers {
 
   /** Jackson's default, and therefore what play-json reads. */
-  private val PlayJsonNestingLimit = 1000
+  private val playJsonNestingLimit = 1000
 
   private def nestedObjectBytes(depth: Int): Array[Byte] =
     asBytes(("{\"n\":" * depth) + "1" + ("}" * depth))
@@ -65,15 +65,15 @@ class JsonDepthSpec extends AnyFunSuite with Matchers {
   }
 
   test("reading accepts the same nesting play-json accepts") {
-    PlayJsonJsoniter.deserialize(nestedObjectBytes(PlayJsonNestingLimit)).isSuccess shouldBe true
+    PlayJsonJsoniter.deserialize(nestedObjectBytes(playJsonNestingLimit)).isSuccess shouldBe true
   }
 
   test("reading refuses the nesting play-json refuses") {
-    PlayJsonJsoniter.deserialize(nestedObjectBytes(PlayJsonNestingLimit + 1)).isFailure shouldBe true
+    PlayJsonJsoniter.deserialize(nestedObjectBytes(playJsonNestingLimit + 1)).isFailure shouldBe true
   }
 
   test("reading agrees with play-json around the limit") {
-    val outcomes = (PlayJsonNestingLimit - 2 to PlayJsonNestingLimit + 2).map { depth =>
+    val outcomes = (playJsonNestingLimit - 2 to playJsonNestingLimit + 2).map { depth =>
       val json = nestedObjectBytes(depth)
       val playJsonReads = Try(Json.parse(json)).isSuccess
       depth -> (PlayJsonJsoniter.deserialize(json).isSuccess, playJsonReads)
@@ -83,11 +83,11 @@ class JsonDepthSpec extends AnyFunSuite with Matchers {
   }
 
   test("writing a value nested deeper than it could be read is refused") {
-    a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(nestedValue(PlayJsonNestingLimit + 1))
+    a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(nestedValue(playJsonNestingLimit + 1))
   }
 
   test("the default limit is the one play-json reads") {
-    JsonValueCodecJsValue.DefaultMaxNestingDepth shouldEqual PlayJsonNestingLimit
+    JsonValueCodecJsValue.DefaultMaxNestingDepth shouldEqual playJsonNestingLimit
   }
 
   test("a codec given a smaller limit holds both directions to it") {
@@ -117,15 +117,15 @@ class JsonDepthSpec extends AnyFunSuite with Matchers {
   test("an empty container at the limit counts as a level, as it does for play-json") {
     Seq("{}", "[]").foreach { innermost =>
       // the innermost container brings the total to the depth in the clue
-      val atLimit = wrapping(PlayJsonNestingLimit - 1, innermost)
-      val pastLimit = wrapping(PlayJsonNestingLimit, innermost)
+      val atLimit = wrapping(playJsonNestingLimit - 1, innermost)
+      val pastLimit = wrapping(playJsonNestingLimit, innermost)
 
-      withClue(s"$innermost at depth $PlayJsonNestingLimit: ") {
+      withClue(s"$innermost at depth $playJsonNestingLimit: ") {
         PlayJsonJsoniter.deserialize(atLimit).isSuccess shouldBe true
         Try(Json.parse(atLimit)).isSuccess shouldBe true
       }
 
-      withClue(s"$innermost at depth ${PlayJsonNestingLimit + 1}: ") {
+      withClue(s"$innermost at depth ${playJsonNestingLimit + 1}: ") {
         PlayJsonJsoniter.deserialize(pastLimit).isFailure shouldBe true
         Try(Json.parse(pastLimit)).isSuccess shouldBe false
       }
@@ -133,15 +133,15 @@ class JsonDepthSpec extends AnyFunSuite with Matchers {
   }
 
   test("writing a value whose innermost container is empty counts it as a level") {
-    val atLimit = nestedAround(JsObject.empty, PlayJsonNestingLimit - 1)
-    val pastLimit = nestedAround(JsObject.empty, PlayJsonNestingLimit)
+    val atLimit = nestedAround(JsObject.empty, playJsonNestingLimit - 1)
+    val pastLimit = nestedAround(JsObject.empty, playJsonNestingLimit)
 
     PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(atLimit)) shouldEqual Success(atLimit)
     a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(pastLimit)
   }
 
   test("arrays and objects count towards the same limit") {
-    val mixed = (1 to PlayJsonNestingLimit / 2).foldLeft[JsValue](JsNumber(1)) { (inner, _) =>
+    val mixed = (1 to playJsonNestingLimit / 2).foldLeft[JsValue](JsNumber(1)) { (inner, _) =>
       JsArray(Seq(JsObject(Seq("n" -> inner))))
     }
 
