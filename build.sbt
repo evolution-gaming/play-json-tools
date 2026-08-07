@@ -126,6 +126,7 @@ lazy val benchmark = project
   .enablePlugins(JmhPlugin)
   .settings(
     commonSettings,
+    allowUnsafeScalaLibUpgrade := true,
     publish / skip := true,
     crossScalaVersions := Seq(Scala213),
     Jmh / sourceDirectory := (Test / sourceDirectory).value,

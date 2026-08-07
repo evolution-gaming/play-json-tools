@@ -1,9 +1,15 @@
 package com.evolution.playjson.jsoniter
 
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriterException
+import com.github.plokhotnyuk.jsoniter_scala.core.{
+  JsonReaderException,
+  JsonValueCodec,
+  JsonWriterException,
+  readFromArray,
+  writeToArray
+}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsNumber, JsObject, JsValue, Json}
+import play.api.libs.json.{JsArray, JsNumber, JsObject, JsValue, Json, JsonConfig, JsonValueCodecJsValue}
 
 import java.nio.charset.StandardCharsets
 import scala.util.{Success, Try}
@@ -64,5 +70,33 @@ class JsonDepthSpec extends AnyFunSuite with Matchers {
 
   test("writing a value nested deeper than it could be read is refused") {
     a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(nestedValue(PlayJsonNestingLimit + 1))
+  }
+
+  test("the default limit is the one play-json reads") {
+    JsonValueCodecJsValue.DefaultMaxNestingDepth shouldEqual PlayJsonNestingLimit
+  }
+
+  test("a codec given a smaller limit holds both directions to it") {
+    val shallow = 3
+    implicit val codec: JsonValueCodec[JsValue] = JsonValueCodecJsValue(
+      JsonConfig.settings.bigDecimalParseConfig,
+      JsonConfig.settings.bigDecimalSerializerConfig,
+      shallow
+    )
+
+    readFromArray[JsValue](nestedObjectBytes(shallow)) shouldEqual nestedValue(shallow)
+    a[JsonReaderException] should be thrownBy readFromArray[JsValue](nestedObjectBytes(shallow + 1))
+
+    writeToArray[JsValue](nestedValue(shallow)) shouldEqual nestedObjectBytes(shallow)
+    a[JsonWriterException] should be thrownBy writeToArray[JsValue](nestedValue(shallow + 1))
+  }
+
+  test("arrays and objects count towards the same limit") {
+    val mixed = (1 to PlayJsonNestingLimit / 2).foldLeft[JsValue](JsNumber(1)) { (inner, _) =>
+      JsArray(Seq(JsObject(Seq("n" -> inner))))
+    }
+
+    PlayJsonJsoniter.deserialize(PlayJsonJsoniter.serialize(mixed)) shouldEqual Success(mixed)
+    a[JsonWriterException] should be thrownBy PlayJsonJsoniter.serialize(JsArray(Seq(mixed)))
   }
 }
