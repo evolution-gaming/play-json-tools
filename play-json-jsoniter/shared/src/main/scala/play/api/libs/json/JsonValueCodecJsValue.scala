@@ -24,6 +24,11 @@ object JsonValueCodecJsValue {
   private val FastPathSmallestValue = BigDecimal("1e-6")
   private val FastPathLargestValue = BigDecimal("1e18")
 
+  /** Jackson's default, and therefore the depth play-json reads. Matching it keeps both backends
+    * accepting the same documents, and keeps this codec from writing one play-json cannot read.
+    */
+  val DefaultMaxNestingDepth: Int = 1000
+
   @deprecated(
     "Reading settings are given here, writing settings are taken from the global " +
       "JsonConfig.settings. Pass both explicitly instead.",
@@ -36,8 +41,28 @@ object JsonValueCodecJsValue {
       bigDecimalParseSettings: BigDecimalParseConfig,
       bigDecimalSerializerSettings: BigDecimalSerializerConfig
   ): JsonValueCodec[JsValue] =
+    unsafe(bigDecimalParseSettings, bigDecimalSerializerSettings, DefaultMaxNestingDepth)
+
+  def of(
+      bigDecimalParseSettings: BigDecimalParseConfig,
+      bigDecimalSerializerSettings: BigDecimalSerializerConfig,
+      maxNestingDepth: Int
+  ): Either[String, JsonValueCodec[JsValue]] =
+    if (maxNestingDepth > 0) {
+      Right(unsafe(bigDecimalParseSettings, bigDecimalSerializerSettings, maxNestingDepth))
+    } else {
+      Left(s"maxNestingDepth must be positive, but was $maxNestingDepth")
+    }
+
+  private def unsafe(
+      bigDecimalParseSettings: BigDecimalParseConfig,
+      bigDecimalSerializerSettings: BigDecimalSerializerConfig,
+      maxNestingDepth: Int
+  ): JsonValueCodec[JsValue] =
     new JsonValueCodec[JsValue] {
-      def decodeValue(in: JsonReader, default: JsValue): JsValue = {
+      def decodeValue(in: JsonReader, default: JsValue): JsValue = decodeValue(in, default, 0)
+
+      private def decodeValue(in: JsonReader, default: JsValue, depth: Int): JsValue = {
         val b = in.nextToken()
         if (b == '"') {
           in.rollbackToken()
@@ -55,6 +80,7 @@ object JsonValueCodecJsValue {
             bigDecimalParseSettings.digitsLimit
           ))
         } else if (b == '[') {
+          val level = nextLevel(in, depth)
           if (in.isNextToken(']')) JsArray.empty
           else {
             in.rollbackToken()
@@ -62,7 +88,7 @@ object JsonValueCodecJsValue {
             var i = 0
             while ({
               if (i == vs.length) vs = java.util.Arrays.copyOf(vs, i << 1)
-              vs(i) = decodeValue(in, default)
+              vs(i) = decodeValue(in, default, level)
               i += 1
               in.isNextToken(',')
             }) ()
@@ -73,12 +99,13 @@ object JsonValueCodecJsValue {
             else in.arrayEndOrCommaError()
           }
         } else if (b == '{') {
+          val level = nextLevel(in, depth)
           if (in.isNextToken('}')) JsObject.empty
           else {
             in.rollbackToken()
             val kvs = new java.util.LinkedHashMap[String, JsValue](8)
             while ({
-              kvs.put(in.readKeyAsString(), decodeValue(in, default))
+              kvs.put(in.readKeyAsString(), decodeValue(in, default, level))
               in.isNextToken(',')
             }) ()
             if (in.isCurrentToken('}')) new JsObject({
@@ -90,7 +117,9 @@ object JsonValueCodecJsValue {
         } else in.readNullOrError(default, "expected JSON value")
       }
 
-      def encodeValue(jsValue: JsValue, out: JsonWriter): Unit =
+      def encodeValue(jsValue: JsValue, out: JsonWriter): Unit = encodeValue(jsValue, out, 0)
+
+      private def encodeValue(jsValue: JsValue, out: JsonWriter, depth: Int): Unit =
         jsValue match {
           case s: JsString =>
             out.writeVal(s.value)
@@ -99,19 +128,33 @@ object JsonValueCodecJsValue {
           case n: JsNumber =>
             encodeBigDecimal(n.value, out)
           case a: JsArray =>
+            val level = nextLevel(out, depth)
             out.writeArrayStart()
-            a.value.foreach(encodeValue(_, out))
+            a.value.foreach(encodeValue(_, out, level))
             out.writeArrayEnd()
           case o: JsObject =>
+            val level = nextLevel(out, depth)
             out.writeObjectStart()
             o.underlying.foreach { kv =>
               out.writeKey(kv._1)
-              encodeValue(kv._2, out)
+              encodeValue(kv._2, out, level)
             }
             out.writeObjectEnd()
           case _ =>
             out.writeNull()
         }
+
+      private def nextLevel(in: JsonReader, depth: Int): Int = {
+        val level = depth + 1
+        if (level > maxNestingDepth) in.decodeError(s"depth of nesting exceeds $maxNestingDepth")
+        level
+      }
+
+      private def nextLevel(out: JsonWriter, depth: Int): Int = {
+        val level = depth + 1
+        if (level > maxNestingDepth) out.encodeError(s"depth of nesting exceeds $maxNestingDepth")
+        level
+      }
 
       /** Whether the configured settings are wide enough for [[needsNoNormalization]] to imply
         * play-json parity. Computed once: the reasoning there is about magnitudes and digit counts,
