@@ -29,6 +29,9 @@ object JsonValueCodecJsValue {
     */
   val DefaultMaxNestingDepth: Int = 1000
 
+  /** The largest depth [[of]] accepts. */
+  val MaxAllowedNestingDepth: Int = 10000
+
   @deprecated(
     "Reading settings are given here, writing settings are taken from the global " +
       "JsonConfig.settings. Pass both explicitly instead.",
@@ -43,15 +46,22 @@ object JsonValueCodecJsValue {
   ): JsonValueCodec[JsValue] =
     unsafe(bigDecimalParseSettings, bigDecimalSerializerSettings, DefaultMaxNestingDepth)
 
+  /** A codec bounded at `maxNestingDepth`, or the reason that depth cannot be used.
+    *
+    * @param maxNestingDepth
+    *   levels of arrays and objects to accept, from 1 to [[MaxAllowedNestingDepth]]. Both directions
+    *   recurse once per level, so the depth a thread survives is bounded by its stack: about 2000
+    *   levels on 1 MB (the JVM default for the main thread on 64-bit), about 10000 on 2 MB.
+    */
   def of(
       bigDecimalParseSettings: BigDecimalParseConfig,
       bigDecimalSerializerSettings: BigDecimalSerializerConfig,
       maxNestingDepth: Int
   ): Either[String, JsonValueCodec[JsValue]] =
-    if (maxNestingDepth > 0) {
+    if (maxNestingDepth > 0 && maxNestingDepth <= MaxAllowedNestingDepth) {
       Right(unsafe(bigDecimalParseSettings, bigDecimalSerializerSettings, maxNestingDepth))
     } else {
-      Left(s"maxNestingDepth must be positive, but was $maxNestingDepth")
+      Left(s"maxNestingDepth must be between 1 and $MaxAllowedNestingDepth, but was $maxNestingDepth")
     }
 
   private def unsafe(

@@ -102,12 +102,18 @@ class JsonDepthSpec extends AnyFunSuite with Matchers {
     a[JsonWriterException] should be thrownBy writeToArray[JsValue](nestedValue(shallow + 1))
   }
 
-  test("a limit that refuses everything is reported rather than built") {
-    Seq(0, -1, Int.MinValue).foreach { limit =>
+  test("a limit outside the accepted range is reported rather than built") {
+    val tooDeep = JsonValueCodecJsValue.MaxAllowedNestingDepth + 1
+
+    Seq(0, -1, Int.MinValue, tooDeep, Int.MaxValue).foreach { limit =>
       withClue(s"limit $limit: ") {
         codecOf(limit).left.map(_.contains(limit.toString)) shouldEqual Left(true)
       }
     }
+  }
+
+  test("the largest accepted limit builds a codec") {
+    codecOf(JsonValueCodecJsValue.MaxAllowedNestingDepth).isRight shouldBe true
   }
 
   test("the default limit builds a codec") {
