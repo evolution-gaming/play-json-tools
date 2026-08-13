@@ -1,12 +1,14 @@
 package com.evolution.playjson.tools
 
-import com.evolution.playjson.tools.PlayJsonHelper._
+import com.evolution.playjson.tools.PlayJsonHelper.MillisPrecisionInstant.instantFormat
+import com.evolution.playjson.tools.PlayJsonHelper.{InstantFormat => _, _}
 import com.evolutiongaming.nel.Nel
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
 
 import java.time.{Instant, LocalTime}
+import scala.annotation.nowarn
 import scala.concurrent.duration._
 
 class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
@@ -137,6 +139,12 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
       JsSuccess(Instant.parse("2026-08-03T10:15:30Z"))
   }
 
+  // reading is wider than writing, so a document written with full precision elsewhere still reads
+  test("instantFormat reads a finer fraction than it writes") {
+    Json.fromJson[Instant](JsString("2026-08-03T10:15:30.123456789Z")) shouldEqual
+      JsSuccess(Instant.parse("2026-08-03T10:15:30.123456789Z"))
+  }
+
   test("instantFormat reads a number as epoch milliseconds") {
     Json.fromJson[Instant](JsNumber(1785492930123L)) shouldEqual JsSuccess(Instant.ofEpochMilli(1785492930123L))
   }
@@ -196,6 +204,14 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
 
   test("instantFormat reports a fractional number") {
     errorMessagesOf(Json.fromJson[Instant](JsNumber(BigDecimal("1.5")))) should include("error.expected.long")
+  }
+
+  @nowarn("cat=deprecation")
+  private val deprecatedInstantFormat: Format[Instant] = PlayJsonHelper.InstantFormat
+
+  // the deprecated name delegates rather than holding a copy, so the two cannot drift apart
+  test("the deprecated InstantFormat is MillisPrecisionInstant.instantFormat") {
+    deprecatedInstantFormat should be theSameInstanceAs instantFormat
   }
 
   test("localTimeFormat round-trips") {
