@@ -71,7 +71,7 @@ object PlayJsonHelper {
               case Success(instant) => JsSuccess(instant)
               case Failure(error)   => JsError(error.toString)
             }
-          case _ => for { millis <- json.validate[Long] } yield Instant.ofEpochMilli(millis)
+          case _ => json.validate[Long].map(Instant.ofEpochMilli(_))
         }
       }
 
