@@ -46,32 +46,47 @@ object PlayJsonHelper {
     def writes(o: FiniteDuration): JsString = JsString(o.toCoarsest.toString)
   }
 
-  implicit val InstantFormat: Format[Instant] = new Format[Instant] {
+  /** Writes three digits of fraction, so anything finer than a millisecond is dropped. Reads any
+    * fraction, so documents written with full precision elsewhere can still be read.
+    */
+  object MillisPrecisionInstant {
 
-    // `uuuu` is the year itself, where `yyyy` is the year within the era: with no era in the pattern,
-    // `yyyy` wrote an instant before year 1 as the matching year AD, so 100 BC came back as 101 AD.
-    // The two agree for every instant from year 1 onwards, so only those are written differently
-    private val millisFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
-    private val isoFormatter = DateTimeFormatter.ISO_INSTANT
+    implicit val instantFormat: Format[Instant] = new Format[Instant] {
 
-    def reads(json: JsValue): JsResult[Instant] = {
-      def parse(string: String) = Try(millisFormatter.parse(string))
-        .recover { case _: DateTimeParseException => isoFormatter.parse(string) }
-        .map(Instant.from)
+      // `uuuu` is the year itself, where `yyyy` is the year within the era: with no era in the pattern,
+      // `yyyy` wrote an instant before year 1 as the matching year AD, so 100 BC came back as 101 AD.
+      // The two agree for every instant from year 1 onwards, so only those are written differently
+      private val millisFormatter =
+        DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
+      private val isoFormatter = DateTimeFormatter.ISO_INSTANT
 
-      // see the note on FiniteDurationFormat.reads for why the shape is matched first
-      json match {
-        case JsString(string) => parse(string) match {
-            case Success(instant) => JsSuccess(instant)
-            case Failure(error)   => JsError(error.toString)
-          }
-        case _ => for { millis <- json.validate[Long] } yield Instant.ofEpochMilli(millis)
+      def reads(json: JsValue): JsResult[Instant] = {
+        def parse(string: String) =
+          Try(millisFormatter.parse(string))
+            .recover { case _: DateTimeParseException => isoFormatter.parse(string) }
+            .map(Instant.from)
+
+        // see the note on FiniteDurationFormat.reads for why the shape is matched first
+        json match {
+          case JsString(string) => parse(string) match {
+              case Success(instant) => JsSuccess(instant)
+              case Failure(error)   => JsError(error.toString)
+            }
+          case _ => json.validate[Long].map(Instant.ofEpochMilli(_))
+        }
       }
-    }
 
-    /** Writes milliseconds, so any finer precision the instant carries is dropped. */
-    def writes(o: Instant): JsValue = JsString(millisFormatter.format(o))
+      /** Writes milliseconds, so any finer precision the instant carries is dropped. */
+      def writes(o: Instant): JsValue = JsString(millisFormatter.format(o))
+    }
   }
+
+  @deprecated(
+    "Deprecated due to reduced precision on the wire. Use MillisPrecisionInstant.instantFormat " +
+      "explicitly if a millisecond is precise enough for your data",
+    "1.4.0"
+  )
+  implicit val InstantFormat: Format[Instant] = MillisPrecisionInstant.instantFormat
 
   implicit val LocalTimeFormat: Format[LocalTime] = new Format[LocalTime] {
 
