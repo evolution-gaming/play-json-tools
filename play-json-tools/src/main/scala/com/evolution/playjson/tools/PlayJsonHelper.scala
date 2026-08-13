@@ -61,9 +61,10 @@ object PlayJsonHelper {
       private val isoFormatter = DateTimeFormatter.ISO_INSTANT
 
       def reads(json: JsValue): JsResult[Instant] = {
-        def parse(string: String) = Try(millisFormatter.parse(string))
-          .recover { case _: DateTimeParseException => isoFormatter.parse(string) }
-          .map(Instant.from)
+        def parse(string: String) =
+          Try(millisFormatter.parse(string))
+            .recover { case _: DateTimeParseException => isoFormatter.parse(string) }
+            .map(Instant.from)
 
         // see the note on FiniteDurationFormat.reads for why the shape is matched first
         json match {
