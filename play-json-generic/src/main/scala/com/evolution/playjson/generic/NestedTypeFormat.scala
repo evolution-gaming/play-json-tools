@@ -8,10 +8,16 @@ final case class Discriminator(subtype: String, name: String)
 object NestedTypeFormat {
 
   @deprecated(
-    "Use NestedTypeFormat.of, which reports subtypes it cannot tell apart on the wire",
+    "Use NestedTypeFormat.of, which reports subtypes it cannot tell apart on the wire, or " +
+      "NestedTypeFormat.unsafe to keep this behaviour without the warning",
     "1.4.0"
   )
-  def apply[A](implicit reads: NestedTypeReads[A], writes: NestedTypeWrites[A]): OFormat[A] =
+  def apply[A](implicit reads: NestedTypeReads[A], writes: NestedTypeWrites[A]): OFormat[A] = unsafe
+
+  /** Same as the deprecated `apply`: a name shared by several subtypes leaves only the first of
+    * them readable.
+    */
+  def unsafe[A](implicit reads: NestedTypeReads[A], writes: NestedTypeWrites[A]): OFormat[A] =
     OFormat(reads.reads(_), writes.writes(_))
 
   /** An `OFormat` writing each subtype of `A` with a `type` field naming it.
@@ -32,7 +38,7 @@ object NestedTypeFormat {
         s"${describe(name)} for ${subtypes.map(_.subtype).mkString(" and ")}"
     }
 
-    if (shared.isEmpty) Right(OFormat(reads.reads(_), writes.writes(_)))
+    if (shared.isEmpty) Right(unsafe)
     else {
       Left(
         "NestedTypeFormat gives one name to several subtypes, so reading a document can only ever " +

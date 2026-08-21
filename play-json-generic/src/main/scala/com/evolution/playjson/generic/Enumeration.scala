@@ -2,11 +2,6 @@ package com.evolution.playjson.generic
 
 import play.api.libs.json._
 
-@deprecated(
-  "Use EnumerationFormat.of, which reports labels the naming strategy collapses onto one another. " +
-    "This one gives them one label, leaving all but one value unreadable",
-  "1.4.0"
-)
 class Enumeration[A] private (enumMappings: EnumMappings[A]) {
 
   def format(implicit nameCodingStrategy: NameCodingStrategy): Format[A] = new Format[A] {
@@ -28,7 +23,17 @@ class Enumeration[A] private (enumMappings: EnumMappings[A]) {
   }
 }
 
-@deprecated("Use EnumerationFormat.of, which validates the labels", "1.4.0")
 object Enumeration {
-  def apply[A](implicit enumMappings: EnumMappings[A]) = new Enumeration[A](enumMappings)
+
+  @deprecated(
+    "Use EnumerationFormat.of, which validates the labels, or Enumeration.unsafe to keep this " +
+      "behaviour without the warning",
+    "1.4.0"
+  )
+  def apply[A](implicit enumMappings: EnumMappings[A]): Enumeration[A] = unsafe[A]
+
+  /** Same as the deprecated `apply`: a label that several values collapse onto leaves all but one
+    * of them unreadable.
+    */
+  def unsafe[A](implicit enumMappings: EnumMappings[A]): Enumeration[A] = new Enumeration[A](enumMappings)
 }
