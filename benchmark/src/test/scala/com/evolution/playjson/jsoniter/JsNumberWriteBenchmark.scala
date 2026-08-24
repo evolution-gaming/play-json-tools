@@ -10,12 +10,11 @@ import play.api.libs.json._
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
-/**
- * Throughput of turning a play-json `JsValue` into bytes, over payloads that exercise the
- * `JsNumber` branch of `encodeValue`, with play-json and circe as reference points.
- *
- * To run: {{{sbt benchmark/Jmh/run com.evolution.playjson.jsoniter.JsNumberWriteBenchmark}}}
- */
+/** Throughput of turning a play-json `JsValue` into bytes, over payloads that exercise the
+  * `JsNumber` branch of `encodeValue`, with play-json and circe as reference points.
+  *
+  * To run: {{{sbt benchmark/Jmh/run com.evolution.playjson.jsoniter.JsNumberWriteBenchmark}}}
+  */
 @State(Scope.Benchmark)
 @Fork(1)
 @Warmup(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
