@@ -10,11 +10,10 @@ import play.api.libs.json._
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
-/**
- * The read counterpart of [[JsNumberWriteBenchmark]], over the same payloads.
- *
- * To run: {{{sbt benchmark/Jmh/run com.evolution.playjson.jsoniter.JsNumberReadBenchmark}}}
- */
+/** The read counterpart of [[JsNumberWriteBenchmark]], over the same payloads.
+  *
+  * To run: {{{sbt benchmark/Jmh/run com.evolution.playjson.jsoniter.JsNumberReadBenchmark}}}
+  */
 @State(Scope.Benchmark)
 @Fork(1)
 @Warmup(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
