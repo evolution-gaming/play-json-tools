@@ -28,7 +28,7 @@ object Enumeration {
   @deprecated(
     "Use EnumerationFormat.of, which validates the labels, or Enumeration.unsafe to keep this " +
       "behaviour without the warning",
-    "1.4.0"
+    "1.5.0"
   )
   def apply[A](implicit enumMappings: EnumMappings[A]): Enumeration[A] = unsafe[A]
 

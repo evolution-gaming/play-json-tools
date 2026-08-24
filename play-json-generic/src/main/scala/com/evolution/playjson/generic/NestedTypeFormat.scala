@@ -10,7 +10,7 @@ object NestedTypeFormat {
   @deprecated(
     "Use NestedTypeFormat.of, which reports subtypes it cannot tell apart on the wire, or " +
       "NestedTypeFormat.unsafe to keep this behaviour without the warning",
-    "1.4.0"
+    "1.5.0"
   )
   def apply[A](implicit reads: NestedTypeReads[A], writes: NestedTypeWrites[A]): OFormat[A] = unsafe
 
