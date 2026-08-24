@@ -39,7 +39,8 @@ ThisBuild / versionPolicyIntention := Compatibility.BinaryCompatible
 
 val alias: Seq[sbt.Def.Setting[?]] =
   // the Scala version is left to the caller, since CI runs `check` once per version in its matrix
-  addCommandAlias("check", "all scalafmtCheckAll scalafmtSbtCheck versionPolicyCheck Compile/doc") ++
+  addCommandAlias("check", "all scalafmtCheckRepo versionPolicyCheck Compile/doc") ++
+    addCommandAlias("fmt", "scalafmtRepo") ++
     addCommandAlias("build", "+all compile test")
 
 lazy val root = project
