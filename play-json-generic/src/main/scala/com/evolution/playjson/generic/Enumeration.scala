@@ -24,5 +24,16 @@ class Enumeration[A] private (enumMappings: EnumMappings[A]) {
 }
 
 object Enumeration {
-  def apply[A](implicit enumMappings: EnumMappings[A]) = new Enumeration[A](enumMappings)
+
+  @deprecated(
+    "Use EnumerationFormat.of, which validates the labels, or Enumeration.unsafe to keep this " +
+      "behaviour without the warning",
+    "1.5.0"
+  )
+  def apply[A](implicit enumMappings: EnumMappings[A]): Enumeration[A] = unsafe[A]
+
+  /** Same as the deprecated `apply`: a label that several values collapse onto leaves all but one
+    * of them unreadable.
+    */
+  def unsafe[A](implicit enumMappings: EnumMappings[A]): Enumeration[A] = new Enumeration[A](enumMappings)
 }
