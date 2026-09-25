@@ -10,6 +10,12 @@ object Dependencies {
   val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.0.0"
   val collectionCompact = "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0"
 
+  object jackson {
+    val version = "2.18.11"
+    val core = "com.fasterxml.jackson.core" % "jackson-core" % version
+    val databind = "com.fasterxml.jackson.core" % "jackson-databind" % version
+  }
+
   object circe {
     val version = "0.14.16"
     val core = "io.circe" %% "circe-core" % version
