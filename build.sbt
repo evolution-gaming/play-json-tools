@@ -73,6 +73,8 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
     libraryDependencies ++=
       (Seq(
         playJson,
+        jackson.core,
+        jackson.databind,
         scalaTest % Test
       ) ++
         (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -81,9 +83,6 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
           case _ =>
             Seq()
         })).map(excludeLog4j)
-  )
-  .jvmSettings(
-    libraryDependencies ++= Seq(jackson.core, jackson.databind)
   )
 
 lazy val `play-json-tools` = project
@@ -110,6 +109,8 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
     libraryDependencies ++=
       (Seq(
         playJson,
+        jackson.core,
+        jackson.databind,
         jsoniter,
         collectionCompact,
         scalaTest % Test
@@ -120,9 +121,6 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
           case _ =>
             Seq()
         })).map(excludeLog4j)
-  )
-  .jvmSettings(
-    libraryDependencies ++= Seq(jackson.core, jackson.databind)
   )
 
 // not part of the aggregate, benchmarks are run manually
