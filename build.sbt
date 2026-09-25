@@ -82,12 +82,17 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
             Seq()
         })).map(excludeLog4j)
   )
+  .jvmSettings(
+    libraryDependencies ++= Seq(jackson.core, jackson.databind)
+  )
 
 lazy val `play-json-tools` = project
   .settings(
     commonSettings,
     libraryDependencies ++= Seq(
       playJson,
+      jackson.core,
+      jackson.databind,
       nel,
       scalaTest % Test
     ).map(excludeLog4j)
@@ -116,6 +121,9 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
             Seq()
         })).map(excludeLog4j)
   )
+  .jvmSettings(
+    libraryDependencies ++= Seq(jackson.core, jackson.databind)
+  )
 
 // not part of the aggregate, benchmarks are run manually
 lazy val benchmark = project
@@ -141,6 +149,8 @@ lazy val `play-json-circe` = project
     allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++= Seq(
       playJson,
+      jackson.core,
+      jackson.databind,
       circe.core,
       circe.parser,
       scalaTest % Test
