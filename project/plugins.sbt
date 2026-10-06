@@ -13,7 +13,7 @@ addSbtPlugin("com.evolution" % "sbt-scalac-opts-plugin" % "0.2.1")
 
 addSbtPlugin("com.evolution" % "sbt-artifactory-plugin" % "0.0.2")
 
-addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.1")
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.6")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.4")
 
