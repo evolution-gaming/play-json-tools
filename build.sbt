@@ -3,7 +3,7 @@ import Dependencies.*
 import scala.collection.Seq
 
 val Scala213 = "2.13.16"
-val Scala3 = "3.3.8"
+val Scala3 = "3.9.0"
 
 val commonSettings = Seq(
   homepage := Some(url("https://github.com/evolution-gaming/play-json-tools")),
