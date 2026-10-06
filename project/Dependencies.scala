@@ -7,7 +7,7 @@ object Dependencies {
   val playJson = "org.playframework" %% "play-json" % "3.0.6"
   val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   val jsoniter = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % "2.39.1"
-  val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.0.0"
+  val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.2.1"
   val collectionCompact = "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0"
 
   object jackson {
