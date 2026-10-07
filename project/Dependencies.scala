@@ -6,18 +6,18 @@ object Dependencies {
   val nel = "com.evolutiongaming" %% "nel" % "1.3.5"
   val playJson = "org.playframework" %% "play-json" % "3.0.6"
   val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
-  val jsoniter = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % "2.39.1"
+  val jsoniter = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % "2.41.2"
   val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.2.1"
   val collectionCompact = "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0"
 
   object jackson {
-    val version = "2.18.11"
+    val version = "2.22.3"
     val core = "com.fasterxml.jackson.core" % "jackson-core" % version
     val databind = "com.fasterxml.jackson.core" % "jackson-databind" % version
   }
 
   object circe {
-    val version = "0.14.16"
+    val version = "0.14.17"
     val core = "io.circe" %% "circe-core" % version
     val parser = "io.circe" %% "circe-parser" % version
   }
