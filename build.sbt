@@ -117,7 +117,11 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
       ) ++
         (CrossVersion.partialVersion(scalaVersion.value) match {
           case Some((2, _)) =>
-            Seq(jsonGenerator % Test)
+            Seq(
+              jsonGenerator % Test,
+              jsonValues % Test,
+              scalacheck % Test
+            )
           case _ =>
             Seq()
         })).map(excludeLog4j)
