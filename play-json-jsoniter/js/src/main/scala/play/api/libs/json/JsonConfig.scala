@@ -163,7 +163,6 @@ object JsonConfig {
     prop(preserveZeroDecimalProperty, defaultPreserveZeroDecimal)(_.toBoolean)
 
   // Default settings, which can be controlled with system properties.
-  // To override, call JacksonJson.setConfig()
   val settings: JsonConfig =
     JsonConfig(
       BigDecimalParseConfig(loadMathContext, loadScaleLimit, loadDigitsLimit),
