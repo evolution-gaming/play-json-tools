@@ -6,7 +6,7 @@ object Dependencies {
   val nel = "com.evolutiongaming" %% "nel" % "1.3.5"
   val playJson = "org.playframework" %% "play-json" % "3.0.6"
   val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
-  val jsoniter = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % "2.41.2"
+  val jsoniter = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % "2.41.4"
   val jsonGenerator = "com.github.imrafaelmerino" %% "json-scala-values-generator" % "1.2.1"
   val jsonValues = "com.github.imrafaelmerino" %% "json-scala-values" % "1.1.0" // scala-steward:off in sync with above
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.20.0"
