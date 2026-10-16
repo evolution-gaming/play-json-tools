@@ -2,6 +2,11 @@
  * Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
  */
 
+/*
+ * Copied from play-json 3.0.6 `play-json/jvm/src/main/scala/play/api/libs/json/JsonConfig.scala` with deprecated members dropped.
+ * play-json keeps it in the JVM-only sources, so its Scala.js artifact lacks it, while the shared `JsonValueCodecJsValue` needs it.
+ */
+
 package play.api.libs.json
 
 import play.api.libs.json.JsonConfig.defaultMaxPlain

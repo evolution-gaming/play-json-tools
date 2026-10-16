@@ -48,7 +48,7 @@ lazy val root = project
   .settings(
     commonSettings,
     publish / skip := true,
-    name := "play-json-tools-root"
+    name := "play-json-tools "
   )
   .aggregate(
     `play-json-tools`,
