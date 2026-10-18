@@ -1,7 +1,5 @@
 import Dependencies.*
 
-import scala.collection.Seq
-
 val Scala213 = "2.13.16"
 val Scala3 = "3.3.8"
 
@@ -39,9 +37,9 @@ ThisBuild / versionPolicyIntention := Compatibility.BinaryCompatible
 
 val alias: Seq[sbt.Def.Setting[?]] =
   // the Scala version is left to the caller, since CI runs `check` once per version in its matrix
-  addCommandAlias("check", "all scalafmtCheckRepo versionPolicyCheck Compile/doc") ++
+  addCommandAlias("check", "; scalafmtCheckRepo; all versionPolicyCheck Compile/doc") ++
     addCommandAlias("fmt", "scalafmtRepo") ++
-    addCommandAlias("build", "+all compile test")
+    addCommandAlias("build", "+all compile testFull")
 
 lazy val root = project
   .in(file("."))
@@ -50,7 +48,7 @@ lazy val root = project
   .settings(
     commonSettings,
     publish / skip := true,
-    name := "play-json-tools"
+    name := "play-json-tools "
   )
   .aggregate(
     `play-json-tools`,
@@ -84,6 +82,17 @@ lazy val `play-json-generic` = crossProject(JVMPlatform, JSPlatform)
             Seq()
         })).map(excludeLog4j)
   )
+  .jsSettings(
+    coverageEnabled := false,
+    versionPolicyIgnored ++= Seq(
+      "org.scala-lang" %% "scala3-library",
+      "com.chuusai" %% "shapeless",
+      "org.playframework" %% "play-json",
+      "org.playframework" %% "play-functional",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310"
+    )
+  )
 
 lazy val `play-json-tools` = project
   .settings(
@@ -107,24 +116,39 @@ lazy val `play-json-jsoniter` = crossProject(JVMPlatform, JSPlatform)
     commonSettings,
     allowUnsafeScalaLibUpgrade := true,
     libraryDependencies ++=
-      (Seq(
+      Seq(
         playJson,
         jackson.core,
         jackson.databind,
         jsoniter,
         collectionCompact,
         scalaTest % Test
-      ) ++
-        (CrossVersion.partialVersion(scalaVersion.value) match {
-          case Some((2, _)) =>
-            Seq(
-              jsonGenerator % Test,
-              jsonValues % Test,
-              scalacheck % Test
-            )
-          case _ =>
-            Seq()
-        })).map(excludeLog4j)
+      ).map(excludeLog4j)
+  )
+  .jsSettings(
+    coverageEnabled := false,
+    versionPolicyIgnored ++= Seq(
+      "org.scala-lang" %% "scala3-library",
+      "org.playframework" %% "play-json",
+      "org.playframework" %% "play-functional",
+      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core",
+      "org.scala-lang.modules" %% "scala-collection-compat",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310"
+    )
+  )
+  .jvmSettings(
+    libraryDependencies ++=
+      (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, _)) =>
+          Seq(
+            jsonGenerator % Test,
+            jsonValues % Test,
+            scalacheck % Test
+          )
+        case _ =>
+          Seq()
+      }).map(excludeLog4j)
   )
 
 // not part of the aggregate, benchmarks are run manually

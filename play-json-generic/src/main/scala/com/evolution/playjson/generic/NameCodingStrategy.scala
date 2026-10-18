@@ -13,7 +13,7 @@ object NameCodingStrategy extends LowPriority
 object NameCodingStrategies {
 
   private def lowerCaseSepCoding(sep: String): NameCodingStrategy = new NameCodingStrategy() {
-    override def apply(s: String): String = s.split("(?<!^)(?=[A-Z])").map(_.toLowerCase).mkString(sep)
+    override def apply(s: String): String = s.split("(?=[A-Z])").map(_.toLowerCase).mkString(sep)
   }
 
   implicit val kebabCase: NameCodingStrategy = lowerCaseSepCoding("-")
