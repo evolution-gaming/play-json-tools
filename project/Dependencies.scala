@@ -13,7 +13,7 @@ object Dependencies {
   val collectionCompact = "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0"
 
   object jackson {
-    val version = "2.22.3"
+    val version = "2.22.4"
     val core = "com.fasterxml.jackson.core" % "jackson-core" % version
     val databind = "com.fasterxml.jackson.core" % "jackson-databind" % version
   }
