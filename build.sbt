@@ -1,15 +1,15 @@
 import Dependencies.*
 
 val Scala213 = "2.13.16"
-val Scala3 = "3.3.8"
+val Scala3 = "3.3.9"
 
 val commonSettings = Seq(
-  homepage := Some(url("https://github.com/evolution-gaming/play-json-tools")),
+  homepage := Some(uri("https://github.com/evolution-gaming/play-json-tools")),
   publishTo := Some(Resolver.evolutionReleases),
   organizationName := "Evolution",
-  organizationHomepage := Some(url("https://evolution.com")),
+  organizationHomepage := Some(uri("https://evolution.com")),
   organization := "com.evolution",
-  licenses := Seq(("MIT", url("https://opensource.org/licenses/MIT"))),
+  licenses := Seq(("MIT", uri("https://opensource.org/licenses/MIT"))),
   description := "Set of implicit helper classes for transforming various objects to and from JSON",
   startYear := Some(2017),
   scalaVersion := Scala213,
@@ -24,7 +24,10 @@ val commonSettings = Seq(
         List(
           // improve error messages:
           "-explain",
-          "-explain-types"
+          "-explain-types",
+
+          // wait for something similar to: https://github.com/scala/scala3/pull/27028
+          "-Wconf:msg=Skipping coverage instrumentation:i"
         )
     }
   }

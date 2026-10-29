@@ -11,5 +11,3 @@ permissions:
 jobs:
   test:
     uses: evolution-gaming/scala-github-actions/.github/workflows/ci.yml@144b8762ece97a25b24621f9d470542fa1e068b4 # v7.2.0
-    with:
-      scala_versions: '["2.13.16", "3.3.8"]'

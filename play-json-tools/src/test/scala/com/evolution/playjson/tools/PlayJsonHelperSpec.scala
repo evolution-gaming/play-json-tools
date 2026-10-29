@@ -94,14 +94,14 @@ class PlayJsonHelperSpec extends AnyFunSuite with Matchers {
 
   // `-1 minute` is written in the plural where `1 minute` is not, which is what Duration.toString does
   test("finiteDurationFormat round-trips a negative duration") {
-    val value = -1.minute
+    val value = (-1).minute
     val json = Json.toJson(value)
     json shouldEqual JsString("-1 minutes")
     Json.fromJson[FiniteDuration](json) shouldEqual JsSuccess(value)
   }
 
   test("finiteDurationFormat reads a negative number as milliseconds") {
-    Json.fromJson[FiniteDuration](JsNumber(-1500)) shouldEqual JsSuccess(-1500.millis)
+    Json.fromJson[FiniteDuration](JsNumber(-1500)) shouldEqual JsSuccess((-1500).millis)
   }
 
   test("finiteDurationFormat reports a duration that is negative infinity") {
